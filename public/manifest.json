@@ -1,0 +1,23 @@
+{
+  "short_name": "TC Admin",
+  "name": "Teacher's Corner Admin Panel",
+  "description": "Admin management tool for Teacher's Corner",
+  "icons": [
+    {
+      "src": "https://raw.githubusercontent.com/lucide-icons/lucide/main/icons/graduation-cap.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "https://raw.githubusercontent.com/lucide-icons/lucide/main/icons/graduation-cap.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#312e81",
+  "background_color": "#f9fafb"
+}

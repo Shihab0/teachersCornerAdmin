@@ -1,0 +1,71 @@
+{
+  "entities": {
+    "Teacher": {
+      "title": "Teacher",
+      "description": "Teacher profile data",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "phone": { "type": "string" },
+        "institution": { "type": "string" },
+        "department": { "type": "string" },
+        "area": { "type": "string" },
+        "canTeachHSC": { "type": "boolean" },
+        "isMedical": { "type": "boolean" },
+        "rating": { "type": "number" },
+        "createdAt": { "type": "number" }
+      },
+      "required": ["name", "phone", "institution", "area"]
+    },
+    "Deal": {
+      "title": "Deal",
+      "description": "Tuition deal data",
+      "type": "object",
+      "properties": {
+        "tuitionId": { "type": "string" },
+        "tutorName": { "type": "string" },
+        "tutorPhone": { "type": "string" },
+        "guardianPhone": { "type": "string" },
+        "studentClass": { "type": "string" },
+        "details": { "type": "string" },
+        "referrerName": { "type": "string" },
+        "adminName": { "type": "string" },
+        "selectionDate": { "type": "string" },
+        "confirmDate": { "type": "string" },
+        "commission": { "type": "number" },
+        "tuitionStatus": { "type": "string" },
+        "commissionStatus": { "type": "string" },
+        "collectedBy": { "type": "string" },
+        "createdAt": { "type": "number" },
+        "updatedAt": { "type": "number" },
+        "history": { "type": "array", "items": { "type": "object" } }
+      }
+    },
+    "Expense": {
+      "title": "Expense",
+      "description": "Office expense data",
+      "type": "object",
+      "properties": {
+        "adminName": { "type": "string" },
+        "amount": { "type": "number" },
+        "purpose": { "type": "string" },
+        "createdAt": { "type": "number" },
+        "history": { "type": "array", "items": { "type": "object" } }
+      }
+    }
+  },
+  "firestore": {
+    "/artifacts/tc-admin-panel/public/data/tc_teachers": {
+      "schema": "Teacher",
+      "description": "Collection of teachers"
+    },
+    "/artifacts/tc-admin-panel/public/data/tc_deals": {
+      "schema": "Deal",
+      "description": "Collection of tuition deals"
+    },
+    "/artifacts/tc-admin-panel/public/data/tc_expenses": {
+      "schema": "Expense",
+      "description": "Collection of office expenses"
+    }
+  }
+}

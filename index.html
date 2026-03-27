@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Teacher's Corner - Admin Panel</title>
+    <!-- PWA Meta Tags -->
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#312e81" />
+    <link
+      rel="apple-touch-icon"
+      href="https://raw.githubusercontent.com/lucide-icons/lucide/main/icons/graduation-cap.svg"
+    />
+  </head>
+  <body class="bg-gray-50 text-gray-800">
+    <!-- 🚀 PWA সুন্দর লোডিং স্ক্রিন -->
+    <div id="pwa-loader">
+      <div class="loader-spinner"></div>
+      <div class="loader-title">
+        Teacher's <span style="color: #facc15; font-weight: 300">CORNER</span>
+      </div>
+      <div class="loader-subtitle">Admin Panel</div>
+    </div>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+    <script>
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", () => {
+          navigator.serviceWorker
+            .register("/sw.js")
+            .then((reg) => console.log("SW Registered"))
+            .catch((err) => console.log("SW Fail", err));
+        });
+      }
+    </script>
+  </body>
+</html>
+
