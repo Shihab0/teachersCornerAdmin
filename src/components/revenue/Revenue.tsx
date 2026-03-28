@@ -1,3 +1,4 @@
+import React, { useState } from "react";
 import type { ChangeEvent, FormEvent } from "react";
 import { Icon } from "../ui/Icon";
 import {
@@ -12,6 +13,8 @@ import {
   Edit,
   History,
   Trash2,
+  ChevronDown,
+  ChevronUp
 } from "lucide-react";
 import { Expense, HistoryEntry } from "../../types";
 import { cn } from "../../lib/utils";
@@ -51,6 +54,8 @@ export const Revenue = ({
   onDeleteExpense,
   onHistoryClick,
 }: RevenueProps) => {
+  const [showAllExpenses, setShowAllExpenses] = useState(false);
+
   const dNet = revStats.admins.Dipu - revStats.adminExps.Dipu;
   const sNet = revStats.admins.Shimanto - revStats.adminExps.Shimanto;
   const diff = Math.abs(dNet - sNet) / 2;
@@ -62,6 +67,8 @@ export const Revenue = ({
   } else if (sNet > dNet) {
     msg = `হিসাব সমান করতে Shimanto-এর Dipu-কে ৳${diff} দিতে হবে (বা খরচ করতে হবে)।`;
   }
+
+  const displayedExpenses = showAllExpenses ? expenses : expenses.slice(0, 4);
 
   return (
     <div className="space-y-6 fade-in">
@@ -78,6 +85,9 @@ export const Revenue = ({
           <option value="2025">২০২৫</option>
           <option value="2026">২০২৬</option>
           <option value="2027">২০২৭</option>
+          <option value="2028">২০২৮</option>
+          <option value="2029">২০২৯</option>
+          <option value="2030">২০৩০</option>
         </select>
         <select
           value={revMonth}
@@ -281,7 +291,7 @@ export const Revenue = ({
 
         <div className="space-y-3 mt-6">
           <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest pl-1 mb-2">সাম্প্রতিক খরচসমূহ</p>
-          {expenses.map((exp) => (
+          {displayedExpenses.map((exp) => (
             <div key={exp.id} className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex flex-col">
               <div className="flex justify-between items-center text-xs mb-3">
                 <div className="flex items-center flex-1 pr-2">
@@ -326,6 +336,23 @@ export const Revenue = ({
               </div>
             </div>
           ))}
+
+          {expenses.length > 4 && (
+            <button
+              onClick={() => setShowAllExpenses(!showAllExpenses)}
+              className="w-full py-3 mt-2 flex items-center justify-center text-xs font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-xl transition-colors"
+            >
+              {showAllExpenses ? (
+                <>
+                  <Icon icon={ChevronUp} size={14} className="mr-1" /> কম দেখুন
+                </>
+              ) : (
+                <>
+                  <Icon icon={ChevronDown} size={14} className="mr-1" /> আরও দেখুন ({expenses.length - 4})
+                </>
+              )}
+            </button>
+          )}
         </div>
       </div>
     </div>

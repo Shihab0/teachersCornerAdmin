@@ -37,11 +37,26 @@ export interface Teacher {
   id: string;
   name: string;
   phone: string;
-  institution: string;
-  department: string;
-  area: string;
-  canTeachHSC: boolean;
+  photoUrl: string;
+  collegeName: string;
+  presentAddress: string;
+  permanentAddress: string;
+  education: {
+    ssc: { year: string; group: string; gpa: string };
+    hsc: { year: string; group: string; gpa: string };
+    honours: { year: string; subject: string; studyYear: string; gpa: string };
+  };
+  experience: string;
+  hasCurrentTuition: boolean;
+  interestedSubjectsAndClasses: string;
   isMedical: boolean;
+  medicalInstitution?: string;
+  isPublicUniversity: boolean;
+  publicUniversityName?: string;
+  canTeachHSC: boolean;
+  hscSubject?: string;
+  facebookLink?: string;
+  studentIdUrl?: string;
   rating: number;
   createdAt: number;
 }

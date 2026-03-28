@@ -17,6 +17,8 @@ import {
   Trash2,
   Undo,
   Clock,
+  Bell,
+  X,
 } from "lucide-react";
 import { Deal, HistoryEntry } from "../../types";
 import { cn } from "../../lib/utils";
@@ -58,6 +60,7 @@ export const Dashboard = ({
 }: DashboardProps) => {
   const [visibleCount, setVisibleCount] = useState(20);
   const [expandedCardId, setExpandedCardId] = useState<string | null>(null);
+  const [showNotifications, setShowNotifications] = useState(false);
 
   const tutorCounts = useMemo(() => {
     const counts: Record<string, number> = {};
@@ -138,16 +141,92 @@ export const Dashboard = ({
 
   return (
     <div className="space-y-4 fade-in">
-      <div className="relative group">
-        <Icon icon={Search} size={18} className="absolute left-4 top-3.5 text-indigo-400" />
-        <input
-          type="text"
-          placeholder="আইডি, টিউটর বা ক্লাস খুঁজুন..."
-          className="w-full pl-11 pr-4 py-3.5 bg-white rounded-2xl shadow-sm border border-gray-100 focus:ring-2 focus:ring-indigo-500 text-sm font-medium outline-none"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-        />
+      <div className="flex items-center space-x-3">
+        <div className="relative flex-1 group">
+          <Icon icon={Search} size={18} className="absolute left-4 top-3.5 text-indigo-400" />
+          <input
+            type="text"
+            placeholder="আইডি, টিউটর বা ক্লাস খুঁজুন..."
+            className="w-full pl-11 pr-4 py-3.5 bg-white rounded-2xl shadow-sm border border-gray-100 focus:ring-2 focus:ring-indigo-500 text-sm font-medium outline-none transition-all"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
+        
+        {notifications.length > 0 && (
+          <button
+            onClick={() => setShowNotifications(true)}
+            className="relative p-3.5 bg-white rounded-2xl shadow-sm border border-gray-100 active:scale-95 transition-all text-indigo-500 hover:bg-indigo-50"
+          >
+            <Icon icon={Bell} size={20} />
+            <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-[10px] font-black rounded-full flex items-center justify-center border-2 border-white shadow-sm">
+              {notifications.length}
+            </span>
+          </button>
+        )}
       </div>
+
+      {showNotifications && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white w-full max-w-md rounded-[32px] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
+            <div className="p-6 border-b border-gray-50 flex justify-between items-center bg-orange-50/50">
+              <h3 className="text-orange-800 font-black flex items-center text-base">
+                <Icon icon={AlertTriangle} size={20} className="mr-2" /> ৩ দিন ওভার! ({notifications.length})
+              </h3>
+              <button
+                onClick={() => setShowNotifications(false)}
+                className="p-2 hover:bg-orange-100 rounded-full transition-colors text-orange-800"
+              >
+                <Icon icon={X} size={20} />
+              </button>
+            </div>
+            <div className="p-4 max-h-[70vh] overflow-y-auto space-y-3 bg-gray-50/50">
+              {notifications.map((n) => (
+                <div key={n.id} className="bg-white p-4 rounded-2xl shadow-sm border border-orange-100 hover:border-orange-200 transition-colors">
+                  <div className="flex justify-between items-start mb-3">
+                    <div>
+                      <p className="font-bold text-gray-800 text-sm flex items-center mb-1">
+                        {n.tutorName}
+                      </p>
+                      <span className="text-[10px] bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded-md font-black border border-indigo-100 uppercase tracking-wider">
+                        ID: {n.tuitionId}
+                      </span>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-orange-600 font-black text-base block leading-none mb-1">৳ {n.commission}</span>
+                      <span className="text-[9px] text-gray-400 font-bold uppercase">Pending</span>
+                    </div>
+                  </div>
+                  <div className="flex space-x-2 pt-3 border-t border-gray-50">
+                    {n.tutorPhone && (
+                      <a
+                        href={`tel:${n.tutorPhone}`}
+                        className="flex-1 inline-flex items-center justify-center px-3 py-2 bg-blue-50 text-blue-700 rounded-xl text-[11px] font-bold border border-blue-100 active:scale-95 transition-transform"
+                      >
+                        <Icon icon={Phone} size={12} className="mr-1.5" /> টিউটর
+                      </a>
+                    )}
+                    <a
+                      href={`tel:${n.guardianPhone}`}
+                      className="flex-1 inline-flex items-center justify-center px-3 py-2 bg-emerald-50 text-emerald-700 rounded-xl text-[11px] font-bold border border-emerald-100 active:scale-95 transition-transform"
+                    >
+                      <Icon icon={Phone} size={12} className="mr-1.5" /> অভিভাবক
+                    </a>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="p-4 bg-white border-t border-gray-50 text-center">
+              <button
+                onClick={() => setShowNotifications(false)}
+                className="w-full py-3 bg-gray-800 text-white rounded-2xl font-black text-xs uppercase tracking-widest active:scale-[0.98] transition-transform"
+              >
+                বন্ধ করুন
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="flex space-x-2 overflow-x-auto pb-1 no-scrollbar">
         <div className="bg-white border border-gray-100 rounded-xl flex items-center shadow-sm px-2">
@@ -186,48 +265,6 @@ export const Dashboard = ({
           <Icon icon={Download} size={14} className="mr-1" /> ব্যাকআপ
         </button>
       </div>
-
-      {notifications.length > 0 && !searchQuery && filterTuitionStatus === "All" && filterCommissionStatus === "All" && (
-        <div className="bg-orange-50 border border-orange-200 rounded-2xl p-4 shadow-sm relative overflow-hidden">
-          <div className="absolute top-0 left-0 w-1.5 h-full bg-orange-500"></div>
-          <h3 className="text-orange-800 font-black flex items-center mb-3 text-sm">
-            <Icon icon={AlertTriangle} size={18} className="mr-2" /> ৩ দিন ওভার! (Pending)
-          </h3>
-          <div className="space-y-3">
-            {notifications.map((n) => (
-              <div key={n.id} className="bg-white p-3 rounded-xl shadow-sm border border-orange-100">
-                <div className="flex justify-between items-start mb-2">
-                  <div>
-                    <p className="font-bold text-gray-800 text-sm flex items-center">
-                      {n.tutorName}{" "}
-                      <span className="ml-2 text-[10px] bg-indigo-50 text-indigo-700 px-1.5 py-0.5 rounded">
-                        {n.tuitionId}
-                      </span>
-                    </p>
-                  </div>
-                  <span className="text-orange-600 font-black text-sm">৳ {n.commission}</span>
-                </div>
-                <div className="flex space-x-2">
-                  {n.tutorPhone && (
-                    <a
-                      href={`tel:${n.tutorPhone}`}
-                      className="inline-flex items-center px-2 py-1 bg-blue-50 text-blue-700 rounded-lg text-[10px] font-bold border border-blue-100"
-                    >
-                      <Icon icon={Phone} size={10} className="mr-1" /> টিউটর
-                    </a>
-                  )}
-                  <a
-                    href={`tel:${n.guardianPhone}`}
-                    className="inline-flex items-center px-2 py-1 bg-emerald-50 text-emerald-700 rounded-lg text-[10px] font-bold border border-emerald-100"
-                  >
-                    <Icon icon={Phone} size={10} className="mr-1" /> অভিভাবক
-                  </a>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
 
       <div>
         <div className="flex justify-between items-center mb-3 px-1">
