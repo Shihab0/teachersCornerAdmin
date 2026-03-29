@@ -59,6 +59,20 @@ export interface Teacher {
   studentIdUrl?: string;
   rating: number;
   createdAt: number;
+  status?: "Pending" | "Approved" | "Rejected";
 }
 
-export type Tab = "dashboard" | "add" | "revenue" | "stats" | "teachers";
+export interface TuitionRequest {
+  id: string;
+  guardianName: string;
+  guardianPhone: string;
+  studentClass: string;
+  subjects: string;
+  area: string;
+  details: string;
+  daysPerWeek: string;
+  status: "Pending" | "Approved" | "Rejected";
+  createdAt: number;
+}
+
+export type Tab = "dashboard" | "add" | "revenue" | "stats" | "teachers" | "requests" | "pending_teachers";

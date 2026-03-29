@@ -35,6 +35,7 @@ interface RevenueProps {
   onEditExpense: (exp: Expense) => void;
   onDeleteExpense: (id: string) => void;
   onHistoryClick: (data: { title: string; history: HistoryEntry[] }) => void;
+  isProcessing?: boolean;
 }
 
 export const Revenue = ({
@@ -53,6 +54,7 @@ export const Revenue = ({
   onEditExpense,
   onDeleteExpense,
   onHistoryClick,
+  isProcessing = false,
 }: RevenueProps) => {
   const [showAllExpenses, setShowAllExpenses] = useState(false);
 
@@ -279,11 +281,13 @@ export const Revenue = ({
             />
             <button
               type="submit"
+              disabled={isProcessing}
               className={cn(
-                "w-full text-white font-black py-3.5 rounded-xl text-xs uppercase tracking-widest active:scale-95 transition-transform",
+                "w-full text-white font-black py-3.5 rounded-xl text-xs uppercase tracking-widest active:scale-95 transition-transform flex items-center justify-center gap-2 disabled:opacity-50",
                 isEditingExpense ? "bg-blue-600 shadow-lg shadow-blue-200" : "bg-gray-800 shadow-lg shadow-gray-200"
               )}
             >
+              {isProcessing && <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />}
               {isEditingExpense ? "আপডেট করুন" : "সেভ করুন"}
             </button>
           </form>

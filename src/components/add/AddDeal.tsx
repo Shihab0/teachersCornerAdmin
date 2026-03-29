@@ -13,6 +13,7 @@ interface AddDealProps {
   onSubmit: (e: FormEvent) => void;
   onDelete: () => void;
   onCancel: () => void;
+  isProcessing?: boolean;
 }
 
 export const AddDeal = ({
@@ -25,6 +26,7 @@ export const AddDeal = ({
   onSubmit,
   onDelete,
   onCancel,
+  isProcessing = false,
 }: AddDealProps) => {
   return (
     <div className="bg-white p-6 rounded-[32px] shadow-sm border border-gray-100 fade-in">
@@ -255,11 +257,17 @@ export const AddDeal = ({
           )}
           <button
             type="submit"
+            disabled={isProcessing}
             className={`flex-[2] ${
               isEditing ? "bg-emerald-600 shadow-emerald-200" : "bg-indigo-600 shadow-indigo-200"
-            } text-white font-black py-4 rounded-2xl shadow-xl active:scale-95 transition-transform flex items-center justify-center text-sm`}
+            } text-white font-black py-4 rounded-2xl shadow-xl active:scale-95 transition-transform flex items-center justify-center text-sm disabled:opacity-50`}
           >
-            <Icon icon={isEditing ? CheckCircle : PlusCircle} size={18} className="mr-2" /> {isEditing ? "আপডেট করুন" : "সেভ করুন"}
+            {isProcessing ? (
+              <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
+            ) : (
+              <Icon icon={isEditing ? CheckCircle : PlusCircle} size={18} className="mr-2" />
+            )}
+            {isEditing ? "আপডেট করুন" : "সেভ করুন"}
           </button>
         </div>
       </form>

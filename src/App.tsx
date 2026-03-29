@@ -2,7 +2,8 @@ import React, { useState, useEffect, useMemo, ChangeEvent, FormEvent } from "rea
 import { onAuthStateChanged, signInWithPopup, signOut, User as FirebaseUser } from "firebase/auth";
 import { collection, onSnapshot, doc, addDoc, updateDoc, deleteDoc, query, orderBy, getDocs, getDocFromServer } from "firebase/firestore";
 import { auth, db, googleProvider, appId, allowedEmails } from "./lib/firebase";
-import { Deal, Expense, Tab, HistoryEntry, Teacher } from "./types";
+import { Toaster, toast } from "sonner";
+import { Deal, Expense, Tab, HistoryEntry, Teacher, TuitionRequest } from "./types";
 import { Header } from "./components/layout/Header";
 import { Footer } from "./components/layout/Footer";
 import { Dashboard } from "./components/dashboard/Dashboard";
@@ -10,6 +11,8 @@ import { AddDeal } from "./components/add/AddDeal";
 import { Revenue } from "./components/revenue/Revenue";
 import { Stats } from "./components/stats/Stats";
 import { TeacherList } from "./components/teachers/TeacherList";
+import { RequestsList } from "./components/admin/RequestsList";
+import { PendingTeachersList } from "./components/admin/PendingTeachersList";
 import { HistoryModal } from "./components/modals/HistoryModal";
 import { ConfirmDialog } from "./components/modals/ConfirmDialog";
 import { PaymentModal } from "./components/modals/PaymentModal";
@@ -17,6 +20,15 @@ import { Login } from "./components/auth/Login";
 import { TeacherModal } from "./components/modals/TeacherModal";
 import { Icon } from "./components/ui/Icon";
 import { Smartphone, Loader2 } from "lucide-react";
+
+enum OperationType {
+  CREATE = 'create',
+  UPDATE = 'update',
+  DELETE = 'delete',
+  LIST = 'list',
+  GET = 'get',
+  WRITE = 'write',
+}
 
 import { DEMO_TEACHERS, DEMO_DEALS, DEMO_EXPENSES } from "./lib/demoData";
 
@@ -32,8 +44,10 @@ export default function App() {
 
   // Data States
   const [deals, setDeals] = useState<Deal[]>([]);
+  const [publicDeals, setPublicDeals] = useState<Deal[]>([]);
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [teachers, setTeachers] = useState<Teacher[]>([]);
+  const [tuitionRequests, setTuitionRequests] = useState<TuitionRequest[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const isInjecting = React.useRef(false);
@@ -78,6 +92,7 @@ export default function App() {
   });
   const [idError, setIdError] = useState("");
   const [isEditingExpense, setIsEditingExpense] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
   const [editExpenseId, setEditExpenseId] = useState<string | null>(null);
   const [expenseForm, setExpenseForm] = useState({
     adminName: "",
@@ -151,10 +166,20 @@ export default function App() {
 
   // Fetch Data
   useEffect(() => {
-    if (!isAdmin) return;
-
+    // Public deals for landing page
     const dealPath = `artifacts/${appId}/public/data/tc_deals`;
     const baseRef = collection(db, dealPath);
+    const qPublicDeals = query(baseRef, orderBy("createdAt", "desc"));
+    const unsubPublic = onSnapshot(qPublicDeals, (snapshot) => {
+      const data = snapshot.docs
+        .map((doc) => ({ id: doc.id, ...doc.data() } as Deal))
+        .filter(d => d.tuitionStatus === "Confirmed" || d.tuitionStatus === "Running")
+        .slice(0, 5);
+      setPublicDeals(data);
+    });
+
+    if (!isAdmin) return () => unsubPublic();
+
     const qDeals = query(baseRef, orderBy("createdAt", "desc"));
     const unsubDeals = onSnapshot(qDeals, (snapshot) => {
       const data = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Deal));
@@ -185,10 +210,22 @@ export default function App() {
       handleFirestoreError(err, "list", teacherPath);
     });
 
+    const reqPath = `artifacts/${appId}/public/data/tc_tuition_requests`;
+    const reqRef = collection(db, reqPath);
+    const qReq = query(reqRef, orderBy("createdAt", "desc"));
+    const unsubReq = onSnapshot(qReq, (snapshot) => {
+      const data = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as TuitionRequest));
+      setTuitionRequests(data);
+    }, (err) => {
+      handleFirestoreError(err, "list", reqPath);
+    });
+
     return () => {
+      unsubPublic();
       unsubDeals();
       unsubExp();
       unsubTeacher();
+      unsubReq();
     };
   }, [isAdmin]);
 
@@ -280,10 +317,10 @@ export default function App() {
           await Promise.all(injectPromises);
           console.log("New demo data injected successfully.");
           
-          alert("ডেমো ডাটা সফলভাবে রিসেট করা হয়েছে!");
+          toast.success("ডেমো ডাটা সফলভাবে রিসেট করা হয়েছে!");
         } catch (e) {
           handleFirestoreError(e, "write", "demo_reset");
-          alert("ডেমো ডাটা রিসেট করতে সমস্যা হয়েছে। কনসোল চেক করুন।");
+          toast.error("ডেমো ডাটা রিসেট করতে সমস্যা হয়েছে। কনসোল চেক করুন।");
         } finally {
           setIsLoading(false);
         }
@@ -337,12 +374,14 @@ export default function App() {
 
   const handleAddDeal = async (e: FormEvent) => {
     e.preventDefault();
+    setIsProcessing(true);
     const rawId = formData.tuitionId.trim();
     const finalTuitionId = rawId.startsWith("TC-") ? rawId : `TC-${rawId}`;
 
     const isDuplicate = deals.some((d) => d.tuitionId === finalTuitionId && d.id !== editId);
     if (isDuplicate) {
       setIdError("এই আইডিটি আগেই ব্যবহার করা হয়েছে!");
+      setIsProcessing(false);
       return;
     }
     setIdError("");
@@ -366,6 +405,7 @@ export default function App() {
           { date: new Date().toISOString(), log: "তথ্য আপডেট করা হয়েছে" },
         ];
         await updateDoc(doc(colRef, editId), { ...payload, history });
+        toast.success("টিউশন সফলভাবে আপডেট করা হয়েছে!");
       } else {
         await addDoc(colRef, {
           ...payload,
@@ -373,6 +413,7 @@ export default function App() {
           createdAt: Date.now(),
           history: [{ date: new Date().toISOString(), log: "নতুন এন্ট্রি তৈরি করা হয়েছে" }],
         });
+        toast.success("নতুন টিউশন সফলভাবে যোগ করা হয়েছে!");
       }
       setFormData({
         tuitionId: "",
@@ -394,7 +435,10 @@ export default function App() {
       setEditId(null);
       setActiveTab("dashboard");
     } catch (err) {
-      handleFirestoreError(err, isEditing ? "update" : "create", `artifacts/${appId}/public/data/tc_deals`);
+      handleFirestoreError(err, isEditing ? OperationType.UPDATE : OperationType.CREATE, `artifacts/${appId}/public/data/tc_deals`);
+      toast.error("তথ্য সেভ করতে সমস্যা হয়েছে।");
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -484,6 +528,7 @@ export default function App() {
   const handleAddExpense = async (e: FormEvent) => {
     e.preventDefault();
     if (!expenseForm.amount || !expenseForm.adminName) return;
+    setIsProcessing(true);
     const colRef = collection(db, "artifacts", appId, "public", "data", "tc_expenses");
 
     try {
@@ -500,6 +545,7 @@ export default function App() {
         });
         setIsEditingExpense(false);
         setEditExpenseId(null);
+        toast.success("খরচ সফলভাবে আপডেট করা হয়েছে!");
       } else {
         await addDoc(colRef, {
           ...expenseForm,
@@ -507,10 +553,14 @@ export default function App() {
           createdAt: Date.now(),
           history: [{ date: new Date().toISOString(), log: "নতুন খরচ এন্ট্রি করা হয়েছে" }],
         });
+        toast.success("নতুন খরচ সফলভাবে যোগ করা হয়েছে!");
       }
       setExpenseForm({ adminName: "", amount: "", purpose: "" });
     } catch (err) {
       console.error(err);
+      toast.error("খরচ সেভ করতে সমস্যা হয়েছে।");
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -611,9 +661,57 @@ export default function App() {
   const handleAddTeacher = async (teacherData: Partial<Teacher>) => {
     try {
       const teacherRef = collection(db, "artifacts", appId, "public", "data", "tc_teachers");
-      await addDoc(teacherRef, teacherData);
+      await addDoc(teacherRef, {
+        ...teacherData,
+        status: "Approved",
+        createdAt: Date.now(),
+      });
+      toast.success("শিক্ষক সফলভাবে যুক্ত করা হয়েছে");
     } catch (error) {
       console.error("Error adding teacher:", error);
+      toast.error("শিক্ষক যুক্ত করতে সমস্যা হয়েছে");
+    }
+  };
+
+  const handleUpdateTuitionRequestStatus = async (id: string, status: "Approved" | "Rejected") => {
+    try {
+      await updateDoc(doc(db, "artifacts", appId, "public", "data", "tc_tuition_requests", id), {
+        status,
+        updatedAt: Date.now(),
+      });
+    } catch (error) {
+      console.error("Error updating request status:", error);
+      throw error;
+    }
+  };
+
+  const handleDeleteTuitionRequest = async (id: string) => {
+    try {
+      await deleteDoc(doc(db, "artifacts", appId, "public", "data", "tc_tuition_requests", id));
+    } catch (error) {
+      console.error("Error deleting request:", error);
+      throw error;
+    }
+  };
+
+  const handleUpdateTeacherStatus = async (id: string, status: "Approved" | "Rejected") => {
+    try {
+      await updateDoc(doc(db, "artifacts", appId, "public", "data", "tc_teachers", id), {
+        status,
+        updatedAt: Date.now(),
+      });
+    } catch (error) {
+      console.error("Error updating teacher status:", error);
+      throw error;
+    }
+  };
+
+  const handleDeleteTeacher = async (id: string) => {
+    try {
+      await deleteDoc(doc(db, "artifacts", appId, "public", "data", "tc_teachers", id));
+    } catch (error) {
+      console.error("Error deleting teacher:", error);
+      throw error;
     }
   };
 
@@ -631,11 +729,12 @@ export default function App() {
   }
 
   if (!isAdmin) {
-    return <Login user={user} onLogin={handleLogin} onLogout={handleLogout} />;
+    return <Login user={user} onLogin={handleLogin} onLogout={handleLogout} deals={publicDeals} />;
   }
 
   return (
     <div className="flex flex-col h-screen max-w-md mx-auto bg-gray-50 overflow-hidden shadow-2xl">
+      <Toaster position="top-center" richColors />
       <Header user={user} onLogout={handleLogout} onInstall={handleInstallClick} />
 
       <main className="flex-1 overflow-y-auto p-4 pb-28 no-scrollbar">
@@ -675,6 +774,7 @@ export default function App() {
               setIdError("");
               setActiveTab("dashboard");
             }}
+            isProcessing={isProcessing}
           />
         )}
 
@@ -695,6 +795,7 @@ export default function App() {
             onEditExpense={handleEditExpenseClick}
             onDeleteExpense={deleteExpense}
             onHistoryClick={setHistoryModalData}
+            isProcessing={isProcessing}
           />
         )}
 
@@ -708,9 +809,25 @@ export default function App() {
 
         {activeTab === "teachers" && (
           <TeacherList 
-            teachers={teachers} 
+            teachers={teachers.filter(t => t.status === "Approved")} 
             onAddTeacher={() => setIsTeacherModalOpen(true)} 
             onResetDemo={handleResetDemoData}
+          />
+        )}
+
+        {activeTab === "requests" && (
+          <RequestsList 
+            requests={tuitionRequests} 
+            onUpdateStatus={handleUpdateTuitionRequestStatus}
+            onDelete={handleDeleteTuitionRequest}
+          />
+        )}
+
+        {activeTab === "pending_teachers" && (
+          <PendingTeachersList 
+            teachers={teachers.filter(t => t.status === "Pending")} 
+            onUpdateStatus={handleUpdateTeacherStatus}
+            onDelete={handleDeleteTeacher}
           />
         )}
       </main>

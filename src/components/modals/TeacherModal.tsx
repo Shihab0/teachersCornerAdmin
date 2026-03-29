@@ -1,7 +1,8 @@
 import React, { useState } from "react";
-import { X, User, Phone, School, MapPin, Star, Check, Image as ImageIcon, BookOpen, Briefcase, GraduationCap, Award, Facebook, IdCard } from "lucide-react";
+import { X, User, Phone, School, MapPin, Star, Check, Image as ImageIcon, BookOpen, Briefcase, GraduationCap, Award, Facebook, IdCard, Loader2 } from "lucide-react";
 import { Icon } from "../ui/Icon";
 import { Teacher } from "../../types";
+import { toast } from "sonner";
 
 const KISHOREGANJ_AREAS = [
   "Harua (হারুয়া)", "Rathkhola (রথখোলা)", "Gaital (গাইট্যাল)", "Botrish (বত্রিশ)",
@@ -30,9 +31,17 @@ interface TeacherModalProps {
   isOpen: boolean;
   onClose: () => void;
   onAdd: (teacher: Partial<Teacher>) => void;
+  title?: string;
+  buttonText?: string;
 }
 
-export const TeacherModal: React.FC<TeacherModalProps> = ({ isOpen, onClose, onAdd }) => {
+export const TeacherModal: React.FC<TeacherModalProps> = ({ 
+  isOpen, 
+  onClose, 
+  onAdd,
+  title = "নতুন শিক্ষক যোগ করুন",
+  buttonText = "শিক্ষক যোগ করুন"
+}) => {
   const years = Array.from({length: 2030 - 2010 + 1}, (_, i) => (2030 - i).toString());
 
   const [formData, setFormData] = useState({
@@ -62,6 +71,7 @@ export const TeacherModal: React.FC<TeacherModalProps> = ({ isOpen, onClose, onA
   const [customCollege, setCustomCollege] = useState("");
   const [customPresentAddress, setCustomPresentAddress] = useState("");
   const [customHonoursSubject, setCustomHonoursSubject] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>, field: 'photoUrl' | 'studentIdUrl') => {
     const file = e.target.files?.[0];
@@ -76,57 +86,69 @@ export const TeacherModal: React.FC<TeacherModalProps> = ({ isOpen, onClose, onA
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const finalCollegeName = formData.collegeName === "Others" ? customCollege : formData.collegeName;
-    const finalPresentAddress = formData.presentAddress === "Others (অন্যান্য)" ? customPresentAddress : formData.presentAddress;
-    const finalHonoursSubject = formData.honoursSubject === "Others" ? customHonoursSubject : formData.honoursSubject;
+    setIsSubmitting(true);
+    try {
+      if (!/^01\d{9}$/.test(formData.phone)) {
+        toast.error("সঠিক ফোন নম্বর দিন (১১ ডিজিট, ০১ দিয়ে শুরু)");
+        setIsSubmitting(false);
+        return;
+      }
+      const finalCollegeName = formData.collegeName === "Others" ? customCollege : formData.collegeName;
+      const finalPresentAddress = formData.presentAddress === "Others (অন্যান্য)" ? customPresentAddress : formData.presentAddress;
+      const finalHonoursSubject = formData.honoursSubject === "Others" ? customHonoursSubject : formData.honoursSubject;
 
-    onAdd({
-      name: formData.name,
-      phone: formData.phone,
-      photoUrl: formData.photoUrl,
-      collegeName: finalCollegeName,
-      presentAddress: finalPresentAddress,
-      permanentAddress: formData.permanentAddress,
-      education: {
-        ssc: { year: formData.sscYear, group: formData.sscGroup, gpa: formData.sscGpa },
-        hsc: { year: formData.hscYear, group: formData.hscGroup, gpa: formData.hscGpa },
-        honours: { year: formData.honoursYear, subject: finalHonoursSubject, studyYear: formData.honoursStudyYear, gpa: formData.honoursGpa },
-      },
-      experience: formData.experience,
-      hasCurrentTuition: formData.hasCurrentTuition,
-      interestedSubjectsAndClasses: formData.interestedSubjectsAndClasses,
-      isMedical: formData.isMedical,
-      medicalInstitution: formData.isMedical ? formData.medicalInstitution : "",
-      isPublicUniversity: formData.isPublicUniversity,
-      publicUniversityName: formData.isPublicUniversity ? formData.publicUniversityName : "",
-      canTeachHSC: formData.canTeachHSC,
-      hscSubject: formData.canTeachHSC ? formData.hscSubject : "",
-      facebookLink: formData.facebookLink,
-      studentIdUrl: formData.studentIdUrl,
-      rating: parseFloat(formData.rating),
-      createdAt: Date.now(),
-    });
-    
-    setFormData({
-      name: "", phone: "", photoUrl: "", collegeName: "", presentAddress: "", permanentAddress: "",
-      sscYear: "", sscGroup: "", sscGpa: "", hscYear: "", hscGroup: "", hscGpa: "",
-      honoursYear: "", honoursSubject: "", honoursStudyYear: "", honoursGpa: "",
-      experience: "", hasCurrentTuition: false, interestedSubjectsAndClasses: "", 
-      isMedical: false, medicalInstitution: "", isPublicUniversity: false, publicUniversityName: "", canTeachHSC: false, hscSubject: "", facebookLink: "", studentIdUrl: "", rating: "5.0",
-    });
-    setCustomCollege("");
-    setCustomPresentAddress("");
-    setCustomHonoursSubject("");
-    onClose();
+      await onAdd({
+        name: formData.name,
+        phone: formData.phone,
+        photoUrl: formData.photoUrl,
+        collegeName: finalCollegeName,
+        presentAddress: finalPresentAddress,
+        permanentAddress: formData.permanentAddress,
+        education: {
+          ssc: { year: formData.sscYear, group: formData.sscGroup, gpa: formData.sscGpa },
+          hsc: { year: formData.hscYear, group: formData.hscGroup, gpa: formData.hscGpa },
+          honours: { year: formData.honoursYear, subject: finalHonoursSubject, studyYear: formData.honoursStudyYear, gpa: formData.honoursGpa },
+        },
+        experience: formData.experience,
+        hasCurrentTuition: formData.hasCurrentTuition,
+        interestedSubjectsAndClasses: formData.interestedSubjectsAndClasses,
+        isMedical: formData.isMedical,
+        medicalInstitution: formData.isMedical ? formData.medicalInstitution : "",
+        isPublicUniversity: formData.isPublicUniversity,
+        publicUniversityName: formData.isPublicUniversity ? formData.publicUniversityName : "",
+        canTeachHSC: formData.canTeachHSC,
+        hscSubject: formData.canTeachHSC ? formData.hscSubject : "",
+        facebookLink: formData.facebookLink,
+        studentIdUrl: formData.studentIdUrl,
+        rating: parseFloat(formData.rating),
+        createdAt: Date.now(),
+      });
+      
+      setFormData({
+        name: "", phone: "", photoUrl: "", collegeName: "", presentAddress: "", permanentAddress: "",
+        sscYear: "", sscGroup: "", sscGpa: "", hscYear: "", hscGroup: "", hscGpa: "",
+        honoursYear: "", honoursSubject: "", honoursStudyYear: "", honoursGpa: "",
+        experience: "", hasCurrentTuition: false, interestedSubjectsAndClasses: "", 
+        isMedical: false, medicalInstitution: "", isPublicUniversity: false, publicUniversityName: "", canTeachHSC: false, hscSubject: "", facebookLink: "", studentIdUrl: "", rating: "5.0",
+      });
+      setCustomCollege("");
+      setCustomPresentAddress("");
+      setCustomHonoursSubject("");
+      onClose();
+    } catch (error) {
+      console.error("Error submitting teacher form:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
       <div className="bg-white w-full max-w-2xl rounded-[40px] shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300">
         <div className="p-6 border-b border-gray-50 flex justify-between items-center bg-indigo-50/30">
-          <h3 className="text-xl font-black text-indigo-900 tracking-tight">নতুন শিক্ষক যোগ করুন</h3>
+          <h3 className="text-xl font-black text-indigo-900 tracking-tight">{title}</h3>
           <button onClick={onClose} className="p-2 hover:bg-white rounded-full transition-colors">
             <X size={20} className="text-indigo-900" />
           </button>
@@ -415,9 +437,11 @@ export const TeacherModal: React.FC<TeacherModalProps> = ({ isOpen, onClose, onA
 
           <button
             type="submit"
-            className="w-full py-4 bg-indigo-600 text-white rounded-[24px] font-black text-sm shadow-xl shadow-indigo-100 active:scale-95 transition-transform mt-4"
+            disabled={isSubmitting}
+            className="w-full py-4 bg-indigo-600 text-white rounded-[24px] font-black text-sm shadow-xl shadow-indigo-100 active:scale-95 transition-transform mt-4 flex items-center justify-center gap-2 disabled:opacity-50"
           >
-            শিক্ষক যোগ করুন
+            {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
+            {buttonText}
           </button>
         </form>
       </div>
