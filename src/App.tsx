@@ -832,9 +832,11 @@ export default function App() {
 
         {activeTab === "teachers" && (
           <TeacherList 
-            teachers={teachers.filter(t => t.status === "Approved")} 
+            teachers={teachers} 
             onAddTeacher={() => setIsTeacherModalOpen(true)} 
             onResetDemo={handleResetDemoData}
+            onUpdateStatus={handleUpdateTeacherStatus}
+            onDelete={handleDeleteTeacher}
           />
         )}
 
@@ -843,14 +845,6 @@ export default function App() {
             requests={tuitionRequests} 
             onUpdateStatus={handleUpdateTuitionRequestStatus}
             onDelete={handleDeleteTuitionRequest}
-          />
-        )}
-
-        {activeTab === "pending_teachers" && (
-          <PendingTeachersList 
-            teachers={teachers.filter(t => t.status === "Pending")} 
-            onUpdateStatus={handleUpdateTeacherStatus}
-            onDelete={handleDeleteTeacher}
           />
         )}
       </main>

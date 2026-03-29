@@ -1,4 +1,4 @@
-const CACHE_NAME = "tc-admin-v5"; // Bumping version to force clear
+const CACHE_NAME = "tc-admin-v6"; // Bumping version to force clear
 const ASSETS_TO_CACHE = [
   "/manifest.json",
 ];
@@ -39,18 +39,32 @@ self.addEventListener("fetch", (event) => {
   // This is the most important fix for the "MIME type" error.
   if (request.mode === "navigate" || url.pathname === "/" || url.pathname.endsWith(".html")) {
     event.respondWith(
-      fetch(request).catch(() => caches.match("/"))
+      fetch(request).catch(async () => {
+        // Fallback to network if possible, or clear cache and fail
+        const response = await fetch(request);
+        if (!response || response.status !== 200) {
+           // If we can't get index.html, clear all caches to be safe
+           const names = await caches.keys();
+           for (let name of names) await caches.delete(name);
+        }
+        return response;
+      })
     );
     return;
   }
 
   // 2. For JS/CSS assets, use Cache First but update in background
+  // Only cache if it's a successful response and NOT a redirect (which index.html often is)
   if (url.pathname.includes("/assets/")) {
     event.respondWith(
       caches.match(request).then((cachedResponse) => {
         if (cachedResponse) return cachedResponse;
         return fetch(request).then((response) => {
-          if (!response || response.status !== 200) return response;
+          // IMPORTANT: Only cache if it's actually a JS/CSS file, not a redirected index.html
+          const contentType = response.headers.get("content-type");
+          if (!response || response.status !== 200 || (contentType && contentType.includes("text/html"))) {
+            return response;
+          }
           const responseClone = response.clone();
           caches.open(CACHE_NAME).then((cache) => cache.put(request, responseClone));
           return response;

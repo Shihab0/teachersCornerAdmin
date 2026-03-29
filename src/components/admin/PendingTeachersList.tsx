@@ -1,20 +1,31 @@
 import React, { useState, useMemo } from "react";
 import { Teacher } from "../../types";
-import { Search, Filter, Phone, MapPin, GraduationCap, Star, CheckCircle2, XCircle, Trash2, Loader2, ChevronDown, ChevronUp, Briefcase, BookOpen, Award, Facebook, IdCard } from "lucide-react";
+import { Search, Filter, Phone, MapPin, GraduationCap, Star, CheckCircle2, XCircle, Trash2, Loader2, ChevronDown, ChevronUp, Briefcase, BookOpen, Award, Facebook, IdCard, CheckSquare, Square } from "lucide-react";
 import { Icon } from "../ui/Icon";
 import { motion, AnimatePresence } from "motion/react";
 import { toast } from "sonner";
+import { Skeleton } from "../ui/Skeleton";
+import { ConfirmDialog } from "../modals/ConfirmDialog";
 
 interface PendingTeachersListProps {
   teachers: Teacher[];
   onUpdateStatus: (id: string, status: "Approved" | "Rejected") => Promise<void>;
   onDelete: (id: string) => Promise<void>;
+  isLoading?: boolean;
 }
 
-export const PendingTeachersList: React.FC<PendingTeachersListProps> = ({ teachers, onUpdateStatus, onDelete }) => {
+export const PendingTeachersList: React.FC<PendingTeachersListProps> = ({ 
+  teachers, 
+  onUpdateStatus, 
+  onDelete,
+  isLoading = false
+}) => {
   const [search, setSearch] = useState("");
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [processingId, setProcessingId] = useState<string | null>(null);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [isBulkProcessing, setIsBulkProcessing] = useState(false);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   const filteredTeachers = useMemo(() => {
     return teachers.filter(t => {
@@ -38,7 +49,6 @@ export const PendingTeachersList: React.FC<PendingTeachersListProps> = ({ teache
   };
 
   const handleDelete = async (id: string) => {
-    if (!window.confirm("আপনি কি নিশ্চিতভাবে এই শিক্ষককে ডিলিট করতে চান?")) return;
     setProcessingId(id);
     try {
       await onDelete(id);
@@ -47,6 +57,7 @@ export const PendingTeachersList: React.FC<PendingTeachersListProps> = ({ teache
       toast.error("ডিলিট করতে সমস্যা হয়েছে");
     } finally {
       setProcessingId(null);
+      setConfirmDeleteId(null);
     }
   };
 
@@ -54,69 +65,178 @@ export const PendingTeachersList: React.FC<PendingTeachersListProps> = ({ teache
     setExpandedId(expandedId === id ? null : id);
   };
 
-  return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-2xl font-black text-gray-800 tracking-tight">পেন্ডিং শিক্ষক</h2>
-        <div className="bg-amber-100 text-amber-600 px-3 py-1 rounded-full text-xs font-black">
-          মোট: {filteredTeachers.length}
+  const toggleSelect = (id: string) => {
+    setSelectedIds(prev => 
+      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+    );
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedIds.length === filteredTeachers.length) {
+      setSelectedIds([]);
+    } else {
+      setSelectedIds(filteredTeachers.map(t => t.id));
+    }
+  };
+
+  const handleBulkAction = async (status: "Approved" | "Rejected") => {
+    if (selectedIds.length === 0) return;
+    setIsBulkProcessing(true);
+    try {
+      await Promise.all(selectedIds.map(id => onUpdateStatus(id, status)));
+      toast.success(`${selectedIds.length} জন শিক্ষককে ${status === "Approved" ? "অনুমোদন" : "প্রত্যাখ্যান"} করা হয়েছে`);
+      setSelectedIds([]);
+    } catch (error) {
+      toast.error("বাল্ক অ্যাকশন সম্পন্ন করতে সমস্যা হয়েছে");
+    } finally {
+      setIsBulkProcessing(false);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between mb-4">
+          <Skeleton className="h-8 w-48" />
+          <Skeleton className="h-6 w-16 rounded-full" />
+        </div>
+        <Skeleton className="h-14 w-full rounded-3xl" />
+        <div className="space-y-3">
+          {[1, 2, 3, 4].map(i => (
+            <Skeleton key={i} className="h-16 w-full rounded-2xl" />
+          ))}
         </div>
       </div>
+    );
+  }
 
-      <div className="space-y-4">
-        <div className="relative">
-          <Icon icon={Search} size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-col gap-1 mb-8">
+        <div className="flex items-center justify-between">
+          <h2 className="text-4xl font-black text-gray-900 dark:text-white tracking-tighter uppercase leading-none">
+            পেন্ডিং <span className="text-amber-600 dark:text-amber-400 italic font-serif lowercase tracking-normal">শিক্ষক</span>
+          </h2>
+          <div className="bg-gray-900 dark:bg-white text-white dark:text-gray-900 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">
+            Total: {filteredTeachers.length}
+          </div>
+        </div>
+        <div className="h-px bg-gray-200 dark:bg-slate-800 w-full mt-2" />
+      </div>
+
+      <div className="space-y-6">
+        <div className="relative group">
+          <Icon icon={Search} size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-indigo-500 transition-colors" />
           <input
             type="text"
             placeholder="নাম, প্রতিষ্ঠান বা ফোন দিয়ে খুঁজুন..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-12 pr-4 py-4 bg-white rounded-3xl border border-gray-100 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 font-medium text-sm"
+            className="w-full pl-12 pr-4 py-5 bg-gray-50 dark:bg-slate-900/50 dark:text-white rounded-2xl border-2 border-transparent focus:border-indigo-500/20 focus:bg-white dark:focus:bg-slate-900 transition-all outline-none font-bold text-sm"
           />
         </div>
       </div>
 
+      {/* Bulk Actions Bar */}
+      <AnimatePresence>
+        {selectedIds.length > 0 && (
+          <motion.div
+            initial={{ y: 100, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 100, opacity: 0 }}
+            className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 w-[90%] max-w-md"
+          >
+            <div className="bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 shadow-2xl rounded-3xl p-4 flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <button 
+                  onClick={toggleSelectAll}
+                  className="p-2 bg-indigo-50 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400 rounded-xl"
+                >
+                  <CheckSquare size={20} />
+                </button>
+                <div className="text-sm font-black text-gray-800 dark:text-slate-100">
+                  {selectedIds.length} নির্বাচিত
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => handleBulkAction("Approved")}
+                  disabled={isBulkProcessing}
+                  className="px-4 py-2 bg-emerald-500 text-white rounded-xl text-xs font-black uppercase tracking-widest hover:bg-emerald-600 transition-colors disabled:opacity-50"
+                >
+                  {isBulkProcessing ? <Loader2 size={16} className="animate-spin" /> : "Approve"}
+                </button>
+                <button
+                  onClick={() => handleBulkAction("Rejected")}
+                  disabled={isBulkProcessing}
+                  className="px-4 py-2 bg-rose-500 text-white rounded-xl text-xs font-black uppercase tracking-widest hover:bg-rose-600 transition-colors disabled:opacity-50"
+                >
+                  {isBulkProcessing ? <Loader2 size={16} className="animate-spin" /> : "Reject"}
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <div className="space-y-3">
         {filteredTeachers.map(teacher => {
           const isExpanded = expandedId === teacher.id;
+          const isSelected = selectedIds.includes(teacher.id);
           return (
-            <div key={teacher.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden transition-all">
-              <div 
-                onClick={() => toggleExpand(teacher.id)}
-                className="py-3 px-4 flex items-center justify-between cursor-pointer hover:bg-gray-50 active:bg-gray-100 transition-colors"
-              >
-                <div className="flex items-center gap-3 flex-1">
-                  <div className="w-10 h-10 rounded-full bg-indigo-100 overflow-hidden shrink-0 border border-indigo-50">
-                    {teacher.photoUrl ? (
-                      <img src={teacher.photoUrl} alt={teacher.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-indigo-400 font-bold text-lg">
-                        {teacher.name.charAt(0)}
+            <div 
+              key={teacher.id} 
+              className={`bg-white dark:bg-slate-900 rounded-[32px] shadow-sm border transition-all overflow-hidden ${
+                isSelected ? 'border-indigo-500 ring-4 ring-indigo-500/10' : 'border-gray-100 dark:border-slate-800'
+              }`}
+            >
+              <div className="flex items-center px-6 py-5">
+                <button 
+                  onClick={() => toggleSelect(teacher.id)}
+                  className={`p-2.5 rounded-xl transition-all transform active:scale-90 ${
+                    isSelected ? 'text-indigo-600 bg-indigo-50 dark:bg-indigo-950/30' : 'text-gray-200 dark:text-slate-700 hover:text-gray-400 dark:hover:text-slate-500'
+                  }`}
+                >
+                  {isSelected ? <CheckSquare size={24} /> : <Square size={24} />}
+                </button>
+                <div 
+                  onClick={() => toggleExpand(teacher.id)}
+                  className="flex-1 flex items-center justify-between cursor-pointer ml-4"
+                >
+                  <div className="flex items-center gap-4 flex-1">
+                    <div className="w-14 h-14 rounded-2xl bg-gray-50 dark:bg-slate-800 overflow-hidden shrink-0 border-2 border-white dark:border-slate-700 shadow-sm">
+                      {teacher.photoUrl ? (
+                        <img src={teacher.photoUrl} alt={teacher.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-indigo-400 font-black text-xl">
+                          {teacher.name.charAt(0)}
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h3 className="font-black text-gray-900 dark:text-white text-base tracking-tight truncate">{teacher.name}</h3>
+                        <div className="flex items-center gap-1 bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 px-2 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-widest shrink-0 border border-amber-100 dark:border-amber-900/30">
+                          {teacher.status}
+                        </div>
                       </div>
-                    )}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <h3 className="font-bold text-gray-800 text-sm truncate">{teacher.name}</h3>
-                      <div className="flex items-center gap-1 bg-amber-50 text-amber-600 px-1.5 py-0.5 rounded-lg text-[10px] font-black shrink-0">
-                        {teacher.status}
+                      <div className="text-xs font-bold text-gray-400 dark:text-slate-500 truncate flex items-center gap-1.5">
+                        <GraduationCap size={14} className="text-indigo-500" />
+                        {teacher.collegeName}
                       </div>
                     </div>
-                    <div className="text-xs text-gray-500 mt-0.5 truncate">
-                      {teacher.collegeName}
-                    </div>
                   </div>
-                </div>
-                <div className="flex items-center gap-3 shrink-0 ml-2">
-                  <a 
-                    href={`tel:${teacher.phone}`} 
-                    onClick={(e) => e.stopPropagation()}
-                    className="p-2 bg-emerald-50 text-emerald-600 rounded-full hover:bg-emerald-100 transition-colors"
-                  >
-                    <Phone size={14} />
-                  </a>
-                  <div className="text-gray-400">
-                    {isExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+                  <div className="flex items-center gap-4 shrink-0 ml-4">
+                    <a 
+                      href={`tel:${teacher.phone}`} 
+                      onClick={(e) => e.stopPropagation()}
+                      className="w-10 h-10 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 rounded-xl flex items-center justify-center hover:bg-emerald-600 hover:text-white transition-all shadow-sm"
+                    >
+                      <Phone size={18} />
+                    </a>
+                    <div className="text-gray-300 dark:text-slate-700">
+                      {isExpanded ? <ChevronUp size={24} /> : <ChevronDown size={24} />}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -129,126 +249,129 @@ export const PendingTeachersList: React.FC<PendingTeachersListProps> = ({ teache
                     exit={{ height: 0, opacity: 0 }}
                     transition={{ duration: 0.2 }}
                   >
-                    <div className="p-4 pt-0 border-t border-gray-50 bg-gray-50/50 space-y-4">
+                    <div className="p-6 pt-0 border-t border-gray-100 dark:border-slate-800 bg-gray-50/30 dark:bg-slate-900/50 space-y-6">
                       
                       {/* Special Categories Badge */}
                       {(teacher.isMedical || teacher.isPublicUniversity || teacher.canTeachHSC) && (
-                        <div className="flex flex-wrap gap-2 mt-3">
+                        <div className="flex flex-wrap gap-2 mt-4">
                           {teacher.isMedical && (
-                            <div className="flex items-center gap-1 bg-rose-50 text-rose-600 px-2 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest">
-                              <Award size={12} /> Medical {teacher.medicalInstitution ? `(${teacher.medicalInstitution})` : ''}
+                            <div className="flex items-center gap-1.5 bg-rose-50 dark:bg-rose-950/30 text-rose-600 dark:text-rose-400 px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-[0.15em] border border-rose-100 dark:border-rose-900/30">
+                              <Award size={14} /> Medical {teacher.medicalInstitution ? `(${teacher.medicalInstitution})` : ''}
                             </div>
                           )}
                           {teacher.isPublicUniversity && (
-                            <div className="flex items-center gap-1 bg-blue-50 text-blue-600 px-2 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest">
-                              <Award size={12} /> Public University {teacher.publicUniversityName ? `(${teacher.publicUniversityName})` : ''}
+                            <div className="flex items-center gap-1.5 bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400 px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-[0.15em] border border-blue-100 dark:border-blue-900/30">
+                              <Award size={14} /> Public University {teacher.publicUniversityName ? `(${teacher.publicUniversityName})` : ''}
                             </div>
                           )}
                           {teacher.canTeachHSC && (
-                            <div className="flex items-center gap-1 bg-indigo-50 text-indigo-600 px-2 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest">
-                              <Award size={12} /> HSC ({teacher.hscSubject || "All"})
+                            <div className="flex items-center gap-1.5 bg-indigo-50 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400 px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-[0.15em] border border-indigo-100 dark:border-indigo-900/30">
+                              <Award size={14} /> HSC ({teacher.hscSubject || "All"})
                             </div>
                           )}
                         </div>
                       )}
 
                       {/* Addresses */}
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
-                        <div className="bg-white p-3 rounded-xl border border-gray-100">
-                          <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">বর্তমান ঠিকানা</div>
-                          <div className="flex items-start gap-2 text-gray-700 text-xs font-medium">
-                            <MapPin size={14} className="text-indigo-400 shrink-0 mt-0.5" />
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm">
+                          <div className="text-[9px] font-black text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-2">বর্তমান ঠিকানা</div>
+                          <div className="flex items-start gap-2.5 text-gray-800 dark:text-slate-200 text-xs font-bold leading-relaxed">
+                            <MapPin size={16} className="text-indigo-500 shrink-0 mt-0.5" />
                             {teacher.presentAddress}
                           </div>
                         </div>
-                        <div className="bg-white p-3 rounded-xl border border-gray-100">
-                          <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">স্থায়ী ঠিকানা</div>
-                          <div className="flex items-start gap-2 text-gray-700 text-xs font-medium">
-                            <MapPin size={14} className="text-indigo-400 shrink-0 mt-0.5" />
+                        <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm">
+                          <div className="text-[9px] font-black text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-2">স্থায়ী ঠিকানা</div>
+                          <div className="flex items-start gap-2.5 text-gray-800 dark:text-slate-200 text-xs font-bold leading-relaxed">
+                            <MapPin size={16} className="text-indigo-500 shrink-0 mt-0.5" />
                             {teacher.permanentAddress}
                           </div>
                         </div>
                       </div>
 
                       {/* Education */}
-                      <div className="bg-white p-3 rounded-xl border border-gray-100">
-                        <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 flex items-center gap-1">
-                          <GraduationCap size={12} /> শিক্ষাগত যোগ্যতা
+                      <div className="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-gray-100 dark:border-slate-800 shadow-sm">
+                        <div className="text-[10px] font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
+                          <div className="p-1.5 bg-indigo-50 dark:bg-indigo-950/30 rounded-lg">
+                            <GraduationCap size={14} />
+                          </div>
+                          শিক্ষাগত যোগ্যতা
                         </div>
-                        <div className="space-y-2">
-                          <div className="grid grid-cols-4 gap-2 text-xs">
-                            <div className="font-bold text-gray-700">SSC</div>
-                            <div className="text-gray-600">{teacher.education?.ssc?.year}</div>
-                            <div className="text-gray-600">{teacher.education?.ssc?.group}</div>
-                            <div className="text-gray-600 font-medium">GPA: {teacher.education?.ssc?.gpa}</div>
+                        <div className="space-y-4">
+                          <div className="grid grid-cols-4 gap-4 text-xs">
+                            <div className="font-black text-gray-900 dark:text-white uppercase tracking-tighter">SSC</div>
+                            <div className="text-gray-500 dark:text-slate-400 font-bold">{teacher.education?.ssc?.year}</div>
+                            <div className="text-gray-500 dark:text-slate-400 font-bold">{teacher.education?.ssc?.group}</div>
+                            <div className="text-indigo-600 dark:text-indigo-400 font-black">GPA: {teacher.education?.ssc?.gpa}</div>
                           </div>
-                          <div className="grid grid-cols-4 gap-2 text-xs border-t border-gray-50 pt-2">
-                            <div className="font-bold text-gray-700">HSC</div>
-                            <div className="text-gray-600">{teacher.education?.hsc?.year}</div>
-                            <div className="text-gray-600">{teacher.education?.hsc?.group}</div>
-                            <div className="text-gray-600 font-medium">GPA: {teacher.education?.hsc?.gpa}</div>
+                          <div className="grid grid-cols-4 gap-4 text-xs border-t border-gray-50 dark:border-slate-800 pt-4">
+                            <div className="font-black text-gray-900 dark:text-white uppercase tracking-tighter">HSC</div>
+                            <div className="text-gray-500 dark:text-slate-400 font-bold">{teacher.education?.hsc?.year}</div>
+                            <div className="text-gray-500 dark:text-slate-400 font-bold">{teacher.education?.hsc?.group}</div>
+                            <div className="text-indigo-600 dark:text-indigo-400 font-black">GPA: {teacher.education?.hsc?.gpa}</div>
                           </div>
-                          <div className="grid grid-cols-4 gap-2 text-xs border-t border-gray-50 pt-2">
-                            <div className="font-bold text-gray-700">Honours</div>
-                            <div className="text-gray-600">{teacher.education?.honours?.year}</div>
-                            <div className="text-gray-600">{teacher.education?.honours?.subject} ({teacher.education?.honours?.studyYear})</div>
-                            <div className="text-gray-600 font-medium">GPA: {teacher.education?.honours?.gpa}</div>
+                          <div className="grid grid-cols-4 gap-4 text-xs border-t border-gray-50 dark:border-slate-800 pt-4">
+                            <div className="font-black text-gray-900 dark:text-white uppercase tracking-tighter">Honours</div>
+                            <div className="text-gray-500 dark:text-slate-400 font-bold">{teacher.education?.honours?.year}</div>
+                            <div className="text-gray-500 dark:text-slate-400 font-bold truncate">{teacher.education?.honours?.subject} ({teacher.education?.honours?.studyYear})</div>
+                            <div className="text-indigo-600 dark:text-indigo-400 font-black">GPA: {teacher.education?.honours?.gpa}</div>
                           </div>
                         </div>
                       </div>
 
                       {/* Experience & Tuition */}
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        <div className="bg-white p-3 rounded-xl border border-gray-100">
-                          <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1 flex items-center gap-1">
-                            <Briefcase size={12} /> অভিজ্ঞতা
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm">
+                          <div className="text-[9px] font-black text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                            <Briefcase size={14} className="text-indigo-500" /> অভিজ্ঞতা
                           </div>
-                          <div className="text-gray-700 text-xs font-medium">
+                          <div className="text-gray-800 dark:text-slate-200 text-xs font-bold leading-relaxed">
                             {teacher.experience || "উল্লেখ নেই"}
                           </div>
                         </div>
-                        <div className="bg-white p-3 rounded-xl border border-gray-100">
-                          <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1 flex items-center gap-1">
-                            <BookOpen size={12} /> বর্তমানে টিউশনি
+                        <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm">
+                          <div className="text-[9px] font-black text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                            <BookOpen size={14} className="text-indigo-500" /> বর্তমানে টিউশনি
                           </div>
-                          <div className="text-gray-700 text-xs font-medium">
+                          <div className="text-gray-800 dark:text-slate-200 text-xs font-bold">
                             {teacher.hasCurrentTuition ? (
-                              <span className="text-emerald-600 font-bold bg-emerald-50 px-2 py-0.5 rounded-md">আছে</span>
+                              <span className="text-emerald-600 dark:text-emerald-400 font-black bg-emerald-50 dark:bg-emerald-950/30 px-3 py-1 rounded-xl border border-emerald-100 dark:border-emerald-900/20">আছে</span>
                             ) : (
-                              <span className="text-rose-600 font-bold bg-rose-50 px-2 py-0.5 rounded-md">নেই</span>
+                              <span className="text-rose-600 dark:text-rose-400 font-black bg-rose-50 dark:bg-rose-950/30 px-3 py-1 rounded-xl border border-rose-100 dark:border-rose-900/20">নেই</span>
                             )}
                           </div>
                         </div>
                       </div>
 
                       {/* Interested Subjects */}
-                      <div className="bg-white p-3 rounded-xl border border-gray-100">
-                        <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">যেসব বিষয়ে এবং শ্রেণীতে পড়াতে আগ্রহী</div>
-                        <div className="text-gray-700 text-xs font-medium leading-relaxed">
+                      <div className="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-gray-100 dark:border-slate-800 shadow-sm">
+                        <div className="text-[9px] font-black text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-2">আগ্রহী বিষয় ও শ্রেণী</div>
+                        <div className="text-gray-800 dark:text-slate-200 text-sm font-bold leading-relaxed">
                           {teacher.interestedSubjectsAndClasses || "উল্লেখ নেই"}
                         </div>
                       </div>
 
                       {/* Social & ID */}
                       {(teacher.facebookLink || teacher.studentIdUrl) && (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           {teacher.facebookLink && (
-                            <div className="bg-white p-3 rounded-xl border border-gray-100">
-                              <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1 flex items-center gap-1">
-                                <Facebook size={12} /> ফেসবুক প্রোফাইল
+                            <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm">
+                              <div className="text-[9px] font-black text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                                <Facebook size={14} className="text-indigo-500" /> ফেসবুক প্রোফাইল
                               </div>
-                              <a href={teacher.facebookLink} target="_blank" rel="noopener noreferrer" className="text-indigo-600 text-xs font-medium hover:underline truncate block">
+                              <a href={teacher.facebookLink} target="_blank" rel="noopener noreferrer" className="text-indigo-600 dark:text-indigo-400 text-xs font-black hover:underline truncate block">
                                 {teacher.facebookLink}
                               </a>
                             </div>
                           )}
                           {teacher.studentIdUrl && (
-                            <div className="bg-white p-3 rounded-xl border border-gray-100">
-                              <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1 flex items-center gap-1">
-                                <IdCard size={12} /> স্টুডেন্ট আইডি
+                            <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm">
+                              <div className="text-[9px] font-black text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                                <IdCard size={14} className="text-indigo-500" /> স্টুডেন্ট আইডি
                               </div>
-                              <a href={teacher.studentIdUrl} target="_blank" rel="noopener noreferrer" className="text-indigo-600 text-xs font-medium hover:underline truncate block">
-                                ছবি দেখুন
+                              <a href={teacher.studentIdUrl} target="_blank" rel="noopener noreferrer" className="group flex items-center gap-2 text-indigo-600 dark:text-indigo-400 text-xs font-black hover:underline">
+                                ছবি দেখুন <Star size={12} className="group-hover:rotate-12 transition-transform" />
                               </a>
                             </div>
                           )}
@@ -256,29 +379,29 @@ export const PendingTeachersList: React.FC<PendingTeachersListProps> = ({ teache
                       )}
 
                       {/* Admin Actions */}
-                      <div className="flex items-center gap-3 pt-4 border-t border-gray-50">
+                      <div className="flex items-center gap-3 pt-6 border-t border-gray-100 dark:border-slate-800">
                         <button
                           onClick={() => handleStatusChange(teacher.id, "Approved")}
                           disabled={processingId === teacher.id}
-                          className="flex-1 flex items-center justify-center gap-2 py-3 bg-emerald-50 text-emerald-600 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-emerald-100 transition-all disabled:opacity-50"
+                          className="flex-1 flex items-center justify-center gap-2 py-4 bg-emerald-500 text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-emerald-600 transition-all shadow-lg shadow-emerald-100 dark:shadow-none disabled:opacity-50"
                         >
-                          {processingId === teacher.id ? <Loader2 size={16} className="animate-spin" /> : <CheckCircle2 size={16} />}
+                          {processingId === teacher.id ? <Loader2 size={18} className="animate-spin" /> : <CheckCircle2 size={18} />}
                           Approve
                         </button>
                         <button
                           onClick={() => handleStatusChange(teacher.id, "Rejected")}
                           disabled={processingId === teacher.id}
-                          className="flex-1 flex items-center justify-center gap-2 py-3 bg-rose-50 text-rose-600 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-rose-100 transition-all disabled:opacity-50"
+                          className="flex-1 flex items-center justify-center gap-2 py-4 bg-rose-500 text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-rose-600 transition-all shadow-lg shadow-rose-100 dark:shadow-none disabled:opacity-50"
                         >
-                          {processingId === teacher.id ? <Loader2 size={16} className="animate-spin" /> : <XCircle size={16} />}
+                          {processingId === teacher.id ? <Loader2 size={18} className="animate-spin" /> : <XCircle size={18} />}
                           Reject
                         </button>
                         <button
-                          onClick={() => handleDelete(teacher.id)}
+                          onClick={() => setConfirmDeleteId(teacher.id)}
                           disabled={processingId === teacher.id}
-                          className="p-3 bg-gray-50 text-gray-400 rounded-2xl hover:bg-gray-100 transition-all disabled:opacity-50"
+                          className="p-4 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-2xl hover:bg-gray-800 dark:hover:bg-gray-100 transition-all shadow-lg shadow-gray-200 dark:shadow-none disabled:opacity-50"
                         >
-                          <Trash2 size={18} />
+                          <Trash2 size={20} />
                         </button>
                       </div>
 
@@ -291,12 +414,21 @@ export const PendingTeachersList: React.FC<PendingTeachersListProps> = ({ teache
         })}
 
         {filteredTeachers.length === 0 && (
-          <div className="text-center py-12 bg-white rounded-3xl border border-gray-100 shadow-sm">
-            <Icon icon={Search} size={40} className="mx-auto text-gray-200 mb-3" />
-            <p className="text-gray-400 text-sm font-bold">কোনো পেন্ডিং শিক্ষক পাওয়া যায়নি!</p>
+          <div className="text-center py-12 bg-white dark:bg-slate-900 rounded-3xl border border-gray-100 dark:border-slate-800 shadow-sm">
+            <Icon icon={Search} size={40} className="mx-auto text-gray-200 dark:text-slate-800 mb-3" />
+            <p className="text-gray-400 dark:text-slate-500 text-sm font-bold">কোনো পেন্ডিং শিক্ষক পাওয়া যায়নি!</p>
           </div>
         )}
       </div>
+
+      <ConfirmDialog
+        isOpen={!!confirmDeleteId}
+        title="শিক্ষক ডিলিট"
+        message="আপনি কি নিশ্চিতভাবে এই শিক্ষককে ডিলিট করতে চান? এই কাজটি আর ফিরিয়ে আনা যাবে না।"
+        onConfirm={() => confirmDeleteId && handleDelete(confirmDeleteId)}
+        onCancel={() => setConfirmDeleteId(null)}
+        isDanger={true}
+      />
     </div>
   );
 };

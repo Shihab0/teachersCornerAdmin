@@ -25,9 +25,18 @@ interface TeacherListProps {
   teachers: Teacher[];
   onAddTeacher: () => void;
   onResetDemo: () => void;
+  onUpdateStatus?: (id: string, status: "Approved" | "Rejected") => Promise<void>;
+  onDelete?: (id: string) => Promise<void>;
 }
 
-export const TeacherList: React.FC<TeacherListProps> = ({ teachers, onAddTeacher, onResetDemo }) => {
+export const TeacherList: React.FC<TeacherListProps> = ({ 
+  teachers, 
+  onAddTeacher, 
+  onResetDemo,
+  onUpdateStatus,
+  onDelete
+}) => {
+  const [activeSubTab, setActiveSubTab] = useState<"Approved" | "Pending">("Approved");
   const [search, setSearch] = useState("");
   const [filterArea, setFilterArea] = useState("All");
   const [filterCollege, setFilterCollege] = useState("All");
@@ -39,24 +48,26 @@ export const TeacherList: React.FC<TeacherListProps> = ({ teachers, onAddTeacher
   const specialCategories = ["All", "Medical", "Public University", "HSC"];
 
   const filteredTeachers = useMemo(() => {
-    return teachers.filter(t => {
-      const matchesSearch = t.name.toLowerCase().includes(search.toLowerCase()) || 
-                           t.collegeName.toLowerCase().includes(search.toLowerCase());
-      const matchesArea = filterArea === "All" || t.presentAddress === filterArea;
-      const matchesCollege = filterCollege === "All" || t.collegeName === filterCollege;
-      
-      let matchesSpecialCategory = true;
-      if (filterSpecialCategory === "Medical") {
-        matchesSpecialCategory = !!t.isMedical;
-      } else if (filterSpecialCategory === "Public University") {
-        matchesSpecialCategory = !!t.isPublicUniversity;
-      } else if (filterSpecialCategory === "HSC") {
-        matchesSpecialCategory = !!t.canTeachHSC;
-      }
+    return teachers
+      .filter(t => t.status === activeSubTab)
+      .filter(t => {
+        const matchesSearch = t.name.toLowerCase().includes(search.toLowerCase()) || 
+                             t.collegeName.toLowerCase().includes(search.toLowerCase());
+        const matchesArea = filterArea === "All" || t.presentAddress === filterArea;
+        const matchesCollege = filterCollege === "All" || t.collegeName === filterCollege;
+        
+        let matchesSpecialCategory = true;
+        if (filterSpecialCategory === "Medical") {
+          matchesSpecialCategory = !!t.isMedical;
+        } else if (filterSpecialCategory === "Public University") {
+          matchesSpecialCategory = !!t.isPublicUniversity;
+        } else if (filterSpecialCategory === "HSC") {
+          matchesSpecialCategory = !!t.canTeachHSC;
+        }
 
-      return matchesSearch && matchesArea && matchesCollege && matchesSpecialCategory;
-    });
-  }, [teachers, search, filterArea, filterCollege, filterSpecialCategory]);
+        return matchesSearch && matchesArea && matchesCollege && matchesSpecialCategory;
+      });
+  }, [teachers, activeSubTab, search, filterArea, filterCollege, filterSpecialCategory]);
 
   const toggleExpand = (id: string) => {
     setExpandedId(expandedId === id ? null : id);
@@ -71,6 +82,26 @@ export const TeacherList: React.FC<TeacherListProps> = ({ teachers, onAddTeacher
           className="p-3 bg-indigo-600 text-white rounded-2xl shadow-lg shadow-indigo-100 active:scale-95 transition-transform"
         >
           <Plus size={20} />
+        </button>
+      </div>
+
+      {/* Sub-tabs for Approved/Pending */}
+      <div className="flex p-1 bg-gray-100 rounded-2xl mb-4">
+        <button
+          onClick={() => setActiveSubTab("Approved")}
+          className={`flex-1 py-2.5 text-xs font-black uppercase tracking-widest rounded-xl transition-all ${
+            activeSubTab === "Approved" ? "bg-white text-indigo-600 shadow-sm" : "text-gray-400"
+          }`}
+        >
+          Approved ({teachers.filter(t => t.status === "Approved").length})
+        </button>
+        <button
+          onClick={() => setActiveSubTab("Pending")}
+          className={`flex-1 py-2.5 text-xs font-black uppercase tracking-widest rounded-xl transition-all ${
+            activeSubTab === "Pending" ? "bg-white text-indigo-600 shadow-sm" : "text-gray-400"
+          }`}
+        >
+          Pending ({teachers.filter(t => t.status === "Pending").length})
         </button>
       </div>
 
@@ -305,6 +336,30 @@ export const TeacherList: React.FC<TeacherListProps> = ({ teachers, onAddTeacher
                               </a>
                             </div>
                           )}
+                        </div>
+                      )}
+
+                      {/* Admin Actions for Pending Teachers */}
+                      {activeSubTab === "Pending" && onUpdateStatus && onDelete && (
+                        <div className="flex gap-2 pt-2">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onUpdateStatus(teacher.id, "Approved");
+                            }}
+                            className="flex-1 py-3 bg-emerald-600 text-white rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-emerald-100 active:scale-95 transition-transform flex items-center justify-center gap-2"
+                          >
+                            <Check size={14} /> Approve
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onDelete(teacher.id);
+                            }}
+                            className="flex-1 py-3 bg-rose-600 text-white rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-rose-100 active:scale-95 transition-transform flex items-center justify-center gap-2"
+                          >
+                            Reject & Delete
+                          </button>
                         </div>
                       )}
 

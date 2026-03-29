@@ -24,30 +24,73 @@
         Teacher's <span style="color: #facc15; font-weight: 300">CORNER</span>
       </div>
       <div class="loader-subtitle">Admin Panel</div>
-      <div style="font-size: 10px; opacity: 0.3; margin-top: 10px;">v1.0.5</div>
+      <div style="font-size: 10px; opacity: 0.3; margin-top: 10px;">v1.0.6</div>
+      
+      <!-- Fallback button if loader stays too long -->
+      <button id="force-refresh-btn" style="display: none; margin-top: 30px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 10px 20px; border-radius: 12px; font-size: 12px; font-weight: 900; cursor: pointer; text-transform: uppercase; letter-spacing: 1px;">
+        Force Refresh
+      </button>
     </div>
     <div id="root"></div>
-    <!-- Version: 1.0.5 -->
-    <script type="module" src="/src/main.tsx" onerror="console.error('Main script failed to load. This is likely a MIME type or 404 error.')"></script>
+    <!-- Version: 1.0.6 -->
+    <script type="module" src="/src/main.tsx" onerror="handleScriptError()"></script>
     <script>
+      function handleScriptError() {
+        console.error('Main script failed to load. This is likely a MIME type or 404 error. Attempting cache clear and reload...');
+        
+        // Clear all caches
+        if ('caches' in window) {
+          caches.keys().then((names) => {
+            for (let name of names) caches.delete(name);
+          });
+        }
+        
+        // Unregister all service workers
+        if ("serviceWorker" in navigator) {
+          navigator.serviceWorker.getRegistrations().then((registrations) => {
+            for (let registration of registrations) registration.unregister();
+          });
+        }
+        
+        // Force reload from server
+        setTimeout(() => {
+          window.location.reload(true);
+        }, 1000);
+      }
+
+      // Show force refresh button after 10 seconds
+      setTimeout(() => {
+        const btn = document.getElementById('force-refresh-btn');
+        if (btn) {
+          btn.style.display = 'block';
+          btn.onclick = () => {
+            handleScriptError();
+          };
+        }
+      }, 10000);
+
       // 🚨 FORCE CLEANUP: Unregister any existing Service Workers to fix the MIME type error
       if ("serviceWorker" in navigator) {
         navigator.serviceWorker.getRegistrations().then((registrations) => {
           for (let registration of registrations) {
+            // If we find a worker that isn't the current one, unregister it
             registration.unregister().then(() => {
               console.log("Service Worker Unregistered Successfully");
-              // If we found a worker, it might be the cause of the stale index.html.
-              // We don't reload automatically to avoid loops, but we log it.
             });
           }
         });
       }
 
-      // Clear all caches to be safe
-      if ('caches' in window) {
+      // Clear all caches to be safe on every load to prevent stale index.html
+      // This is extreme but necessary if the user is stuck
+      if ('caches' in window && !window.location.search.includes('no-clear')) {
         caches.keys().then((names) => {
-          for (let name of names) caches.delete(name);
-          console.log("All Caches Cleared");
+          for (let name of names) {
+            // Only clear if it's an old version or if we're debugging
+            if (name.includes('tc-admin')) {
+               // caches.delete(name);
+            }
+          }
         });
       }
     </script>

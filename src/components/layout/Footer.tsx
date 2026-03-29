@@ -63,17 +63,17 @@ export const Footer = ({ activeTab, setActiveTab, isEditing, onEntryClick }: Foo
       </button>
 
       <button
-        onClick={() => setActiveTab("pending_teachers")}
+        onClick={() => setActiveTab("stats")}
         className={`flex flex-col items-center p-1.5 transition-all ${
-          activeTab === "pending_teachers" ? "text-indigo-600 scale-110" : "text-gray-400"
+          activeTab === "stats" ? "text-indigo-600 scale-110" : "text-gray-400"
         }`}
       >
         <Icon
-          icon={UserCheck}
+          icon={BarChart2}
           size={18}
-          className={activeTab === "pending_teachers" ? "fill-indigo-100" : ""}
+          className={activeTab === "stats" ? "fill-indigo-100" : ""}
         />
-        <span className="text-[7px] font-black uppercase mt-1">Pending</span>
+        <span className="text-[7px] font-black uppercase mt-1">Stats</span>
       </button>
 
       <button

@@ -1,16 +1,18 @@
 import { Icon } from "../ui/Icon";
-import { Smartphone, LogOut } from "lucide-react";
+import { Smartphone, LogOut, Moon, Sun } from "lucide-react";
 import { User as FirebaseUser } from "firebase/auth";
 
 interface HeaderProps {
   user: FirebaseUser | null;
   onLogout: () => void;
   onInstall: () => void;
+  isDarkMode: boolean;
+  toggleDarkMode: () => void;
 }
 
-export const Header = ({ user, onLogout, onInstall }: HeaderProps) => {
+export const Header = ({ user, onLogout, onInstall, isDarkMode, toggleDarkMode }: HeaderProps) => {
   return (
-    <header className="bg-indigo-900 text-white p-4 pt-6 sticky top-0 z-50 flex justify-between items-center shadow-md">
+    <header className="bg-indigo-900 dark:bg-slate-950 text-white p-4 pt-6 sticky top-0 z-50 flex justify-between items-center shadow-md transition-colors duration-300">
       <div>
         <h1 className="text-xl font-black text-yellow-400 leading-none">
           Teacher's <span className="text-white font-light">CORNER</span>
@@ -18,8 +20,15 @@ export const Header = ({ user, onLogout, onInstall }: HeaderProps) => {
       </div>
       <div className="flex items-center space-x-3">
         <button
+          onClick={toggleDarkMode}
+          className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors"
+          title={isDarkMode ? "Light Mode" : "Dark Mode"}
+        >
+          <Icon icon={isDarkMode ? Sun : Moon} size={16} />
+        </button>
+        <button
           onClick={onInstall}
-          className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center"
+          className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors"
           title="Install App"
         >
           <Icon icon={Smartphone} size={16} />

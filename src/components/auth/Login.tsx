@@ -14,6 +14,7 @@ import { collection, addDoc } from "firebase/firestore";
 import { db, appId } from "../../lib/firebase";
 import { TeacherModal } from "../modals/TeacherModal";
 import { GuardianModal } from "../modals/GuardianModal";
+import { TuitionUpdatePost } from "../stats/TuitionUpdatePost";
 
 import { Deal } from "../../types";
 
@@ -273,34 +274,11 @@ export const Login = ({ user, onLogin, onLogout, deals = [] }: LoginProps) => {
                 <Award className="w-4 h-4" />
                 সফল টিউশন আপডেট
               </motion.div>
-              <h2 className="text-3xl font-black text-white tracking-tight">সর্বশেষ ৫টি <span className="text-emerald-400">সফল টিউশন</span></h2>
-            </div>
-
-            <div className="grid gap-4">
-              {deals.map((deal, i) => (
-                <motion.div
-                  key={deal.id}
-                  initial={{ opacity: 0, x: -20 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  transition={{ delay: i * 0.1 }}
-                  className="bg-white/5 backdrop-blur-md border border-white/10 p-5 rounded-3xl flex items-center justify-between group hover:bg-white/10 transition-all"
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-emerald-500/20 rounded-2xl flex items-center justify-center text-emerald-400 group-hover:scale-110 transition-transform">
-                      <CheckCircle2 className="w-6 h-6" />
-                    </div>
-                    <div>
-                      <div className="text-[10px] font-black text-emerald-400/60 uppercase tracking-widest mb-1">ID: {deal.tuitionId}</div>
-                      <div className="text-lg font-bold text-white tracking-wide">{deal.tutorName}</div>
-                    </div>
-                  </div>
-                  <div className="hidden sm:block">
-                    <div className="px-4 py-2 bg-white/5 rounded-xl text-[10px] font-black text-white/40 uppercase tracking-widest">
-                      Confirmed
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
+              <h2 className="text-3xl font-black text-white tracking-tight mb-12">সর্বশেষ ৫টি <span className="text-emerald-400">সফল টিউশন</span></h2>
+              
+              <div className="flex justify-center">
+                <TuitionUpdatePost deals={deals} />
+              </div>
             </div>
           </div>
         </section>
@@ -384,4 +362,3 @@ export const Login = ({ user, onLogin, onLogout, deals = [] }: LoginProps) => {
     </div>
   );
 };
-
