@@ -4,6 +4,10 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Teacher's Corner - Admin Panel</title>
+    <!-- 🚨 CACHE BUSTING: Prevent browser from caching index.html -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
     <!-- PWA Meta Tags -->
     <link rel="manifest" href="/manifest.json" />
     <meta name="theme-color" content="#312e81" />
@@ -20,31 +24,30 @@
         Teacher's <span style="color: #facc15; font-weight: 300">CORNER</span>
       </div>
       <div class="loader-subtitle">Admin Panel</div>
+      <div style="font-size: 10px; opacity: 0.3; margin-top: 10px;">v1.0.5</div>
     </div>
     <div id="root"></div>
+    <!-- Version: 1.0.5 -->
     <script type="module" src="/src/main.tsx" onerror="console.error('Main script failed to load. This is likely a MIME type or 404 error.')"></script>
     <script>
+      // 🚨 FORCE CLEANUP: Unregister any existing Service Workers to fix the MIME type error
       if ("serviceWorker" in navigator) {
-        window.addEventListener("load", () => {
-          navigator.serviceWorker
-            .register("/sw.js")
-            .then((reg) => {
-              console.log("SW Registered");
-              // Check for updates
-              reg.onupdatefound = () => {
-                const installingWorker = reg.installing;
-                if (installingWorker) {
-                  installingWorker.onstatechange = () => {
-                    if (installingWorker.state === "installed") {
-                      if (navigator.serviceWorker.controller) {
-                        console.log("New content is available; please refresh.");
-                      }
-                    }
-                  };
-                }
-              };
-            })
-            .catch((err) => console.log("SW Fail", err));
+        navigator.serviceWorker.getRegistrations().then((registrations) => {
+          for (let registration of registrations) {
+            registration.unregister().then(() => {
+              console.log("Service Worker Unregistered Successfully");
+              // If we found a worker, it might be the cause of the stale index.html.
+              // We don't reload automatically to avoid loops, but we log it.
+            });
+          }
+        });
+      }
+
+      // Clear all caches to be safe
+      if ('caches' in window) {
+        caches.keys().then((names) => {
+          for (let name of names) caches.delete(name);
+          console.log("All Caches Cleared");
         });
       }
     </script>
