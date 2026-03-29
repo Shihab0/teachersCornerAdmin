@@ -102,20 +102,40 @@ export default function App() {
 
   // Auth & PWA Prompt
   useEffect(() => {
+    console.log("App initialized. Testing connection and setting up auth...");
+    
     // Test connection
     const testConnection = async () => {
       try {
         await getDocFromServer(doc(db, "artifacts", appId, "public", "data", "connection_test", "test"));
+        console.log("Firebase connection test successful.");
       } catch (error) {
         if (error instanceof Error && error.message.includes("the client is offline")) {
           console.error("Please check your Firebase configuration. The client is offline.");
+        } else {
+          console.warn("Firebase connection test failed (this might be normal if the path doesn't exist yet):", error);
         }
       }
     };
     testConnection();
 
+    // Safety fallback: Remove loader after 8 seconds if auth hasn't finished
+    const safetyTimeout = setTimeout(() => {
+      const loader = document.getElementById("pwa-loader");
+      if (loader && loader.style.opacity !== "0") {
+        console.warn("Auth took too long. Removing loader via safety fallback.");
+        loader.style.opacity = "0";
+        loader.style.visibility = "hidden";
+        setTimeout(() => loader.remove(), 500);
+        setAuthLoading(false);
+      }
+    }, 8000);
+
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      console.log("Auth state changed. User:", currentUser ? currentUser.email : "Not logged in");
+      clearTimeout(safetyTimeout);
       setUser(currentUser);
+      
       if (currentUser && currentUser.email && allowedEmails.includes(currentUser.email.toLowerCase())) {
         setIsAdmin(true);
       } else {
@@ -138,7 +158,10 @@ export default function App() {
       setDeferredPrompt(e);
     });
 
-    return () => unsubscribe();
+    return () => {
+      unsubscribe();
+      clearTimeout(safetyTimeout);
+    };
   }, []);
 
   const handleFirestoreError = (error: unknown, operationType: string, path: string | null) => {

@@ -18,9 +18,9 @@ export const RequestsList: React.FC<RequestsListProps> = ({ requests, onUpdateSt
 
   const filteredRequests = useMemo(() => {
     return requests.filter(r => {
-      const matchesSearch = r.studentName.toLowerCase().includes(search.toLowerCase()) || 
-                           r.institution.toLowerCase().includes(search.toLowerCase()) ||
-                           r.phone.includes(search);
+      const matchesSearch = (r.guardianName?.toLowerCase() || "").includes(search.toLowerCase()) || 
+                           (r.studentClass?.toLowerCase() || "").includes(search.toLowerCase()) ||
+                           (r.guardianPhone || "").includes(search);
       const matchesStatus = filterStatus === "All" || r.status === filterStatus;
       return matchesSearch && matchesStatus;
     });
@@ -65,7 +65,7 @@ export const RequestsList: React.FC<RequestsListProps> = ({ requests, onUpdateSt
           <Icon icon={Search} size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
           <input
             type="text"
-            placeholder="নাম, প্রতিষ্ঠান বা ফোন দিয়ে খুঁজুন..."
+            placeholder="নাম, ক্লাস বা ফোন দিয়ে খুঁজুন..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full pl-12 pr-4 py-4 bg-white rounded-3xl border border-gray-100 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 font-medium text-sm"
@@ -103,7 +103,7 @@ export const RequestsList: React.FC<RequestsListProps> = ({ requests, onUpdateSt
               <div className="p-5">
                 <div className="flex justify-between items-start mb-4">
                   <div>
-                    <h3 className="font-black text-gray-800 text-lg">{request.studentName}</h3>
+                    <h3 className="font-black text-gray-800 text-lg">{request.guardianName}</h3>
                     <div className="flex items-center gap-1 text-xs text-gray-500 font-medium mt-1">
                       <MapPin size={12} className="text-indigo-400" />
                       {request.area}
@@ -122,21 +122,17 @@ export const RequestsList: React.FC<RequestsListProps> = ({ requests, onUpdateSt
                   <div className="space-y-2">
                     <div className="flex items-center gap-2 text-xs text-gray-600">
                       <BookOpen size={14} className="text-indigo-400" />
-                      <span className="font-bold">{request.class}</span>
+                      <span className="font-bold">{request.studentClass}</span>
                     </div>
                     <div className="flex items-center gap-2 text-xs text-gray-600">
                       <Clock size={14} className="text-indigo-400" />
-                      <span className="font-bold">{request.daysPerWeek} দিন/সপ্তাহ</span>
+                      <span className="font-bold">{request.daysPerWeek}</span>
                     </div>
                   </div>
                   <div className="space-y-2">
                     <div className="flex items-center gap-2 text-xs text-gray-600">
                       <Calendar size={14} className="text-indigo-400" />
-                      <span className="font-bold">{request.time}</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-xs text-gray-600">
-                      <User size={14} className="text-indigo-400" />
-                      <span className="font-bold">{request.gender} টিচার</span>
+                      <span className="font-bold">{new Date(request.createdAt).toLocaleDateString("bn-BD")}</span>
                     </div>
                   </div>
                 </div>
@@ -146,13 +142,20 @@ export const RequestsList: React.FC<RequestsListProps> = ({ requests, onUpdateSt
                   <div className="text-xs font-bold text-gray-700">{request.subjects}</div>
                 </div>
 
+                {request.details && (
+                  <div className="bg-amber-50/30 rounded-2xl p-3 mb-4 border border-amber-100/50">
+                    <div className="text-[10px] font-black text-amber-600/60 uppercase tracking-widest mb-1">বিস্তারিত</div>
+                    <div className="text-xs font-medium text-gray-700 italic">"{request.details}"</div>
+                  </div>
+                )}
+
                 <div className="flex items-center justify-between pt-4 border-t border-gray-50">
                   <a 
-                    href={`tel:${request.phone}`}
+                    href={`tel:${request.guardianPhone}`}
                     className="flex items-center gap-2 text-indigo-600 font-black text-sm"
                   >
                     <Phone size={16} />
-                    {request.phone}
+                    {request.guardianPhone}
                   </a>
                   
                   <div className="flex items-center gap-2">
