@@ -22,13 +22,28 @@
       <div class="loader-subtitle">Admin Panel</div>
     </div>
     <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
+    <script type="module" src="/src/main.tsx" onerror="console.error('Main script failed to load. This is likely a MIME type or 404 error.')"></script>
     <script>
       if ("serviceWorker" in navigator) {
         window.addEventListener("load", () => {
           navigator.serviceWorker
             .register("/sw.js")
-            .then((reg) => console.log("SW Registered"))
+            .then((reg) => {
+              console.log("SW Registered");
+              // Check for updates
+              reg.onupdatefound = () => {
+                const installingWorker = reg.installing;
+                if (installingWorker) {
+                  installingWorker.onstatechange = () => {
+                    if (installingWorker.state === "installed") {
+                      if (navigator.serviceWorker.controller) {
+                        console.log("New content is available; please refresh.");
+                      }
+                    }
+                  };
+                }
+              };
+            })
             .catch((err) => console.log("SW Fail", err));
         });
       }
