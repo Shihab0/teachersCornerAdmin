@@ -10,99 +10,55 @@ interface FooterProps {
 }
 
 export const Footer = ({ activeTab, setActiveTab, isEditing, onEntryClick }: FooterProps) => {
+  const tabs: { id: Tab; label: string; icon: any }[] = [
+    { id: "dashboard", label: "Home", icon: Home },
+    { id: "stats", label: "Stats", icon: BarChart2 },
+    { id: "add", label: isEditing ? "Update" : "Entry", icon: isEditing ? Edit : Plus },
+    { id: "teachers", label: "Teachers", icon: Users },
+    { id: "revenue", label: "Accounts", icon: Wallet },
+  ];
+
   return (
-    <nav className="fixed bottom-0 w-full max-w-md bg-white/90 backdrop-blur-xl border-t border-gray-100 flex justify-around p-2 pb-safe z-40">
-      <button
-        onClick={() => setActiveTab("dashboard")}
-        className={`flex flex-col items-center p-1.5 transition-all ${
-          activeTab === "dashboard" ? "text-indigo-600 scale-110" : "text-gray-400"
-        }`}
-      >
-        <Icon
-          icon={Home}
-          size={18}
-          className={activeTab === "dashboard" ? "fill-indigo-100" : ""}
-        />
-        <span className="text-[7px] font-black uppercase mt-1">Home</span>
-      </button>
-      
-      <button
-        onClick={() => setActiveTab("requests")}
-        className={`flex flex-col items-center p-1.5 transition-all ${
-          activeTab === "requests" ? "text-indigo-600 scale-110" : "text-gray-400"
-        }`}
-      >
-        <Icon
-          icon={ClipboardList}
-          size={18}
-          className={activeTab === "requests" ? "fill-indigo-100" : ""}
-        />
-        <span className="text-[7px] font-black uppercase mt-1">Requests</span>
-      </button>
-
-      <button
-        onClick={onEntryClick}
-        className={`flex flex-col items-center p-1.5 transition-all ${
-          activeTab === "add" ? "text-indigo-600" : "text-gray-400"
-        }`}
-      >
-        <div
-          className={`${
-            activeTab === "add" ? "bg-indigo-100 text-indigo-600" : "bg-gray-50 text-gray-400"
-          } p-2 rounded-full -mt-7 shadow-sm border border-gray-100 transition-colors`}
-        >
-          <Icon
-            icon={isEditing ? Edit : Plus}
-            size={22}
-            className={activeTab === "add" ? "fill-indigo-100" : ""}
-          />
-        </div>
-        <span className="text-[7px] font-black uppercase mt-1">
-          {isEditing ? "Update" : "Entry"}
-        </span>
-      </button>
-
-      <button
-        onClick={() => setActiveTab("stats")}
-        className={`flex flex-col items-center p-1.5 transition-all ${
-          activeTab === "stats" ? "text-indigo-600 scale-110" : "text-gray-400"
-        }`}
-      >
-        <Icon
-          icon={BarChart2}
-          size={18}
-          className={activeTab === "stats" ? "fill-indigo-100" : ""}
-        />
-        <span className="text-[7px] font-black uppercase mt-1">Stats</span>
-      </button>
-
-      <button
-        onClick={() => setActiveTab("teachers")}
-        className={`flex flex-col items-center p-1.5 transition-all ${
-          activeTab === "teachers" ? "text-indigo-600 scale-110" : "text-gray-400"
-        }`}
-      >
-        <Icon
-          icon={Users}
-          size={18}
-          className={activeTab === "teachers" ? "fill-indigo-100" : ""}
-        />
-        <span className="text-[7px] font-black uppercase mt-1">Teachers</span>
-      </button>
-
-      <button
-        onClick={() => setActiveTab("revenue")}
-        className={`flex flex-col items-center p-1.5 transition-all ${
-          activeTab === "revenue" ? "text-emerald-600 scale-110" : "text-gray-400"
-        }`}
-      >
-        <Icon
-          icon={Wallet}
-          size={18}
-          className={activeTab === "revenue" ? "fill-emerald-100" : ""}
-        />
-        <span className="text-[7px] font-black uppercase mt-1">Accounts</span>
-      </button>
+    <nav className="glass fixed bottom-0 left-0 right-0 z-50 px-4 pb-safe pt-2 shadow-[0_-8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_-8px_30px_rgb(0,0,0,0.2)] transition-all duration-500">
+      <div className="max-w-md mx-auto flex justify-between items-center">
+        {tabs.map((tab) => {
+          const isActive = activeTab === tab.id;
+          const isSpecial = tab.id === "add";
+          
+          return (
+            <button
+              key={tab.id}
+              onClick={isSpecial ? onEntryClick : () => setActiveTab(tab.id)}
+              className={`flex flex-col items-center justify-center py-2 px-3 rounded-2xl transition-all duration-300 group relative ${
+                isActive 
+                  ? "text-emerald-600 dark:text-emerald-400" 
+                  : "text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300"
+              }`}
+            >
+              {isSpecial ? (
+                <div className={`p-3 rounded-full -mt-10 shadow-xl transition-all duration-300 border-4 border-background ${
+                  isActive 
+                    ? "bg-emerald-500 text-white scale-110 rotate-90" 
+                    : "bg-slate-900 dark:bg-white text-white dark:text-slate-900 group-hover:scale-105"
+                }`}>
+                  <Icon icon={tab.icon} size={24} />
+                </div>
+              ) : (
+                <div className={`p-1 rounded-xl transition-all duration-300 ${
+                  isActive ? "scale-110" : "group-hover:scale-110"
+                }`}>
+                  <Icon icon={tab.icon} size={20} />
+                </div>
+              )}
+              <span className={`text-[9px] font-black uppercase tracking-widest mt-1 transition-all duration-300 ${
+                isActive ? "opacity-100 translate-y-0" : "opacity-0 translate-y-1 group-hover:opacity-100 group-hover:translate-y-0"
+              }`}>
+                {tab.label}
+              </span>
+            </button>
+          );
+        })}
+      </div>
     </nav>
   );
 };

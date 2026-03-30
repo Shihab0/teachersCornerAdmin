@@ -87,25 +87,25 @@ export const RequestsList: React.FC<RequestsListProps> = ({ requests, onUpdateSt
     <div className="space-y-6">
       <div className="flex flex-col gap-1 mb-8">
         <div className="flex items-center justify-between">
-          <h2 className="text-4xl font-black text-gray-900 dark:text-white tracking-tighter uppercase leading-none">
-            টিউশন <span className="text-indigo-600 dark:text-indigo-400 italic font-serif lowercase tracking-normal">রিকোয়েস্ট</span>
+          <h2 className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter uppercase leading-none">
+            টিউশন <span className="text-emerald-600 dark:text-emerald-400 italic font-serif lowercase tracking-normal">রিকোয়েস্ট</span>
           </h2>
-          <div className="bg-gray-900 dark:bg-white text-white dark:text-gray-900 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">
+          <div className="bg-slate-900 dark:bg-white text-white dark:text-slate-900 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">
             Total: {requests.length}
           </div>
         </div>
-        <div className="h-px bg-gray-200 dark:bg-slate-800 w-full mt-2" />
+        <div className="h-px bg-slate-200 dark:bg-slate-800 w-full mt-2" />
       </div>
 
       <div className="space-y-6">
         <div className="relative group">
-          <Icon icon={Search} size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-indigo-500 transition-colors" />
+          <Icon icon={Search} size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-emerald-500 transition-colors" />
           <input
             type="text"
             placeholder="নাম, ক্লাস বা ফোন দিয়ে খুঁজুন..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-12 pr-4 py-5 bg-gray-50 dark:bg-slate-900/50 dark:text-white rounded-2xl border-2 border-transparent focus:border-indigo-500/20 focus:bg-white dark:focus:bg-slate-900 transition-all outline-none font-bold text-sm"
+            className="w-full pl-12 pr-4 py-5 bg-slate-50 dark:bg-slate-900/50 dark:text-white rounded-2xl border-2 border-transparent focus:border-emerald-500/20 focus:bg-white dark:focus:bg-slate-900 transition-all outline-none font-bold text-sm"
           />
         </div>
 
@@ -117,8 +117,8 @@ export const RequestsList: React.FC<RequestsListProps> = ({ requests, onUpdateSt
                 onClick={() => setFilterStatus(status as any)}
                 className={`px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap border-2 ${
                   filterStatus === status 
-                  ? "bg-gray-900 dark:bg-white text-white dark:text-gray-900 border-gray-900 dark:border-white shadow-xl shadow-gray-200 dark:shadow-none" 
-                  : "bg-white dark:bg-slate-800 text-gray-400 dark:text-gray-500 border-gray-100 dark:border-slate-800 hover:border-gray-200 dark:hover:border-slate-700"
+                  ? "bg-slate-900 dark:bg-white text-white dark:text-slate-900 border-slate-900 dark:border-white shadow-xl shadow-slate-200 dark:shadow-none" 
+                  : "bg-white dark:bg-slate-800 text-slate-400 dark:text-slate-500 border-slate-100 dark:border-slate-800 hover:border-slate-200 dark:hover:border-slate-700"
                 }`}
               >
                 {status === "All" ? "সবগুলো" : status === "Pending" ? "পেন্ডিং" : status === "Approved" ? "অনুমোদিত" : "প্রত্যাখ্যাত"}
@@ -130,8 +130,8 @@ export const RequestsList: React.FC<RequestsListProps> = ({ requests, onUpdateSt
             onClick={toggleSelectAll}
             className={`p-3 rounded-xl border-2 transition-all ${
               selectedIds.length === filteredRequests.length && filteredRequests.length > 0
-              ? "bg-indigo-50 dark:bg-indigo-900/30 border-indigo-200 dark:border-indigo-800 text-indigo-600 dark:text-indigo-400"
-              : "bg-white dark:bg-slate-800 border-gray-100 dark:border-slate-800 text-gray-400 dark:text-slate-600 hover:border-gray-200 dark:hover:border-slate-700"
+              ? "bg-emerald-50 dark:bg-emerald-900/30 border-emerald-200 dark:border-emerald-800 text-emerald-600 dark:text-emerald-400"
+              : "bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-800 text-slate-400 dark:text-slate-600 hover:border-slate-200 dark:hover:border-slate-700"
             }`}
             title="সবগুলো সিলেক্ট করুন"
           >
@@ -147,12 +147,12 @@ export const RequestsList: React.FC<RequestsListProps> = ({ requests, onUpdateSt
             exit={{ y: 100, opacity: 0 }}
             className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 w-[90%] max-w-md"
           >
-            <div className="bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 shadow-2xl rounded-3xl p-4 flex items-center justify-between gap-4">
+            <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 shadow-2xl rounded-3xl p-4 flex items-center justify-between gap-4">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-xl">
+                <div className="p-2 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-xl">
                   <CheckSquare size={20} />
                 </div>
-                <div className="text-sm font-black text-gray-800 dark:text-white">
+                <div className="text-sm font-black text-slate-800 dark:text-white">
                   {selectedIds.length} নির্বাচিত
                 </div>
               </div>
@@ -207,25 +207,25 @@ export const RequestsList: React.FC<RequestsListProps> = ({ requests, onUpdateSt
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.9 }}
                 key={request.id}
-                className={`bg-white dark:bg-slate-800 rounded-3xl border shadow-sm overflow-hidden transition-all ${
+                className={`bg-white dark:bg-slate-900 rounded-[40px] border card-shadow overflow-hidden transition-all ${
                   selectedIds.includes(request.id) 
-                  ? "border-indigo-500 ring-2 ring-indigo-500/10" 
-                  : "border-gray-100 dark:border-slate-700"
+                  ? "border-emerald-500 ring-2 ring-emerald-500/10" 
+                  : "border-slate-100 dark:border-slate-800/50"
                 }`}
               >
-                <div className="p-6">
+                <div className="p-8">
                   <div className="flex justify-between items-start mb-6">
                     <div className="flex gap-4">
                       <button 
                         onClick={() => toggleSelect(request.id)}
-                        className={`mt-1 transition-all transform active:scale-90 ${selectedIds.includes(request.id) ? "text-indigo-500" : "text-gray-200 dark:text-slate-700 hover:text-gray-400 dark:hover:text-slate-500"}`}
+                        className={`mt-1 transition-all transform active:scale-90 ${selectedIds.includes(request.id) ? "text-emerald-500" : "text-slate-200 dark:text-slate-700 hover:text-slate-400 dark:hover:text-slate-500"}`}
                       >
                         <Icon icon={selectedIds.includes(request.id) ? CheckSquare : Square} size={24} />
                       </button>
                       <div>
-                        <h3 className="font-black text-gray-900 dark:text-white text-xl tracking-tight leading-tight">{request.guardianName}</h3>
-                        <div className="flex items-center gap-1.5 text-[10px] text-gray-400 dark:text-slate-500 font-black uppercase tracking-widest mt-1.5">
-                          <MapPin size={12} className="text-indigo-500" />
+                        <h3 className="font-black text-slate-900 dark:text-white text-xl tracking-tight leading-tight">{request.guardianName}</h3>
+                        <div className="flex items-center gap-1.5 text-[10px] text-slate-400 dark:text-slate-500 font-black uppercase tracking-widest mt-1.5">
+                          <MapPin size={12} className="text-emerald-500" />
                           {request.area}
                         </div>
                       </div>
@@ -241,56 +241,56 @@ export const RequestsList: React.FC<RequestsListProps> = ({ requests, onUpdateSt
 
                   <div className="grid grid-cols-2 gap-6 mb-6 ml-10">
                     <div className="space-y-3">
-                      <div className="flex items-center gap-3 text-xs text-gray-600 dark:text-slate-300">
-                        <div className="w-8 h-8 rounded-lg bg-gray-50 dark:bg-slate-900 flex items-center justify-center text-indigo-500">
+                      <div className="flex items-center gap-3 text-xs text-slate-600 dark:text-slate-300">
+                        <div className="w-8 h-8 rounded-lg bg-slate-50 dark:bg-slate-900 flex items-center justify-center text-emerald-500">
                           <BookOpen size={16} />
                         </div>
                         <div>
-                          <p className="text-[9px] font-black text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-0.5">শ্রেণী</p>
+                          <p className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-0.5">শ্রেণী</p>
                           <p className="font-bold">{request.studentClass}</p>
                         </div>
                       </div>
-                      <div className="flex items-center gap-3 text-xs text-gray-600 dark:text-slate-300">
-                        <div className="w-8 h-8 rounded-lg bg-gray-50 dark:bg-slate-900 flex items-center justify-center text-indigo-500">
+                      <div className="flex items-center gap-3 text-xs text-slate-600 dark:text-slate-300">
+                        <div className="w-8 h-8 rounded-lg bg-slate-50 dark:bg-slate-900 flex items-center justify-center text-emerald-500">
                           <Clock size={16} />
                         </div>
                         <div>
-                          <p className="text-[9px] font-black text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-0.5">সপ্তাহে দিন</p>
+                          <p className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-0.5">সপ্তাহে দিন</p>
                           <p className="font-bold">{request.daysPerWeek}</p>
                         </div>
                       </div>
                     </div>
                     <div className="space-y-3">
-                      <div className="flex items-center gap-3 text-xs text-gray-600 dark:text-slate-300">
-                        <div className="w-8 h-8 rounded-lg bg-gray-50 dark:bg-slate-900 flex items-center justify-center text-indigo-500">
+                      <div className="flex items-center gap-3 text-xs text-slate-600 dark:text-slate-300">
+                        <div className="w-8 h-8 rounded-lg bg-slate-50 dark:bg-slate-900 flex items-center justify-center text-emerald-500">
                           <Calendar size={16} />
                         </div>
                         <div>
-                          <p className="text-[9px] font-black text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-0.5">তারিখ</p>
+                          <p className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-0.5">তারিখ</p>
                           <p className="font-bold">{new Date(request.createdAt).toLocaleDateString("bn-BD")}</p>
                         </div>
                       </div>
                     </div>
                   </div>
 
-                  <div className="bg-gray-50 dark:bg-slate-900/50 rounded-2xl p-4 mb-6 ml-10 border border-gray-100 dark:border-slate-800">
-                    <div className="text-[9px] font-black text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-2">বিষয়সমূহ</div>
-                    <div className="text-sm font-bold text-gray-800 dark:text-slate-200 leading-relaxed">{request.subjects}</div>
+                  <div className="bg-slate-50 dark:bg-slate-900/50 rounded-2xl p-4 mb-6 ml-10 border border-slate-100 dark:border-slate-800">
+                    <div className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2">বিষয়সমূহ</div>
+                    <div className="text-sm font-bold text-slate-800 dark:text-slate-200 leading-relaxed">{request.subjects}</div>
                   </div>
 
                   {request.details && (
                     <div className="bg-amber-50/30 dark:bg-amber-900/10 rounded-2xl p-4 mb-6 border border-amber-100/50 dark:border-amber-900/20 ml-10">
                       <div className="text-[9px] font-black text-amber-600/60 dark:text-amber-400/60 uppercase tracking-widest mb-2">বিস্তারিত নোট</div>
-                      <div className="text-xs font-medium text-gray-700 dark:text-slate-300 italic leading-relaxed">"{request.details}"</div>
+                      <div className="text-xs font-medium text-slate-700 dark:text-slate-300 italic leading-relaxed">"{request.details}"</div>
                     </div>
                   )}
 
-                  <div className="flex items-center justify-between pt-6 border-t border-gray-100 dark:border-slate-800 ml-10">
+                  <div className="flex items-center justify-between pt-6 border-t border-slate-100 dark:border-slate-800 ml-10">
                     <a 
                       href={`tel:${request.guardianPhone}`}
-                      className="group flex items-center gap-3 text-indigo-600 dark:text-indigo-400 font-black text-sm"
+                      className="group flex items-center gap-3 text-emerald-600 dark:text-emerald-400 font-black text-sm"
                     >
-                      <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center group-hover:bg-indigo-600 group-hover:text-white transition-all">
+                      <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-900/30 flex items-center justify-center group-hover:bg-emerald-600 group-hover:text-white transition-all">
                         <Phone size={18} />
                       </div>
                       <span className="tracking-tighter">{request.guardianPhone}</span>
@@ -320,7 +320,7 @@ export const RequestsList: React.FC<RequestsListProps> = ({ requests, onUpdateSt
                       <button
                         onClick={() => setConfirmDeleteId(request.id)}
                         disabled={processingId === request.id}
-                        className="p-3 bg-gray-50 dark:bg-slate-800 text-gray-400 dark:text-slate-500 rounded-xl hover:bg-gray-900 hover:text-white dark:hover:bg-white dark:hover:text-gray-900 transition-all disabled:opacity-50"
+                        className="p-3 bg-slate-50 dark:bg-slate-800 text-slate-400 dark:text-slate-500 rounded-xl hover:bg-slate-900 hover:text-white dark:hover:bg-white dark:hover:text-slate-900 transition-all disabled:opacity-50"
                         title="Delete"
                       >
                         <Trash2 size={20} />

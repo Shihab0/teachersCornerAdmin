@@ -37,6 +37,23 @@ export default function App() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [authLoading, setAuthLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<Tab>("dashboard");
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("theme") === "dark" || 
+        (!localStorage.getItem("theme") && window.matchMedia("(prefers-color-scheme: dark)").matches);
+    }
+    return false;
+  });
+
+  useEffect(() => {
+    if (isDarkMode) {
+      document.documentElement.classList.add("dark");
+      localStorage.setItem("theme", "dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+      localStorage.setItem("theme", "light");
+    }
+  }, [isDarkMode]);
 
   // App Install States
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
@@ -136,8 +153,14 @@ export default function App() {
       clearTimeout(safetyTimeout);
       setUser(currentUser);
       
-      if (currentUser && currentUser.email && allowedEmails.includes(currentUser.email.toLowerCase())) {
-        setIsAdmin(true);
+      if (currentUser && currentUser.email) {
+        const email = currentUser.email.toLowerCase();
+        if (allowedEmails.map(e => e.toLowerCase()).includes(email)) {
+          setIsAdmin(true);
+        } else {
+          setIsAdmin(false);
+          setIsLoading(false);
+        }
       } else {
         setIsAdmin(false);
         setIsLoading(false);
@@ -752,13 +775,31 @@ export default function App() {
   }
 
   if (!isAdmin) {
-    return <Login user={user} onLogin={handleLogin} onLogout={handleLogout} deals={publicDeals} />;
+    return (
+      <div className={isDarkMode ? "dark" : ""}>
+        <Login 
+          user={user} 
+          onLogin={handleLogin} 
+          onLogout={handleLogout} 
+          deals={publicDeals} 
+          isDarkMode={isDarkMode}
+          toggleDarkMode={() => setIsDarkMode(!isDarkMode)}
+        />
+      </div>
+    );
   }
 
   return (
     <div className="flex flex-col h-screen max-w-md mx-auto bg-gray-50 overflow-hidden shadow-2xl">
       <Toaster position="top-center" richColors />
-      <Header user={user} onLogout={handleLogout} onInstall={handleInstallClick} />
+      <Header 
+        user={user} 
+        onLogout={handleLogout} 
+        onInstall={handleInstallClick} 
+        isDarkMode={isDarkMode}
+        toggleDarkMode={() => setIsDarkMode(!isDarkMode)}
+        setActiveTab={setActiveTab}
+      />
 
       <main className="flex-1 overflow-y-auto p-4 pb-28 no-scrollbar">
         {activeTab === "dashboard" && (
