@@ -1,5 +1,5 @@
 import { Icon } from "../ui/Icon";
-import { Smartphone, LogOut, Moon, Sun, ClipboardList, Zap, Settings, User, ChevronDown } from "lucide-react";
+import { Smartphone, LogOut, Moon, Sun, ClipboardList, Zap, Settings, User, ChevronDown, GraduationCap } from "lucide-react";
 import { User as FirebaseUser } from "firebase/auth";
 import { Tab } from "../../types";
 
@@ -16,14 +16,17 @@ export const Header = ({ user, onLogout, onInstall, isDarkMode, toggleDarkMode, 
   return (
     <header className="glass sticky top-0 z-50 flex justify-between items-center p-4 pt-6 shadow-sm transition-all duration-500">
       <div className="flex items-center gap-2 cursor-pointer" onClick={() => setActiveTab("dashboard")}>
-        <div className="w-8 h-8 bg-emerald-500 rounded-lg flex items-center justify-center shadow-lg shadow-emerald-500/20">
-          <Icon icon={Zap} size={18} className="text-white fill-white" />
+        <div className="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/20 rotate-3 hover:rotate-0 transition-transform duration-300">
+          <Icon icon={GraduationCap} size={22} className="text-white" />
         </div>
-        <h1 className="text-xl font-black text-slate-900 dark:text-white leading-none tracking-tighter uppercase">
-          Teacher's <span className="text-emerald-500 font-light">CORNER</span>
-        </h1>
+        <div className="flex flex-col">
+          <h1 className="text-lg font-black text-slate-900 dark:text-white leading-none tracking-tighter uppercase">
+            Teacher's
+          </h1>
+          <span className="text-emerald-500 font-black text-[10px] tracking-[0.2em] uppercase leading-none mt-0.5">CORNER</span>
+        </div>
       </div>
-      <div className="flex items-center space-x-1.5">
+      <div className="flex items-center space-x-2">
         <button
           onClick={() => setActiveTab("requests")}
           className="w-10 h-10 rounded-xl bg-slate-100/50 dark:bg-slate-800/50 flex items-center justify-center hover:bg-emerald-50 dark:hover:bg-emerald-900/20 text-slate-600 dark:text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition-all duration-300"
@@ -33,17 +36,10 @@ export const Header = ({ user, onLogout, onInstall, isDarkMode, toggleDarkMode, 
         </button>
         <button
           onClick={toggleDarkMode}
-          className="w-10 h-10 rounded-xl bg-slate-100/50 dark:bg-slate-800/50 flex items-center justify-center hover:bg-indigo-50 dark:hover:bg-indigo-900/20 text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all duration-300"
+          className="w-10 h-10 rounded-xl bg-slate-100/50 dark:bg-slate-800/50 flex items-center justify-center hover:bg-amber-50 dark:hover:bg-amber-900/20 text-slate-600 dark:text-slate-400 hover:text-amber-600 dark:hover:text-amber-400 transition-all duration-300"
           title={isDarkMode ? "Light Mode" : "Dark Mode"}
         >
           <Icon icon={isDarkMode ? Sun : Moon} size={20} />
-        </button>
-        <button
-          onClick={onInstall}
-          className="w-10 h-10 rounded-xl bg-slate-100/50 dark:bg-slate-800/50 flex items-center justify-center hover:bg-indigo-50 dark:hover:bg-indigo-900/20 text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all duration-300"
-          title="Install App"
-        >
-          <Icon icon={Smartphone} size={20} />
         </button>
         <div className="group relative">
           <div className="bg-slate-900 dark:bg-white px-3 py-2 rounded-xl flex items-center text-[10px] font-black text-white dark:text-slate-900 cursor-pointer hover:opacity-90 transition-all shadow-lg shadow-slate-900/10 dark:shadow-white/5">
@@ -59,6 +55,12 @@ export const Header = ({ user, onLogout, onInstall, isDarkMode, toggleDarkMode, 
                 {user?.email}
               </p>
             </div>
+            <button
+              onClick={onInstall}
+              className="w-full text-left px-6 py-4 text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 font-bold flex items-center transition-colors"
+            >
+              <Icon icon={Smartphone} size={18} className="mr-3" /> অ্যাপ ইনস্টল করুন
+            </button>
             <button
               onClick={onLogout}
               className="w-full text-left px-6 py-4 text-sm text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-900/20 font-black flex items-center transition-colors"

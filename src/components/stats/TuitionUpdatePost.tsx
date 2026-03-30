@@ -1,6 +1,6 @@
 import React, { useRef, useState } from "react";
 import html2canvas from "html2canvas";
-import { Download, CheckCircle2, Loader2, Award } from "lucide-react";
+import { Download, CheckCircle2, Loader2, Award, GraduationCap } from "lucide-react";
 import { Deal } from "../../types";
 
 interface TuitionUpdatePostProps {
@@ -58,13 +58,13 @@ export const TuitionUpdatePost: React.FC<TuitionUpdatePostProps> = ({ deals, hid
         {/* Header Section */}
         <div className="relative z-10 text-center w-full">
           <div className="inline-flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[9px] font-black uppercase tracking-[0.3em] px-5 py-1.5 rounded-full mb-5">
-            <Award size={10} className="text-emerald-400" />
+            <GraduationCap size={12} className="text-emerald-400" />
             Teacher's Corner
           </div>
           <h2 className="text-[26px] font-black text-white tracking-tighter leading-tight mb-3">
             Tuition <span className="text-emerald-400">Updates</span>
           </h2>
-          <div className="w-16 h-1 bg-gradient-to-r from-emerald-500 to-indigo-500 mx-auto rounded-full shadow-[0_0_15px_rgba(16,185,129,0.4)]"></div>
+          <div className="w-16 h-1 bg-gradient-to-r from-emerald-500 to-emerald-300 mx-auto rounded-full shadow-[0_0_15px_rgba(16,185,129,0.4)]"></div>
         </div>
 
         {/* Rows Section */}

@@ -126,13 +126,13 @@ export const PendingTeachersList: React.FC<PendingTeachersListProps> = ({
 
       <div className="space-y-6">
         <div className="relative group">
-          <Icon icon={Search} size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-indigo-500 transition-colors" />
+          <Icon icon={Search} size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-emerald-500 transition-colors" />
           <input
             type="text"
             placeholder="নাম, প্রতিষ্ঠান বা ফোন দিয়ে খুঁজুন..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-12 pr-4 py-5 bg-gray-50 dark:bg-slate-900/50 dark:text-white rounded-2xl border-2 border-transparent focus:border-indigo-500/20 focus:bg-white dark:focus:bg-slate-900 transition-all outline-none font-bold text-sm"
+            className="w-full pl-12 pr-4 py-5 bg-gray-50 dark:bg-slate-900/50 dark:text-white rounded-2xl border-2 border-transparent focus:border-emerald-500/20 focus:bg-white dark:focus:bg-slate-900 transition-all outline-none font-bold text-sm"
           />
         </div>
       </div>
@@ -150,7 +150,7 @@ export const PendingTeachersList: React.FC<PendingTeachersListProps> = ({
               <div className="flex items-center gap-3">
                 <button 
                   onClick={toggleSelectAll}
-                  className="p-2 bg-indigo-50 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400 rounded-xl"
+                  className="p-2 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 rounded-xl"
                 >
                   <CheckSquare size={20} />
                 </button>
@@ -187,14 +187,14 @@ export const PendingTeachersList: React.FC<PendingTeachersListProps> = ({
             <div 
               key={teacher.id} 
               className={`bg-white dark:bg-slate-900 rounded-[32px] shadow-sm border transition-all overflow-hidden ${
-                isSelected ? 'border-indigo-500 ring-4 ring-indigo-500/10' : 'border-gray-100 dark:border-slate-800'
+                isSelected ? 'border-emerald-500 ring-4 ring-emerald-500/10' : 'border-gray-100 dark:border-slate-800'
               }`}
             >
               <div className="flex items-center px-6 py-5">
                 <button 
                   onClick={() => toggleSelect(teacher.id)}
                   className={`p-2.5 rounded-xl transition-all transform active:scale-90 ${
-                    isSelected ? 'text-indigo-600 bg-indigo-50 dark:bg-indigo-950/30' : 'text-gray-200 dark:text-slate-700 hover:text-gray-400 dark:hover:text-slate-500'
+                    isSelected ? 'text-emerald-600 bg-emerald-50 dark:bg-emerald-950/30' : 'text-gray-200 dark:text-slate-700 hover:text-gray-400 dark:hover:text-slate-500'
                   }`}
                 >
                   {isSelected ? <CheckSquare size={24} /> : <Square size={24} />}
@@ -208,7 +208,7 @@ export const PendingTeachersList: React.FC<PendingTeachersListProps> = ({
                       {teacher.photoUrl ? (
                         <img src={teacher.photoUrl} alt={teacher.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center text-indigo-400 font-black text-xl">
+                        <div className="w-full h-full flex items-center justify-center text-emerald-400 font-black text-xl">
                           {teacher.name.charAt(0)}
                         </div>
                       )}
@@ -221,7 +221,7 @@ export const PendingTeachersList: React.FC<PendingTeachersListProps> = ({
                         </div>
                       </div>
                       <div className="text-xs font-bold text-gray-400 dark:text-slate-500 truncate flex items-center gap-1.5">
-                        <GraduationCap size={14} className="text-indigo-500" />
+                        <GraduationCap size={14} className="text-emerald-500" />
                         {teacher.collegeName}
                       </div>
                     </div>
@@ -265,7 +265,7 @@ export const PendingTeachersList: React.FC<PendingTeachersListProps> = ({
                             </div>
                           )}
                           {teacher.canTeachHSC && (
-                            <div className="flex items-center gap-1.5 bg-indigo-50 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400 px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-[0.15em] border border-indigo-100 dark:border-indigo-900/30">
+                            <div className="flex items-center gap-1.5 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-[0.15em] border border-emerald-100 dark:border-emerald-900/30">
                               <Award size={14} /> HSC ({teacher.hscSubject || "All"})
                             </div>
                           )}
@@ -277,14 +277,14 @@ export const PendingTeachersList: React.FC<PendingTeachersListProps> = ({
                         <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm">
                           <div className="text-[9px] font-black text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-2">বর্তমান ঠিকানা</div>
                           <div className="flex items-start gap-2.5 text-gray-800 dark:text-slate-200 text-xs font-bold leading-relaxed">
-                            <MapPin size={16} className="text-indigo-500 shrink-0 mt-0.5" />
+                            <MapPin size={16} className="text-emerald-500 shrink-0 mt-0.5" />
                             {teacher.presentAddress}
                           </div>
                         </div>
                         <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm">
                           <div className="text-[9px] font-black text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-2">স্থায়ী ঠিকানা</div>
                           <div className="flex items-start gap-2.5 text-gray-800 dark:text-slate-200 text-xs font-bold leading-relaxed">
-                            <MapPin size={16} className="text-indigo-500 shrink-0 mt-0.5" />
+                            <MapPin size={16} className="text-emerald-500 shrink-0 mt-0.5" />
                             {teacher.permanentAddress}
                           </div>
                         </div>
@@ -292,8 +292,8 @@ export const PendingTeachersList: React.FC<PendingTeachersListProps> = ({
 
                       {/* Education */}
                       <div className="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-gray-100 dark:border-slate-800 shadow-sm">
-                        <div className="text-[10px] font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
-                          <div className="p-1.5 bg-indigo-50 dark:bg-indigo-950/30 rounded-lg">
+                        <div className="text-[10px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
+                          <div className="p-1.5 bg-emerald-50 dark:bg-emerald-950/30 rounded-lg">
                             <GraduationCap size={14} />
                           </div>
                           শিক্ষাগত যোগ্যতা
@@ -303,19 +303,19 @@ export const PendingTeachersList: React.FC<PendingTeachersListProps> = ({
                             <div className="font-black text-gray-900 dark:text-white uppercase tracking-tighter">SSC</div>
                             <div className="text-gray-500 dark:text-slate-400 font-bold">{teacher.education?.ssc?.year}</div>
                             <div className="text-gray-500 dark:text-slate-400 font-bold">{teacher.education?.ssc?.group}</div>
-                            <div className="text-indigo-600 dark:text-indigo-400 font-black">GPA: {teacher.education?.ssc?.gpa}</div>
+                            <div className="text-emerald-600 dark:text-emerald-400 font-black">GPA: {teacher.education?.ssc?.gpa}</div>
                           </div>
                           <div className="grid grid-cols-4 gap-4 text-xs border-t border-gray-50 dark:border-slate-800 pt-4">
                             <div className="font-black text-gray-900 dark:text-white uppercase tracking-tighter">HSC</div>
                             <div className="text-gray-500 dark:text-slate-400 font-bold">{teacher.education?.hsc?.year}</div>
                             <div className="text-gray-500 dark:text-slate-400 font-bold">{teacher.education?.hsc?.group}</div>
-                            <div className="text-indigo-600 dark:text-indigo-400 font-black">GPA: {teacher.education?.hsc?.gpa}</div>
+                            <div className="text-emerald-600 dark:text-emerald-400 font-black">GPA: {teacher.education?.hsc?.gpa}</div>
                           </div>
                           <div className="grid grid-cols-4 gap-4 text-xs border-t border-gray-50 dark:border-slate-800 pt-4">
                             <div className="font-black text-gray-900 dark:text-white uppercase tracking-tighter">Honours</div>
                             <div className="text-gray-500 dark:text-slate-400 font-bold">{teacher.education?.honours?.year}</div>
                             <div className="text-gray-500 dark:text-slate-400 font-bold truncate">{teacher.education?.honours?.subject} ({teacher.education?.honours?.studyYear})</div>
-                            <div className="text-indigo-600 dark:text-indigo-400 font-black">GPA: {teacher.education?.honours?.gpa}</div>
+                            <div className="text-emerald-600 dark:text-emerald-400 font-black">GPA: {teacher.education?.honours?.gpa}</div>
                           </div>
                         </div>
                       </div>
@@ -324,7 +324,7 @@ export const PendingTeachersList: React.FC<PendingTeachersListProps> = ({
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm">
                           <div className="text-[9px] font-black text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-2 flex items-center gap-1.5">
-                            <Briefcase size={14} className="text-indigo-500" /> অভিজ্ঞতা
+                            <Briefcase size={14} className="text-emerald-500" /> অভিজ্ঞতা
                           </div>
                           <div className="text-gray-800 dark:text-slate-200 text-xs font-bold leading-relaxed">
                             {teacher.experience || "উল্লেখ নেই"}
@@ -332,7 +332,7 @@ export const PendingTeachersList: React.FC<PendingTeachersListProps> = ({
                         </div>
                         <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm">
                           <div className="text-[9px] font-black text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-2 flex items-center gap-1.5">
-                            <BookOpen size={14} className="text-indigo-500" /> বর্তমানে টিউশনি
+                            <BookOpen size={14} className="text-emerald-500" /> বর্তমানে টিউশনি
                           </div>
                           <div className="text-gray-800 dark:text-slate-200 text-xs font-bold">
                             {teacher.hasCurrentTuition ? (
@@ -358,9 +358,9 @@ export const PendingTeachersList: React.FC<PendingTeachersListProps> = ({
                           {teacher.facebookLink && (
                             <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm">
                               <div className="text-[9px] font-black text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-2 flex items-center gap-1.5">
-                                <Facebook size={14} className="text-indigo-500" /> ফেসবুক প্রোফাইল
+                                <Facebook size={14} className="text-emerald-500" /> ফেসবুক প্রোফাইল
                               </div>
-                              <a href={teacher.facebookLink} target="_blank" rel="noopener noreferrer" className="text-indigo-600 dark:text-indigo-400 text-xs font-black hover:underline truncate block">
+                              <a href={teacher.facebookLink} target="_blank" rel="noopener noreferrer" className="text-emerald-600 dark:text-emerald-400 text-xs font-black hover:underline truncate block">
                                 {teacher.facebookLink}
                               </a>
                             </div>
@@ -368,9 +368,9 @@ export const PendingTeachersList: React.FC<PendingTeachersListProps> = ({
                           {teacher.studentIdUrl && (
                             <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm">
                               <div className="text-[9px] font-black text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-2 flex items-center gap-1.5">
-                                <IdCard size={14} className="text-indigo-500" /> স্টুডেন্ট আইডি
+                                <IdCard size={14} className="text-emerald-500" /> স্টুডেন্ট আইডি
                               </div>
-                              <a href={teacher.studentIdUrl} target="_blank" rel="noopener noreferrer" className="group flex items-center gap-2 text-indigo-600 dark:text-indigo-400 text-xs font-black hover:underline">
+                              <a href={teacher.studentIdUrl} target="_blank" rel="noopener noreferrer" className="group flex items-center gap-2 text-emerald-600 dark:text-emerald-400 text-xs font-black hover:underline">
                                 ছবি দেখুন <Star size={12} className="group-hover:rotate-12 transition-transform" />
                               </a>
                             </div>

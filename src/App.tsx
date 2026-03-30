@@ -765,8 +765,8 @@ export default function App() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-900">
         <div className="text-center">
-          <Loader2 className="w-12 h-12 animate-spin text-indigo-500 mx-auto mb-4" />
-          <p className="text-indigo-200 font-black text-sm uppercase tracking-widest animate-pulse">
+          <Loader2 className="w-12 h-12 animate-spin text-emerald-500 mx-auto mb-4" />
+          <p className="text-emerald-200 font-black text-sm uppercase tracking-widest animate-pulse">
             লোড হচ্ছে...
           </p>
         </div>
@@ -951,16 +951,16 @@ export default function App() {
           onClick={() => setShowInstallModal(false)}
         >
           <div className="bg-white rounded-[40px] p-8 w-full max-w-sm shadow-2xl text-center" onClick={(e) => e.stopPropagation()}>
-            <Icon icon={Smartphone} size={40} className="mx-auto text-indigo-500 mb-5" />
+            <Icon icon={Smartphone} size={40} className="mx-auto text-emerald-500 mb-5" />
             <h3 className="font-black text-xl text-gray-800 mb-2">হোম স্ক্রিনে সেভ করুন</h3>
             <p className="text-xs text-gray-500 leading-relaxed mb-8 font-medium">
               অ্যাপটি আপনার মোবাইলে সেভ করতে ব্রাউজারের <span className="font-bold text-gray-800">৩-ডট (⋮)</span> মেনু থেকে{" "}
-              <span className="font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded">"Install app"</span> অথবা{" "}
-              <span className="font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded">"Add to Home screen"</span> এ ক্লিক করুন।
+              <span className="font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">"Install app"</span> অথবা{" "}
+              <span className="font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">"Add to Home screen"</span> এ ক্লিক করুন।
             </p>
             <button
               onClick={() => setShowInstallModal(false)}
-              className="w-full py-4 bg-indigo-600 text-white font-black rounded-2xl shadow-xl shadow-indigo-100 active:scale-95 transition-transform"
+              className="w-full py-4 bg-emerald-600 text-white font-black rounded-2xl shadow-xl shadow-emerald-100 active:scale-95 transition-transform"
             >
               বুঝতে পেরেছি
             </button>

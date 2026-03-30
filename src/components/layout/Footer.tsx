@@ -1,5 +1,5 @@
 import { Icon } from "../ui/Icon";
-import { Home, Plus, Wallet, Edit, BarChart2, Users, ClipboardList, UserCheck } from "lucide-react";
+import { Home, Plus, Wallet, Edit, BarChart2, Users, ClipboardList, UserCheck, GraduationCap } from "lucide-react";
 import { Tab } from "../../types";
 
 interface FooterProps {
@@ -11,11 +11,11 @@ interface FooterProps {
 
 export const Footer = ({ activeTab, setActiveTab, isEditing, onEntryClick }: FooterProps) => {
   const tabs: { id: Tab; label: string; icon: any }[] = [
-    { id: "dashboard", label: "Home", icon: Home },
-    { id: "stats", label: "Stats", icon: BarChart2 },
-    { id: "add", label: isEditing ? "Update" : "Entry", icon: isEditing ? Edit : Plus },
-    { id: "teachers", label: "Teachers", icon: Users },
-    { id: "revenue", label: "Accounts", icon: Wallet },
+    { id: "dashboard", label: "হোম", icon: Home },
+    { id: "stats", label: "পরিসংখ্যান", icon: BarChart2 },
+    { id: "add", label: isEditing ? "আপডেট" : "এন্ট্রি", icon: isEditing ? Edit : Plus },
+    { id: "teachers", label: "শিক্ষক", icon: GraduationCap },
+    { id: "revenue", label: "হিসাব", icon: Wallet },
   ];
 
   return (
