@@ -134,7 +134,7 @@ export const Login = ({ user, onLogin, onLogout, deals = [], isDarkMode, toggleD
               Kishoreganj's Premier Tuition Media
             </div>
             
-            <h1 className="text-3xl sm:text-5xl md:text-7xl lg:text-8xl font-black text-slate-900 dark:text-white leading-[1.1] sm:leading-[0.95] mb-6 sm:mb-8 tracking-normal text-balance">
+            <h1 className="text-3xl sm:text-5xl md:text-7xl lg:text-8xl font-black text-slate-900 dark:text-white leading-[1.1] sm:leading-[0.95] mb-6 sm:mb-8 tracking-wide [word-spacing:0.1em] text-balance">
               আপনার সন্তানের <br />
               <span className="text-emerald-600 italic">ভবিষ্যৎ</span> গড়ুন
             </h1>
