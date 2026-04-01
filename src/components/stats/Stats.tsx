@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from "react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend, BarChart, Bar, XAxis, YAxis, CartesianGrid, LineChart, Line } from "recharts";
 import { Deal, Teacher } from "../../types";
-import { TrendingUp, TrendingDown, Users, BookOpen, CheckCircle, XCircle, GraduationCap, MapPin, Award, Calendar, BarChart3, LineChart as LineChartIcon } from "lucide-react";
+import { TrendingUp, TrendingDown, Users, BookOpen, CheckCircle, XCircle, GraduationCap, MapPin, Award, Calendar, BarChart3, LineChart as LineChartIcon, ChevronDown } from "lucide-react";
 import { TuitionUpdatePost } from "./TuitionUpdatePost";
 import { cn } from "../../lib/utils";
 
@@ -112,7 +112,7 @@ export const Stats: React.FC<StatsProps> = ({ deals, teachers, onResetDemo }) =>
       recentTuitions,
       monthlyTrends
     };
-  }, [deals, teachers, selectedYear]);
+  }, [deals, teachers, selectedYear, selectedMonth]);
 
   return (
     <div className="space-y-6 pb-8 transition-colors">
@@ -402,7 +402,7 @@ export const Stats: React.FC<StatsProps> = ({ deals, teachers, onResetDemo }) =>
         </div>
 
         <div className="flex items-baseline gap-4 mb-4">
-          <div className="text-6xl font-black text-rose-600 dark:text-rose-500 tracking-tighter">
+          <div className="text-4xl sm:text-6xl font-black text-rose-600 dark:text-rose-500 tracking-tighter">
             ৳{stats.commissionLoss.toLocaleString()}
           </div>
           {stats.commissionLoss > 0 && (

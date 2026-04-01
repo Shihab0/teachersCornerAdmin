@@ -1,15 +1,17 @@
 import { Icon } from "../ui/Icon";
-import { Home, Plus, Wallet, Edit, BarChart2, Users, ClipboardList, UserCheck, GraduationCap } from "lucide-react";
+import { Home, Plus, Edit, BarChart2, Wallet, GraduationCap } from "lucide-react";
+import { useStore } from "../../store/useStore";
 import { Tab } from "../../types";
 
 interface FooterProps {
-  activeTab: Tab;
-  setActiveTab: (tab: Tab) => void;
   isEditing: boolean;
   onEntryClick: () => void;
+  onInstall: () => void;
 }
 
-export const Footer = ({ activeTab, setActiveTab, isEditing, onEntryClick }: FooterProps) => {
+export const Footer = ({ isEditing, onEntryClick, onInstall }: FooterProps) => {
+  const { activeTab, setActiveTab } = useStore();
+
   const tabs: { id: Tab; label: string; icon: any }[] = [
     { id: "dashboard", label: "হোম", icon: Home },
     { id: "stats", label: "পরিসংখ্যান", icon: BarChart2 },

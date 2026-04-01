@@ -1,9 +1,10 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { X, User, Phone, School, MapPin, Star, Check, Image as ImageIcon, BookOpen, Briefcase, GraduationCap, Award, Facebook, IdCard, Loader2 } from "lucide-react";
+import { X, User, Phone, School, MapPin, Star, Check, Image as ImageIcon, BookOpen, Briefcase, GraduationCap, Award, Facebook, IdCard, Loader2, ChevronRight, ChevronLeft } from "lucide-react";
 import { Icon } from "../ui/Icon";
 import { Teacher } from "../../types";
 import { toast } from "sonner";
+import { useStore } from "../../store/useStore";
 
 const KISHOREGANJ_AREAS = [
   "Harua (হারুয়া)", "Rathkhola (রথখোলা)", "Gaital (গাইট্যাল)", "Botrish (বত্রিশ)",
@@ -29,20 +30,26 @@ const HONOURS_SUBJECTS = [
 ];
 
 interface TeacherModalProps {
-  isOpen: boolean;
-  onClose: () => void;
   onAdd: (teacher: Partial<Teacher>) => void;
   title?: string;
   buttonText?: string;
+  isOpen?: boolean;
+  onClose?: () => void;
 }
 
 export const TeacherModal: React.FC<TeacherModalProps> = ({ 
-  isOpen, 
-  onClose, 
   onAdd,
   title = "নতুন শিক্ষক যোগ করুন",
-  buttonText = "শিক্ষক যোগ করুন"
+  buttonText = "শিক্ষক যোগ করুন",
+  isOpen: propIsOpen,
+  onClose: propOnClose
 }) => {
+  const { isTeacherModalOpen, setIsTeacherModalOpen } = useStore();
+  const isOpen = propIsOpen !== undefined ? propIsOpen : isTeacherModalOpen;
+  const onClose = propOnClose || (() => setIsTeacherModalOpen(false));
+  
+  const [step, setStep] = useState(1);
+  const totalSteps = 4;
   const years = Array.from({length: 2030 - 2010 + 1}, (_, i) => (2030 - i).toString());
 
   const [formData, setFormData] = useState({
@@ -85,10 +92,7 @@ export const TeacherModal: React.FC<TeacherModalProps> = ({
     }
   };
 
-  if (!isOpen) return null;
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async () => {
     setIsSubmitting(true);
     try {
       if (!/^01\d{9}$/.test(formData.phone)) {
@@ -127,23 +131,44 @@ export const TeacherModal: React.FC<TeacherModalProps> = ({
         createdAt: Date.now(),
       });
       
+      toast.success("শিক্ষক সফলভাবে যোগ করা হয়েছে!");
       setFormData({
         name: "", phone: "", photoUrl: "", collegeName: "", presentAddress: "", permanentAddress: "",
         sscYear: "", sscGroup: "", sscGpa: "", hscYear: "", hscGroup: "", hscGpa: "",
         honoursYear: "", honoursSubject: "", honoursStudyYear: "", honoursGpa: "",
         experience: "", hasCurrentTuition: false, interestedSubjectsAndClasses: "", 
-        isMedical: false, medicalInstitution: "", isPublicUniversity: false, publicUniversityName: "", canTeachHSC: false, hscSubject: "", facebookLink: "", studentIdUrl: "", rating: "5.0",
+        isMedical: false, medicalInstitution: "", isPublicUniversity: false, 
+        publicUniversityName: "", canTeachHSC: false, hscSubject: "", 
+        facebookLink: "", studentIdUrl: "", rating: "5.0"
       });
-      setCustomCollege("");
-      setCustomPresentAddress("");
-      setCustomHonoursSubject("");
+      setStep(1);
       onClose();
     } catch (error) {
-      console.error("Error submitting teacher form:", error);
+      toast.error("কিছু সমস্যা হয়েছে। আবার চেষ্টা করুন।");
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  const nextStep = () => {
+    if (step === 1) {
+      if (!formData.name || !formData.phone || !formData.collegeName) {
+        toast.error("অনুগ্রহ করে সব তারকা চিহ্নিত (*) তথ্য পূরণ করুন");
+        return;
+      }
+    }
+    if (step === 2) {
+      if (!formData.presentAddress || !formData.permanentAddress) {
+        toast.error("অনুগ্রহ করে ঠিকানা পূরণ করুন");
+        return;
+      }
+    }
+    setStep(s => Math.min(s + 1, totalSteps));
+  };
+
+  const prevStep = () => setStep(s => Math.max(s - 1, 1));
+
+  if (!isOpen) return null;
 
   return (
     <AnimatePresence>
@@ -153,330 +178,300 @@ export const TeacherModal: React.FC<TeacherModalProps> = ({
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            className="bg-white dark:bg-slate-900 w-full max-w-2xl rounded-[40px] shadow-2xl overflow-hidden relative"
+            className="bg-white dark:bg-slate-900 w-full max-w-2xl rounded-[40px] shadow-2xl overflow-hidden relative flex flex-col max-h-[90vh]"
           >
-            <div className="p-6 border-b border-slate-50 dark:border-slate-800 flex justify-between items-center bg-emerald-50/30 dark:bg-emerald-500/5">
+            {/* Header */}
+            <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-emerald-600 dark:bg-emerald-600 shrink-0">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 rounded-2xl flex items-center justify-center">
+                <div className="w-10 h-10 bg-white/20 text-white rounded-2xl flex items-center justify-center">
                   <GraduationCap className="w-6 h-6" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">{title}</h3>
-                  <p className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-widest">শিক্ষকদের জন্য</p>
+                  <h3 className="text-xl font-black text-white tracking-tight">{title}</h3>
+                  <p className="text-[10px] font-bold text-emerald-100 uppercase tracking-widest">ধাপ {step} / {totalSteps}</p>
                 </div>
               </div>
-              <button onClick={onClose} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors">
-                <X size={20} className="text-slate-400" />
+              <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition-colors">
+                <X size={20} className="text-white" />
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="p-6 space-y-6 max-h-[75vh] overflow-y-auto custom-scrollbar bg-white dark:bg-slate-900">
-          
-          {/* Basic Info */}
-          <div className="space-y-4">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="w-1.5 h-4 bg-emerald-500 rounded-full" />
-              <h4 className="text-xs font-black uppercase tracking-widest text-slate-400">১. প্রাথমিক তথ্য</h4>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-1">
-                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-4">নাম *</label>
-                <div className="relative">
-                  <Icon icon={User} size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-400" />
-                  <input required type="text" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} className="w-full pl-12 pr-4 py-3 bg-slate-50/50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800 focus:bg-white dark:focus:bg-slate-800 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 shadow-sm transition-all text-sm font-medium text-slate-800 dark:text-slate-200 placeholder:text-slate-400" placeholder="শিক্ষকের নাম" />
-                </div>
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-4">ফোন *</label>
-                <div className="relative">
-                  <Icon icon={Phone} size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-400" />
-                  <input required type="tel" value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })} className="w-full pl-12 pr-4 py-3 bg-slate-50/50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800 focus:bg-white dark:focus:bg-slate-800 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 shadow-sm transition-all text-sm font-medium text-slate-800 dark:text-slate-200 placeholder:text-slate-400" placeholder="ফোন নম্বর" />
-                </div>
-              </div>
+            {/* Progress Bar */}
+            <div className="w-full h-1.5 bg-slate-100 dark:bg-slate-800 shrink-0">
+              <motion.div 
+                initial={{ width: 0 }}
+                animate={{ width: `${(step / totalSteps) * 100}%` }}
+                className="h-full bg-emerald-500"
+              />
             </div>
 
-            <div className="grid grid-cols-1 gap-4">
-              <div className="space-y-1">
-                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-4">কলেজের নাম *</label>
-                <div className="relative">
-                  <Icon icon={School} size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-400" />
-                  <select required value={formData.collegeName} onChange={(e) => setFormData({ ...formData, collegeName: e.target.value })} className="w-full pl-12 pr-4 py-3 bg-slate-50/50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800 focus:bg-white dark:focus:bg-slate-800 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 shadow-sm transition-all text-sm font-medium text-slate-800 dark:text-slate-200 appearance-none">
-                    <option value="" disabled>কলেজ নির্বাচন করুন</option>
-                    {KISHOREGANJ_INSTITUTIONS.map(inst => <option key={inst} value={inst}>{inst}</option>)}
-                  </select>
-                </div>
-                {formData.collegeName === "Others" && (
-                  <div className="mt-2">
-                    <input required type="text" value={customCollege} onChange={(e) => setCustomCollege(e.target.value)} className="w-full px-4 py-3 bg-slate-50/50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800 focus:bg-white dark:focus:bg-slate-800 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 shadow-sm transition-all text-sm font-medium text-slate-800 dark:text-slate-200 placeholder:text-slate-400" placeholder="কলেজের নাম লিখুন" />
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
+            <div className="flex-1 overflow-y-auto custom-scrollbar p-6 bg-white dark:bg-slate-900">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={step}
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  transition={{ duration: 0.2 }}
+                  className="space-y-6"
+                >
+                  {step === 1 && (
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-2 mb-2">
+                        <div className="w-1.5 h-4 bg-emerald-500 rounded-full" />
+                        <h4 className="text-xs font-black uppercase tracking-widest text-slate-400">১. প্রাথমিক তথ্য</h4>
+                      </div>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-4">নাম *</label>
+                          <div className="relative">
+                            <Icon icon={User} size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-400" />
+                            <input required type="text" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} className="w-full pl-12 pr-4 py-3 bg-slate-50/50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800 focus:bg-white dark:focus:bg-slate-800 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 shadow-sm transition-all text-sm font-medium text-slate-800 dark:text-slate-200" placeholder="শিক্ষকের নাম" />
+                          </div>
+                        </div>
 
-          {/* Address */}
-          <div className="space-y-4">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="w-1.5 h-4 bg-emerald-500 rounded-full" />
-              <h4 className="text-xs font-black uppercase tracking-widest text-slate-400">২. ঠিকানা</h4>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-1">
-                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-4">বর্তমান ঠিকানা *</label>
-                <div className="relative">
-                  <Icon icon={MapPin} size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-400" />
-                  <select required value={formData.presentAddress} onChange={(e) => setFormData({ ...formData, presentAddress: e.target.value })} className="w-full pl-12 pr-4 py-3 bg-slate-50/50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800 focus:bg-white dark:focus:bg-slate-800 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 shadow-sm transition-all text-sm font-medium text-slate-800 dark:text-slate-200 appearance-none">
-                    <option value="" disabled>বর্তমান ঠিকানা নির্বাচন করুন</option>
-                    {KISHOREGANJ_AREAS.map(area => <option key={area} value={area}>{area}</option>)}
-                  </select>
-                </div>
-                {formData.presentAddress === "Others (অন্যান্য)" && (
-                  <div className="mt-2">
-                    <input required type="text" value={customPresentAddress} onChange={(e) => setCustomPresentAddress(e.target.value)} className="w-full px-4 py-3 bg-slate-50/50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800 focus:bg-white dark:focus:bg-slate-800 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 shadow-sm transition-all text-sm font-medium text-slate-800 dark:text-slate-200 placeholder:text-slate-400" placeholder="বর্তমান ঠিকানা লিখুন" />
-                  </div>
-                )}
-              </div>
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-4">ফোন *</label>
+                          <div className="relative">
+                            <Icon icon={Phone} size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-400" />
+                            <input required type="tel" value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })} className="w-full pl-12 pr-4 py-3 bg-slate-50/50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800 focus:bg-white dark:focus:bg-slate-800 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 shadow-sm transition-all text-sm font-medium text-slate-800 dark:text-slate-200" placeholder="ফোন নম্বর" />
+                          </div>
+                        </div>
+                      </div>
 
-              <div className="space-y-1">
-                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-4">স্থায়ী ঠিকানা *</label>
-                <div className="relative">
-                  <Icon icon={MapPin} size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-400" />
-                  <input required type="text" value={formData.permanentAddress} onChange={(e) => setFormData({ ...formData, permanentAddress: e.target.value })} className="w-full pl-12 pr-4 py-3 bg-slate-50/50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800 focus:bg-white dark:focus:bg-slate-800 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 shadow-sm transition-all text-sm font-medium text-slate-800 dark:text-slate-200 placeholder:text-slate-400" placeholder="স্থায়ী ঠিকানা" />
-                </div>
-              </div>
-            </div>
-          </div>
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-4">কলেজের নাম *</label>
+                        <div className="relative">
+                          <Icon icon={School} size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-400" />
+                          <select required value={formData.collegeName} onChange={(e) => setFormData({ ...formData, collegeName: e.target.value })} className="w-full pl-12 pr-4 py-3 bg-slate-50/50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800 focus:bg-white dark:focus:bg-slate-800 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 shadow-sm transition-all text-sm font-medium text-slate-800 dark:text-slate-200 appearance-none">
+                            <option value="" disabled>কলেজ নির্বাচন করুন</option>
+                            {KISHOREGANJ_INSTITUTIONS.map(inst => <option key={inst} value={inst}>{inst}</option>)}
+                          </select>
+                        </div>
+                        {formData.collegeName === "Others" && (
+                          <input required type="text" value={customCollege} onChange={(e) => setCustomCollege(e.target.value)} className="w-full mt-2 px-4 py-3 bg-slate-50/50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800 focus:bg-white dark:focus:bg-slate-800 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 shadow-sm transition-all text-sm font-medium text-slate-800 dark:text-slate-200" placeholder="কলেজের নাম লিখুন" />
+                        )}
+                      </div>
 
-          {/* Education */}
-          <div className="space-y-4">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="w-1.5 h-4 bg-emerald-500 rounded-full" />
-              <h4 className="text-xs font-black uppercase tracking-widest text-slate-400">৩. শিক্ষাগত যোগ্যতা</h4>
-            </div>
-            
-            {/* SSC */}
-            <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-2xl space-y-3">
-              <h5 className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-2"><GraduationCap size={14}/> SSC</h5>
-              <div className="grid grid-cols-3 gap-3">
-                <select value={formData.sscYear} onChange={e => setFormData({...formData, sscYear: e.target.value})} className="w-full px-4 py-2 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 transition-all text-xs font-medium text-slate-800 dark:text-slate-200 appearance-none">
-                  <option value="">পাসের সন</option>
-                  {years.map(y => <option key={y} value={y}>{y}</option>)}
-                </select>
-                <select value={formData.sscGroup} onChange={e => setFormData({...formData, sscGroup: e.target.value})} className="w-full px-4 py-2 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 transition-all text-xs font-medium text-slate-800 dark:text-slate-200 appearance-none">
-                  <option value="">গ্রুপ</option>
-                  {GROUPS.map(g => <option key={g} value={g}>{g}</option>)}
-                </select>
-                <input placeholder="GPA" value={formData.sscGpa} onChange={e => setFormData({...formData, sscGpa: e.target.value})} className="w-full px-4 py-2 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 transition-all text-xs font-medium text-slate-800 dark:text-slate-200 placeholder:text-slate-400" />
-              </div>
-            </div>
-
-            {/* HSC */}
-            <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-2xl space-y-3">
-              <h5 className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-2"><GraduationCap size={14}/> HSC</h5>
-              <div className="grid grid-cols-3 gap-3">
-                <select value={formData.hscYear} onChange={e => setFormData({...formData, hscYear: e.target.value})} className="w-full px-4 py-2 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 transition-all text-xs font-medium text-slate-800 dark:text-slate-200 appearance-none">
-                  <option value="">পাসের সন</option>
-                  {years.map(y => <option key={y} value={y}>{y}</option>)}
-                </select>
-                <select value={formData.hscGroup} onChange={e => setFormData({...formData, hscGroup: e.target.value})} className="w-full px-4 py-2 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 transition-all text-xs font-medium text-slate-800 dark:text-slate-200 appearance-none">
-                  <option value="">গ্রুপ</option>
-                  {GROUPS.map(g => <option key={g} value={g}>{g}</option>)}
-                </select>
-                <input placeholder="GPA" value={formData.hscGpa} onChange={e => setFormData({...formData, hscGpa: e.target.value})} className="w-full px-4 py-2 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 transition-all text-xs font-medium text-slate-800 dark:text-slate-200 placeholder:text-slate-400" />
-              </div>
-            </div>
-
-            {/* Honours */}
-            <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-2xl space-y-3">
-              <h5 className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-2"><GraduationCap size={14}/> Honours</h5>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                <select value={formData.honoursYear} onChange={e => setFormData({...formData, honoursYear: e.target.value})} className="w-full px-4 py-2 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 transition-all text-xs font-medium text-slate-800 dark:text-slate-200 appearance-none">
-                  <option value="">পাসের সন</option>
-                  {years.map(y => <option key={y} value={y}>{y}</option>)}
-                </select>
-                <div className="space-y-2">
-                  <select value={formData.honoursSubject} onChange={e => setFormData({...formData, honoursSubject: e.target.value})} className="w-full px-4 py-2 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 transition-all text-xs font-medium text-slate-800 dark:text-slate-200 appearance-none">
-                    <option value="">বিষয়</option>
-                    {HONOURS_SUBJECTS.map(s => <option key={s} value={s}>{s}</option>)}
-                  </select>
-                  {formData.honoursSubject === "Others" && (
-                    <input placeholder="বিষয় লিখুন" value={customHonoursSubject} onChange={e => setCustomHonoursSubject(e.target.value)} className="w-full px-4 py-2 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 transition-all text-xs font-medium text-slate-800 dark:text-slate-200 placeholder:text-slate-400" />
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-4">ছবি (অপশনাল)</label>
+                        <div className="relative">
+                          <label className="cursor-pointer flex flex-col items-center justify-center w-full h-32 bg-slate-50/50 dark:bg-slate-800/50 rounded-xl border-2 border-dashed border-slate-100 dark:border-slate-800 hover:bg-white dark:hover:bg-slate-800 hover:border-emerald-400 transition-colors">
+                            <div className="flex flex-col items-center justify-center">
+                              <Icon icon={ImageIcon} size={32} className="text-slate-400 mb-2" />
+                              <p className="text-sm font-medium text-slate-600 dark:text-slate-400">
+                                {formData.photoUrl ? "ছবি আপলোড হয়েছে" : "ক্লিক করে ছবি আপলোড করুন"}
+                              </p>
+                            </div>
+                            <input type="file" accept="image/*" className="hidden" onChange={(e) => handleImageUpload(e, 'photoUrl')} />
+                          </label>
+                        </div>
+                      </div>
+                    </div>
                   )}
-                </div>
-                <select value={formData.honoursStudyYear} onChange={e => setFormData({...formData, honoursStudyYear: e.target.value})} className="w-full px-4 py-2 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 transition-all text-xs font-medium text-slate-800 dark:text-slate-200 appearance-none">
-                  <option value="">বর্ষ</option>
-                  <option value="1st Year">1st Year</option>
-                  <option value="2nd Year">2nd Year</option>
-                  <option value="3rd Year">3rd Year</option>
-                  <option value="4th Year">4th Year</option>
-                  <option value="Masters">Masters</option>
-                  <option value="Completed">Completed</option>
-                </select>
-                <input placeholder="GPA" value={formData.honoursGpa} onChange={e => setFormData({...formData, honoursGpa: e.target.value})} className="w-full px-4 py-2 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 transition-all text-xs font-medium text-slate-800 dark:text-slate-200 placeholder:text-slate-400" />
-              </div>
+
+                  {step === 2 && (
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-2 mb-2">
+                        <div className="w-1.5 h-4 bg-emerald-500 rounded-full" />
+                        <h4 className="text-xs font-black uppercase tracking-widest text-slate-400">২. ঠিকানা</h4>
+                      </div>
+                      <div className="space-y-4">
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-4">বর্তমান ঠিকানা *</label>
+                          <div className="relative">
+                            <Icon icon={MapPin} size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-400" />
+                            <select required value={formData.presentAddress} onChange={(e) => setFormData({ ...formData, presentAddress: e.target.value })} className="w-full pl-12 pr-4 py-3 bg-slate-50/50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800 focus:bg-white dark:focus:bg-slate-800 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 shadow-sm transition-all text-sm font-medium text-slate-800 dark:text-slate-200 appearance-none">
+                              <option value="" disabled>বর্তমান ঠিকানা নির্বাচন করুন</option>
+                              {KISHOREGANJ_AREAS.map(area => <option key={area} value={area}>{area}</option>)}
+                            </select>
+                          </div>
+                          {formData.presentAddress === "Others (অন্যান্য)" && (
+                            <input required type="text" value={customPresentAddress} onChange={(e) => setCustomPresentAddress(e.target.value)} className="w-full mt-2 px-4 py-3 bg-slate-50/50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800 focus:bg-white dark:focus:bg-slate-800 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 shadow-sm transition-all text-sm font-medium text-slate-800 dark:text-slate-200" placeholder="বর্তমান ঠিকানা লিখুন" />
+                          )}
+                        </div>
+
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-4">স্থায়ী ঠিকানা *</label>
+                          <div className="relative">
+                            <Icon icon={MapPin} size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-400" />
+                            <input required type="text" value={formData.permanentAddress} onChange={(e) => setFormData({ ...formData, permanentAddress: e.target.value })} className="w-full pl-12 pr-4 py-3 bg-slate-50/50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800 focus:bg-white dark:focus:bg-slate-800 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 shadow-sm transition-all text-sm font-medium text-slate-800 dark:text-slate-200" placeholder="স্থায়ী ঠিকানা" />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {step === 3 && (
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-2 mb-2">
+                        <div className="w-1.5 h-4 bg-emerald-500 rounded-full" />
+                        <h4 className="text-xs font-black uppercase tracking-widest text-slate-400">৩. শিক্ষাগত যোগ্যতা</h4>
+                      </div>
+                      
+                      <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-2xl space-y-3">
+                        <h5 className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-2"><GraduationCap size={14}/> SSC</h5>
+                        <div className="grid grid-cols-3 gap-3">
+                          <select value={formData.sscYear} onChange={e => setFormData({...formData, sscYear: e.target.value})} className="w-full px-4 py-2 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-medium text-slate-800 dark:text-slate-200 appearance-none">
+                            <option value="">পাসের সন</option>
+                            {years.map(y => <option key={y} value={y}>{y}</option>)}
+                          </select>
+                          <select value={formData.sscGroup} onChange={e => setFormData({...formData, sscGroup: e.target.value})} className="w-full px-4 py-2 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-medium text-slate-800 dark:text-slate-200 appearance-none">
+                            <option value="">গ্রুপ</option>
+                            {GROUPS.map(g => <option key={g} value={g}>{g}</option>)}
+                          </select>
+                          <input placeholder="GPA" value={formData.sscGpa} onChange={e => setFormData({...formData, sscGpa: e.target.value})} className="w-full px-4 py-2 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-medium text-slate-800 dark:text-slate-200" />
+                        </div>
+                      </div>
+
+                      <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-2xl space-y-3">
+                        <h5 className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-2"><GraduationCap size={14}/> HSC</h5>
+                        <div className="grid grid-cols-3 gap-3">
+                          <select value={formData.hscYear} onChange={e => setFormData({...formData, hscYear: e.target.value})} className="w-full px-4 py-2 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-medium text-slate-800 dark:text-slate-200 appearance-none">
+                            <option value="">পাসের সন</option>
+                            {years.map(y => <option key={y} value={y}>{y}</option>)}
+                          </select>
+                          <select value={formData.hscGroup} onChange={e => setFormData({...formData, hscGroup: e.target.value})} className="w-full px-4 py-2 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-medium text-slate-800 dark:text-slate-200 appearance-none">
+                            <option value="">গ্রুপ</option>
+                            {GROUPS.map(g => <option key={g} value={g}>{g}</option>)}
+                          </select>
+                          <input placeholder="GPA" value={formData.hscGpa} onChange={e => setFormData({...formData, hscGpa: e.target.value})} className="w-full px-4 py-2 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-medium text-slate-800 dark:text-slate-200" />
+                        </div>
+                      </div>
+
+                      <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-2xl space-y-3">
+                        <h5 className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-2"><GraduationCap size={14}/> Honours</h5>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                          <select value={formData.honoursYear} onChange={e => setFormData({...formData, honoursYear: e.target.value})} className="w-full px-4 py-2 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-medium text-slate-800 dark:text-slate-200 appearance-none">
+                            <option value="">পাসের সন</option>
+                            {years.map(y => <option key={y} value={y}>{y}</option>)}
+                          </select>
+                          <div className="space-y-2">
+                            <select value={formData.honoursSubject} onChange={e => setFormData({...formData, honoursSubject: e.target.value})} className="w-full px-4 py-2 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-medium text-slate-800 dark:text-slate-200 appearance-none">
+                              <option value="">বিষয়</option>
+                              {HONOURS_SUBJECTS.map(s => <option key={s} value={s}>{s}</option>)}
+                            </select>
+                            {formData.honoursSubject === "Others" && (
+                              <input placeholder="বিষয় লিখুন" value={customHonoursSubject} onChange={e => setCustomHonoursSubject(e.target.value)} className="w-full px-4 py-2 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-medium text-slate-800 dark:text-slate-200" />
+                            )}
+                          </div>
+                          <select value={formData.honoursStudyYear} onChange={e => setFormData({...formData, honoursStudyYear: e.target.value})} className="w-full px-4 py-2 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-medium text-slate-800 dark:text-slate-200 appearance-none">
+                            <option value="">বর্ষ</option>
+                            <option value="1st Year">1st Year</option>
+                            <option value="2nd Year">2nd Year</option>
+                            <option value="3rd Year">3rd Year</option>
+                            <option value="4th Year">4th Year</option>
+                            <option value="Masters">Masters</option>
+                            <option value="Completed">Completed</option>
+                          </select>
+                          <input placeholder="GPA" value={formData.honoursGpa} onChange={e => setFormData({...formData, honoursGpa: e.target.value})} className="w-full px-4 py-2 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-medium text-slate-800 dark:text-slate-200" />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {step === 4 && (
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-2 mb-2">
+                        <div className="w-1.5 h-4 bg-emerald-500 rounded-full" />
+                        <h4 className="text-xs font-black uppercase tracking-widest text-slate-400">৪. অন্যান্য তথ্য</h4>
+                      </div>
+                      
+                      <div className="grid grid-cols-1 gap-4">
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-4">অভিজ্ঞতা</label>
+                          <div className="relative">
+                            <Icon icon={Briefcase} size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-400" />
+                            <input type="text" value={formData.experience} onChange={(e) => setFormData({ ...formData, experience: e.target.value })} className="w-full pl-12 pr-4 py-3 bg-slate-50/50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800 text-sm font-medium text-slate-800 dark:text-slate-200" placeholder="উদা: ৩ বছরের অভিজ্ঞতা" />
+                          </div>
+                        </div>
+
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-4">যেসব বিষয়ে এবং শ্রেণীতে পড়াতে আগ্রহী</label>
+                          <div className="relative">
+                            <Icon icon={BookOpen} size={18} className="absolute left-4 top-4 text-emerald-400" />
+                            <textarea value={formData.interestedSubjectsAndClasses} onChange={(e) => setFormData({ ...formData, interestedSubjectsAndClasses: e.target.value })} className="w-full pl-12 pr-4 py-3 bg-slate-50/50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800 text-sm font-medium text-slate-800 dark:text-slate-200 min-h-[80px]" placeholder="উদা: ৯ম-১২শ শ্রেণী (পদার্থ, গণিত)" />
+                          </div>
+                        </div>
+
+                        <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-2xl space-y-3">
+                          <span className="text-sm font-bold text-slate-700 dark:text-slate-300 block">স্পেশাল ক্যাটাগরি</span>
+                          <div className="flex flex-wrap gap-4">
+                            <label className="flex items-center gap-2 cursor-pointer">
+                              <input type="checkbox" checked={formData.isMedical} onChange={(e) => setFormData({...formData, isMedical: e.target.checked})} className="w-4 h-4 text-emerald-600 rounded" />
+                              <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Medical</span>
+                            </label>
+                            <label className="flex items-center gap-2 cursor-pointer">
+                              <input type="checkbox" checked={formData.isPublicUniversity} onChange={(e) => setFormData({...formData, isPublicUniversity: e.target.checked})} className="w-4 h-4 text-emerald-600 rounded" />
+                              <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Public University</span>
+                            </label>
+                            <label className="flex items-center gap-2 cursor-pointer">
+                              <input type="checkbox" checked={formData.canTeachHSC} onChange={(e) => setFormData({...formData, canTeachHSC: e.target.checked})} className="w-4 h-4 text-emerald-600 rounded" />
+                              <span className="text-xs font-bold text-slate-700 dark:text-slate-300">HSC পড়াতে সক্ষম</span>
+                            </label>
+                          </div>
+                        </div>
+
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-4">ফেসবুক প্রোফাইল লিংক (অপশনাল)</label>
+                          <div className="relative">
+                            <Icon icon={Facebook} size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-400" />
+                            <input type="url" value={formData.facebookLink} onChange={(e) => setFormData({ ...formData, facebookLink: e.target.value })} className="w-full pl-12 pr-4 py-3 bg-slate-50/50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800 text-sm font-medium text-slate-800 dark:text-slate-200" placeholder="https://facebook.com/..." />
+                          </div>
+                        </div>
+
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-4">স্টুডেন্ট আইডি কার্ডের ছবি (অপশনাল)</label>
+                          <label className="cursor-pointer flex flex-col items-center justify-center w-full h-24 bg-slate-50/50 dark:bg-slate-800/50 rounded-xl border-2 border-dashed border-slate-100 dark:border-slate-800 hover:border-emerald-400 transition-colors">
+                            <Icon icon={IdCard} size={24} className="text-slate-400 mb-1" />
+                            <p className="text-xs font-medium text-slate-600 dark:text-slate-400">
+                              {formData.studentIdUrl ? "ছবি আপলোড হয়েছে" : "আইডি কার্ড আপলোড করুন"}
+                            </p>
+                            <input type="file" accept="image/*" className="hidden" onChange={(e) => handleImageUpload(e, 'studentIdUrl')} />
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </motion.div>
+              </AnimatePresence>
             </div>
-          </div>
 
-          {/* Special Category */}
-          <div className="space-y-4">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="w-1.5 h-4 bg-emerald-500 rounded-full" />
-              <h4 className="text-sm font-bold text-slate-700 dark:text-slate-300 flex items-center gap-2">
-                <Award size={16} /> স্পেশাল ক্যাটাগরি (অপশনাল)
-              </h4>
-            </div>
-            <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-2xl space-y-4">
-              <div className="flex flex-wrap gap-4">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <div className={`w-5 h-5 rounded flex items-center justify-center border-2 transition-colors ${formData.isMedical ? 'bg-emerald-500 border-emerald-500' : 'bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700'}`}>
-                    {formData.isMedical && <Check size={14} className="text-white" />}
-                  </div>
-                  <input type="checkbox" className="hidden" checked={formData.isMedical} onChange={(e) => setFormData({...formData, isMedical: e.target.checked})} />
-                  <span className="text-sm font-bold text-slate-700 dark:text-slate-300">Medical</span>
-                </label>
-
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <div className={`w-5 h-5 rounded flex items-center justify-center border-2 transition-colors ${formData.isPublicUniversity ? 'bg-emerald-500 border-emerald-500' : 'bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700'}`}>
-                    {formData.isPublicUniversity && <Check size={14} className="text-white" />}
-                  </div>
-                  <input type="checkbox" className="hidden" checked={formData.isPublicUniversity} onChange={(e) => setFormData({...formData, isPublicUniversity: e.target.checked})} />
-                  <span className="text-sm font-bold text-slate-700 dark:text-slate-300">Public University</span>
-                </label>
-
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <div className={`w-5 h-5 rounded flex items-center justify-center border-2 transition-colors ${formData.canTeachHSC ? 'bg-emerald-500 border-emerald-500' : 'bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700'}`}>
-                    {formData.canTeachHSC && <Check size={14} className="text-white" />}
-                  </div>
-                  <input type="checkbox" className="hidden" checked={formData.canTeachHSC} onChange={(e) => setFormData({...formData, canTeachHSC: e.target.checked})} />
-                  <span className="text-sm font-bold text-slate-700 dark:text-slate-300">HSC পড়াতে সক্ষম</span>
-                </label>
-              </div>
-
-              {formData.isMedical && (
-                <div className="animate-in fade-in slide-in-from-top-2 duration-200">
-                  <input 
-                    type="text" 
-                    placeholder="মেডিকেল কলেজের নাম লিখুন" 
-                    value={formData.medicalInstitution} 
-                    onChange={e => setFormData({...formData, medicalInstitution: e.target.value})} 
-                    className="w-full px-4 py-3 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 transition-all text-sm font-medium text-slate-800 dark:text-slate-200 placeholder:text-slate-400" 
-                  />
-                </div>
-              )}
-
-              {formData.isPublicUniversity && (
-                <div className="animate-in fade-in slide-in-from-top-2 duration-200">
-                  <input 
-                    type="text" 
-                    placeholder="পাবলিক বিশ্ববিদ্যালয়ের নাম লিখুন" 
-                    value={formData.publicUniversityName} 
-                    onChange={e => setFormData({...formData, publicUniversityName: e.target.value})} 
-                    className="w-full px-4 py-3 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 transition-all text-sm font-medium text-slate-800 dark:text-slate-200 placeholder:text-slate-400" 
-                  />
-                </div>
-              )}
-
-              {formData.canTeachHSC && (
-                <div className="animate-in fade-in slide-in-from-top-2 duration-200">
-                  <input 
-                    type="text" 
-                    placeholder="HSC এর কোন বিষয় পড়াতে সক্ষম? (উদা: পদার্থবিজ্ঞান, উচ্চতর গণিত)" 
-                    value={formData.hscSubject} 
-                    onChange={e => setFormData({...formData, hscSubject: e.target.value})} 
-                    className="w-full px-4 py-3 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 transition-all text-sm font-medium text-slate-800 dark:text-slate-200 placeholder:text-slate-400" 
-                  />
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Experience & Others */}
-          <div className="space-y-4">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="w-1.5 h-4 bg-emerald-500 rounded-full" />
-              <h4 className="text-xs font-black uppercase tracking-widest text-slate-400">৪. অন্যান্য তথ্য</h4>
-            </div>
-            
-            <div className="space-y-1">
-              <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-4">অভিজ্ঞতা</label>
-              <div className="relative">
-                <Icon icon={Briefcase} size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-400" />
-                <input type="text" value={formData.experience} onChange={(e) => setFormData({ ...formData, experience: e.target.value })} className="w-full pl-12 pr-4 py-3 bg-slate-50/50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800 focus:bg-white dark:focus:bg-slate-800 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 shadow-sm transition-all text-sm font-medium text-slate-800 dark:text-slate-200 placeholder:text-slate-400" placeholder="উদা: ৩ বছরের অভিজ্ঞতা" />
-              </div>
-            </div>
-
-            <div className="space-y-1">
-              <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-4">যেসব বিষয়ে এবং শ্রেণীতে পড়াতে আগ্রহী</label>
-              <div className="relative">
-                <Icon icon={BookOpen} size={18} className="absolute left-4 top-4 text-emerald-400" />
-                <textarea value={formData.interestedSubjectsAndClasses} onChange={(e) => setFormData({ ...formData, interestedSubjectsAndClasses: e.target.value })} className="w-full pl-12 pr-4 py-3 bg-slate-50/50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800 focus:bg-white dark:focus:bg-slate-800 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 shadow-sm transition-all text-sm font-medium text-slate-800 dark:text-slate-200 placeholder:text-slate-400 min-h-[80px]" placeholder="উদা: ৯ম-১২শ শ্রেণী (পদার্থ, গণিত)" />
-              </div>
-            </div>
-
-            <div className="space-y-1">
-              <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-4">ফেসবুক প্রোফাইল লিংক / নাম (অপশনাল)</label>
-              <div className="relative">
-                <Icon icon={Facebook} size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-400" />
-                <input type="url" value={formData.facebookLink} onChange={(e) => setFormData({ ...formData, facebookLink: e.target.value })} className="w-full pl-12 pr-4 py-3 bg-slate-50/50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800 focus:bg-white dark:focus:bg-slate-800 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 shadow-sm transition-all text-sm font-medium text-slate-800 dark:text-slate-200 placeholder:text-slate-400" placeholder="https://facebook.com/..." />
-              </div>
-            </div>
-
-            <div className="space-y-1">
-              <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-4">স্টুডেন্ট আইডি কার্ডের ছবি (অপশনাল)</label>
-              <div className="relative">
-                <label className="cursor-pointer flex flex-col items-center justify-center w-full h-32 bg-slate-50/50 dark:bg-slate-800/50 rounded-xl border-2 border-dashed border-slate-100 dark:border-slate-800 hover:bg-white dark:hover:bg-slate-800 hover:border-emerald-400 transition-colors">
-                  <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                    <Icon icon={IdCard} size={32} className="text-slate-400 mb-2" />
-                    <p className="text-sm font-medium text-slate-600 dark:text-slate-400">
-                      {formData.studentIdUrl ? "ছবি আপলোড হয়েছে" : "ক্লিক করে ছবি আপলোড করুন"}
-                    </p>
-                  </div>
-                  <input type="file" accept="image/*" className="hidden" onChange={(e) => handleImageUpload(e, 'studentIdUrl')} />
-                </label>
-              </div>
-              <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium ml-4 mt-1">
-                * ভেরিফাইড টিচার ব্যাজ পেতে স্টুডেন্ট আইডি কার্ডের ছবি দিন।
-              </p>
-            </div>
-
-            <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-2xl space-y-3">
-              <span className="text-sm font-bold text-slate-700 dark:text-slate-300 block">বর্তমানে টিউশনি আছে কি?</span>
-              <div className="flex items-center gap-3">
+            {/* Footer Navigation */}
+            <div className="p-6 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 flex gap-3 shrink-0">
+              {step > 1 && (
                 <button
                   type="button"
-                  onClick={() => setFormData({ ...formData, hasCurrentTuition: true })}
-                  className={`flex-1 py-3 rounded-xl font-black text-xs uppercase tracking-widest transition-all border-2 ${
-                    formData.hasCurrentTuition ? "bg-emerald-50 dark:bg-emerald-500/10 border-emerald-500 text-emerald-600 dark:text-emerald-400" : "bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-800 text-slate-400 hover:border-slate-200 dark:hover:border-slate-700"
-                  }`}
+                  onClick={prevStep}
+                  className="flex-1 py-4 bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-slate-300 dark:hover:bg-slate-700 transition-all flex items-center justify-center gap-2"
                 >
-                  হ্যাঁ
+                  <ChevronLeft size={16} />
+                  পূর্ববর্তী
                 </button>
+              )}
+              {step < totalSteps ? (
                 <button
                   type="button"
-                  onClick={() => setFormData({ ...formData, hasCurrentTuition: false })}
-                  className={`flex-1 py-3 rounded-xl font-black text-xs uppercase tracking-widest transition-all border-2 ${
-                    !formData.hasCurrentTuition ? "bg-rose-50 dark:bg-rose-500/10 border-rose-500 text-rose-600 dark:text-rose-400" : "bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-800 text-slate-400 hover:border-slate-200 dark:hover:border-slate-700"
-                  }`}
+                  onClick={nextStep}
+                  className="flex-[2] py-4 bg-emerald-600 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-lg shadow-emerald-500/20 hover:bg-emerald-700 transition-all flex items-center justify-center gap-2"
                 >
-                  না
+                  পরবর্তী ধাপ
+                  <ChevronRight size={16} />
                 </button>
-              </div>
+              ) : (
+                <button
+                  onClick={handleSubmit}
+                  disabled={isSubmitting}
+                  className="flex-[2] py-4 bg-emerald-600 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-lg shadow-emerald-500/20 hover:bg-emerald-700 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                >
+                  {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
+                  {buttonText}
+                </button>
+              )}
             </div>
-          </div>
-
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="w-full py-4 bg-emerald-600 text-white rounded-[24px] font-black text-sm uppercase tracking-widest shadow-xl shadow-emerald-100 dark:shadow-none active:scale-95 transition-all mt-4 flex items-center justify-center gap-2 disabled:opacity-50"
-          >
-            {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
-            {buttonText}
-          </button>
-        </form>
-      </motion.div>
-    </div>
+          </motion.div>
+        </div>
       )}
     </AnimatePresence>
   );

@@ -1,3 +1,4 @@
+import { useStore } from "../../store/useStore";
 import type { ChangeEvent, FormEvent } from "react";
 import { Icon } from "../ui/Icon";
 import { Plus, Edit, CheckCircle, PlusCircle, Trash2 } from "lucide-react";
@@ -6,28 +7,27 @@ import { Deal } from "../../types";
 interface AddDealProps {
   isEditing: boolean;
   formData: any;
-  handleInputChange: (e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => void;
+  onInputChange: (e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => void;
   setFormData: (data: any) => void;
   idError: string;
   setIdError: (err: string) => void;
   onSubmit: (e: FormEvent) => void;
   onDelete: () => void;
   onCancel: () => void;
-  isProcessing?: boolean;
 }
 
 export const AddDeal = ({
   isEditing,
   formData,
-  handleInputChange,
+  onInputChange,
   setFormData,
   idError,
   setIdError,
   onSubmit,
   onDelete,
   onCancel,
-  isProcessing = false,
 }: AddDealProps) => {
+  const { isProcessing } = useStore();
   return (
     <div className="bg-white dark:bg-slate-900 p-8 rounded-[40px] card-shadow border border-slate-100 dark:border-slate-800/50 transition-all fade-in">
       <h2 className="text-xl font-black mb-8 flex items-center text-slate-800 dark:text-white uppercase tracking-tight">
@@ -49,7 +49,7 @@ export const AddDeal = ({
                 name="tuitionId"
                 value={formData.tuitionId}
                 onChange={(e) => {
-                  handleInputChange(e);
+                  onInputChange(e);
                   setIdError("");
                 }}
                 className={`w-full border border-slate-200 dark:border-slate-700 rounded-r-2xl p-4 text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 bg-white dark:bg-slate-900 dark:text-white font-bold outline-none transition-all ${
@@ -83,7 +83,7 @@ export const AddDeal = ({
               disabled={formData.isTutorNotSelected}
               name="tutorName"
               value={formData.tutorName}
-              onChange={handleInputChange}
+              onChange={onInputChange}
               className="w-full p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl text-sm font-medium focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 dark:text-white disabled:opacity-50 outline-none transition-all"
               placeholder="টিউটরের নাম *"
             />
@@ -93,7 +93,7 @@ export const AddDeal = ({
               type="tel"
               name="tutorPhone"
               value={formData.tutorPhone}
-              onChange={handleInputChange}
+              onChange={onInputChange}
               className="w-full p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl text-sm font-medium focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 dark:text-white disabled:opacity-50 outline-none transition-all"
               placeholder="টিউটরের মোবাইল *"
             />
@@ -102,14 +102,14 @@ export const AddDeal = ({
               type="tel"
               name="guardianPhone"
               value={formData.guardianPhone}
-              onChange={handleInputChange}
+              onChange={onInputChange}
               className="w-full p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl text-sm font-medium focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 dark:text-white outline-none transition-all"
               placeholder="অভিভাবকের মোবাইল *"
             />
             <input
               name="referrerName"
               value={formData.referrerName}
-              onChange={handleInputChange}
+              onChange={onInputChange}
               className="w-full p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl text-sm font-medium focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 dark:text-white outline-none transition-all"
               placeholder="রেফারারের নাম (যদি থাকে)"
             />
@@ -122,7 +122,7 @@ export const AddDeal = ({
               required
               name="studentClass"
               value={formData.studentClass}
-              onChange={handleInputChange}
+              onChange={onInputChange}
               className="w-full p-4 bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 rounded-2xl text-[11px] font-black text-slate-800 dark:text-slate-200 outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 appearance-none transition-all uppercase tracking-widest"
             >
               <option value="" disabled>
@@ -153,7 +153,7 @@ export const AddDeal = ({
             required
             name="details"
             value={formData.details}
-            onChange={handleInputChange}
+            onChange={onInputChange}
             className="w-full p-4 bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 rounded-2xl text-[11px] font-black text-slate-800 dark:text-slate-200 outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all uppercase tracking-widest"
             placeholder="বিষয় *"
           />
@@ -166,7 +166,7 @@ export const AddDeal = ({
               type="number"
               name="commission"
               value={formData.commission}
-              onChange={handleInputChange}
+              onChange={onInputChange}
               className="w-full p-4 bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 rounded-2xl text-sm font-black text-emerald-600 dark:text-emerald-400 outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
               placeholder="কমিশন (৳) *"
             />
@@ -175,7 +175,7 @@ export const AddDeal = ({
             required
             name="adminName"
             value={formData.adminName}
-            onChange={handleInputChange}
+            onChange={onInputChange}
             className="w-full p-4 bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 rounded-2xl text-[11px] font-black text-slate-800 dark:text-slate-200 outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 appearance-none transition-all uppercase tracking-widest"
           >
             <option value="" disabled>
@@ -194,7 +194,7 @@ export const AddDeal = ({
               type="date"
               name="selectionDate"
               value={formData.selectionDate}
-              onChange={handleInputChange}
+              onChange={onInputChange}
               className="w-full p-4 bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 rounded-2xl text-xs font-bold text-slate-800 dark:text-slate-200 outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
             />
           </div>
@@ -204,7 +204,7 @@ export const AddDeal = ({
               type="date"
               name="confirmDate"
               value={formData.confirmDate}
-              onChange={handleInputChange}
+              onChange={onInputChange}
               className="w-full p-4 bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 rounded-2xl text-xs font-bold text-slate-800 dark:text-slate-200 outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
             />
           </div>
@@ -216,7 +216,7 @@ export const AddDeal = ({
             <select
               name="tuitionStatus"
               value={formData.tuitionStatus}
-              onChange={handleInputChange}
+              onChange={onInputChange}
               className="w-full p-3.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-[10px] font-black text-slate-800 dark:text-slate-200 outline-none appearance-none uppercase tracking-widest"
             >
               <option value="Processing">Processing</option>
@@ -231,7 +231,7 @@ export const AddDeal = ({
             <select
               name="commissionStatus"
               value={formData.commissionStatus}
-              onChange={handleInputChange}
+              onChange={onInputChange}
               className="w-full p-3.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-[10px] font-black text-slate-800 dark:text-slate-200 outline-none appearance-none uppercase tracking-widest"
             >
               <option value="Pending">Pending</option>

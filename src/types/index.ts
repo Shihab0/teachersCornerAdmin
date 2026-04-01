@@ -75,4 +75,4 @@ export interface TuitionRequest {
   createdAt: number;
 }
 
-export type Tab = "dashboard" | "add" | "revenue" | "stats" | "teachers" | "requests";
+export type Tab = "dashboard" | "add" | "revenue" | "stats" | "teachers" | "requests" | "admin_requests" | "admin_pending_teachers";

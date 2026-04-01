@@ -1,18 +1,18 @@
 import { Icon } from "../ui/Icon";
 import { X, History, Clock } from "lucide-react";
-import { HistoryEntry } from "../../types";
+import { useStore } from "../../store/useStore";
 
-interface HistoryModalProps {
-  title: string;
-  history: HistoryEntry[];
-  onClose: () => void;
-}
+export const HistoryModal = () => {
+  const { historyModalData, setHistoryModalData } = useStore();
 
-export const HistoryModal = ({ title, history, onClose }: HistoryModalProps) => {
+  if (!historyModalData) return null;
+
+  const { title, history } = historyModalData;
+
   return (
     <div
       className="fixed inset-0 bg-black/60 z-[100] flex items-end justify-center backdrop-blur-sm"
-      onClick={onClose}
+      onClick={() => setHistoryModalData(null)}
     >
       <div
         className="bg-white rounded-t-[40px] p-6 w-full max-w-md max-h-[80vh] overflow-y-auto animate-in slide-in-from-bottom-full duration-300"
@@ -24,7 +24,7 @@ export const HistoryModal = ({ title, history, onClose }: HistoryModalProps) => 
             {title}
           </h3>
           <button
-            onClick={onClose}
+            onClick={() => setHistoryModalData(null)}
             className="w-8 h-8 bg-gray-100 text-gray-500 rounded-full flex items-center justify-center active:scale-90"
           >
             <Icon icon={X} size={16} />

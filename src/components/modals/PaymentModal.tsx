@@ -1,12 +1,16 @@
 import { Icon } from "../ui/Icon";
 import { DollarSign, User } from "lucide-react";
+import { useStore } from "../../store/useStore";
 
 interface PaymentModalProps {
-  onProcess: (collector: string) => void;
-  onClose: () => void;
+  onConfirm: (collector: string) => void;
 }
 
-export const PaymentModal = ({ onProcess, onClose }: PaymentModalProps) => {
+export const PaymentModal = ({ onConfirm }: PaymentModalProps) => {
+  const { paymentModalDealId, setPaymentModalDealId } = useStore();
+
+  if (!paymentModalDealId) return null;
+
   return (
     <div className="fixed inset-0 bg-black/60 z-[100] flex items-center justify-center p-6 backdrop-blur-sm">
       <div className="bg-white rounded-[40px] p-8 max-w-xs w-full shadow-2xl animate-in zoom-in-95 duration-200 text-center">
@@ -20,20 +24,20 @@ export const PaymentModal = ({ onProcess, onClose }: PaymentModalProps) => {
 
         <div className="grid grid-cols-2 gap-3">
           <button
-            onClick={() => onProcess("Dipu")}
+            onClick={() => onConfirm("Dipu")}
             className="py-6 bg-cyan-50 text-cyan-700 font-black rounded-[24px] border border-cyan-100 flex flex-col items-center active:scale-95 transition-transform"
           >
             <Icon icon={User} size={24} className="mb-2" /> Dipu
           </button>
           <button
-            onClick={() => onProcess("Shimanto")}
+            onClick={() => onConfirm("Shimanto")}
             className="py-6 bg-amber-50 text-amber-700 font-black rounded-[24px] border border-amber-100 flex flex-col items-center active:scale-95 transition-transform"
           >
             <Icon icon={User} size={24} className="mb-2" /> Shimanto
           </button>
         </div>
         <button
-          onClick={onClose}
+          onClick={() => setPaymentModalDealId(null)}
           className="w-full mt-5 py-4 text-gray-400 font-black text-[10px] uppercase tracking-widest bg-gray-50 rounded-[20px] active:scale-95 transition-transform"
         >
           বাতিল

@@ -1,18 +1,15 @@
 import { Icon } from "../ui/Icon";
-import { Smartphone, LogOut, Moon, Sun, ClipboardList, Zap, Settings, User, ChevronDown, GraduationCap } from "lucide-react";
-import { User as FirebaseUser } from "firebase/auth";
-import { Tab } from "../../types";
+import { Smartphone, LogOut, Moon, Sun, ClipboardList, GraduationCap } from "lucide-react";
+import { useStore } from "../../store/useStore";
 
 interface HeaderProps {
-  user: FirebaseUser | null;
   onLogout: () => void;
   onInstall: () => void;
-  isDarkMode: boolean;
-  toggleDarkMode: () => void;
-  setActiveTab: (tab: Tab) => void;
 }
 
-export const Header = ({ user, onLogout, onInstall, isDarkMode, toggleDarkMode, setActiveTab }: HeaderProps) => {
+export const Header = ({ onLogout, onInstall }: HeaderProps) => {
+  const { user, isDarkMode, toggleDarkMode, setActiveTab } = useStore();
+
   return (
     <header className="glass sticky top-0 z-50 flex justify-between items-center p-4 pt-6 shadow-sm transition-all duration-500">
       <div className="flex items-center gap-2 cursor-pointer" onClick={() => setActiveTab("dashboard")}>
@@ -28,7 +25,7 @@ export const Header = ({ user, onLogout, onInstall, isDarkMode, toggleDarkMode, 
       </div>
       <div className="flex items-center space-x-2">
         <button
-          onClick={() => setActiveTab("requests")}
+          onClick={() => setActiveTab("admin_requests")}
           className="w-10 h-10 rounded-xl bg-slate-100/50 dark:bg-slate-800/50 flex items-center justify-center hover:bg-emerald-50 dark:hover:bg-emerald-900/20 text-slate-600 dark:text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition-all duration-300"
           title="Tuition Requests"
         >

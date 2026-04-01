@@ -1,68 +1,66 @@
 import React, { useState } from "react";
-import type { ChangeEvent, FormEvent } from "react";
 import { Icon } from "../ui/Icon";
 import {
-  Calendar,
   TrendingUp,
   Wallet,
   User,
-  Scale,
-  CheckCircle,
-  AlertTriangle,
   Receipt,
   Edit,
   History,
   Trash2,
   ChevronDown,
   ChevronUp,
-  RotateCcw
+  Download,
+  RotateCcw,
 } from "lucide-react";
 import { Expense, HistoryEntry } from "../../types";
 import { cn } from "../../lib/utils";
 import { ConfirmDialog } from "../modals/ConfirmDialog";
+import { useStore } from "../../store/useStore";
+import { useRevenue } from "../../hooks/useRevenue";
 
 interface RevenueProps {
-  revYear: string;
-  setRevYear: (y: string) => void;
-  revMonth: string;
-  setRevMonth: (m: string) => void;
-  revStats: any;
-  expenses: Expense[];
-  expenseForm: any;
-  handleExpenseChange: (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
-  handleAddExpense: (e: FormEvent) => void;
-  isEditingExpense: boolean;
-  setIsEditingExpense: (b: boolean) => void;
-  setExpenseForm: (f: any) => void;
-  onEditExpense: (exp: Expense) => void;
-  onDeleteExpense: (id: string) => void;
-  onHistoryClick: (data: { title: string; history: HistoryEntry[] }) => void;
-  isProcessing?: boolean;
+  onResetDemo: () => void;
+  onHistoryClick?: (data: { title: string; history: HistoryEntry[] }) => void;
 }
 
 export const Revenue = ({
-  revYear,
-  setRevYear,
-  revMonth,
-  setRevMonth,
-  revStats,
-  expenses,
-  expenseForm,
-  handleExpenseChange,
-  handleAddExpense,
-  isEditingExpense,
-  setIsEditingExpense,
-  setExpenseForm,
-  onEditExpense,
-  onDeleteExpense,
   onHistoryClick,
-  isProcessing = false,
+  onResetDemo,
 }: RevenueProps) => {
+  const {
+    revYear,
+    setRevYear,
+    revMonth,
+    setRevMonth,
+    expenses,
+    expenseForm,
+    setExpenseForm,
+    isEditingExpense,
+    setIsEditingExpense,
+    setEditExpenseId,
+    isProcessing,
+  } = useStore();
+
+  const {
+    revStats,
+    handleExpenseChange,
+    handleAddExpense,
+    handleEditExpenseClick,
+    deleteExpense,
+    exportToCSV,
+  } = useRevenue();
+
   const [showAllExpenses, setShowAllExpenses] = useState(false);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   const dNet = revStats.admins.Dipu - revStats.adminExps.Dipu;
   const sNet = revStats.admins.Shimanto - revStats.adminExps.Shimanto;
+  
+  const totalNet = Math.max(0, dNet) + Math.max(0, sNet);
+  const dWidth = totalNet > 0 ? (Math.max(0, dNet) / totalNet) * 100 : 50;
+  const sWidth = totalNet > 0 ? (Math.max(0, sNet) / totalNet) * 100 : 50;
+
   const diff = Math.abs(dNet - sNet) / 2;
   const isEq = dNet === sNet;
 
@@ -77,44 +75,55 @@ export const Revenue = ({
 
   return (
     <div className="space-y-6 fade-in">
-      <div className="flex flex-col gap-1 mb-8">
-        <div className="flex items-center justify-between">
-          <h2 className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter uppercase leading-none">
-            রেভিনিউ <span className="text-emerald-600 dark:text-emerald-400 italic font-serif lowercase tracking-normal">& খরচ</span>
-          </h2>
-          <div className="flex space-x-2 bg-slate-100 dark:bg-slate-800 p-1.5 rounded-xl border border-slate-200 dark:border-slate-700">
-            <select
-              value={revYear}
-              onChange={(e) => setRevYear(e.target.value)}
-              className="bg-transparent border-none text-[10px] font-black text-slate-600 dark:text-slate-400 outline-none cursor-pointer px-2 uppercase tracking-widest"
-            >
-              <option value="All">সব বছর</option>
-              <option value="2025">২০২৫</option>
-              <option value="2026">২০২৬</option>
-            </select>
-            <div className="w-px h-4 bg-slate-300 dark:bg-slate-700 self-center" />
-            <select
-              value={revMonth}
-              onChange={(e) => setRevMonth(e.target.value)}
-              className="bg-transparent border-none text-[10px] font-black text-slate-600 dark:text-slate-400 outline-none cursor-pointer px-2 uppercase tracking-widest"
-            >
-              <option value="All">সব মাস</option>
-              <option value="01">জানুয়ারি</option>
-              <option value="02">ফেব্রুয়ারি</option>
-              <option value="03">মার্চ</option>
-              <option value="04">এপ্রিল</option>
-              <option value="05">মে</option>
-              <option value="06">জুন</option>
-              <option value="07">জুলাই</option>
-              <option value="08">আগস্ট</option>
-              <option value="09">সেপ্টেম্বর</option>
-              <option value="10">অক্টোবর</option>
-              <option value="11">নভেম্বর</option>
-              <option value="12">ডিসেম্বর</option>
-            </select>
+      <div className="bg-white dark:bg-slate-900 p-8 rounded-[32px] border border-slate-100 dark:border-slate-800 shadow-sm mb-6 overflow-hidden relative">
+        <div className="absolute -right-20 -top-20 text-[20vw] font-black text-slate-50 dark:text-slate-800/20 select-none pointer-events-none tracking-tighter leading-none uppercase italic transform -rotate-12">
+          ACC
+        </div>
+        
+        <div className="relative z-10 flex flex-col gap-1">
+          <div className="flex items-center justify-between">
+            <h2 className="text-4xl md:text-6xl font-black text-slate-950 dark:text-white tracking-tighter uppercase leading-[0.85] transform -skew-x-6">
+              REVENUE <br />
+              <span className="text-emerald-600 dark:text-emerald-400 italic lowercase tracking-normal text-2xl md:text-4xl">& EXPENSE</span>
+            </h2>
+            <div className="flex flex-col items-end gap-4">
+              <div className="flex space-x-2 bg-slate-100 dark:bg-slate-800 p-1.5 rounded-xl border border-slate-200 dark:border-slate-700">
+                <select
+                  value={revYear}
+                  onChange={(e) => setRevYear(e.target.value)}
+                  className="bg-transparent border-none text-[10px] font-black text-slate-600 dark:text-slate-400 outline-none cursor-pointer px-2 uppercase tracking-widest"
+                >
+                  <option value="All">সব বছর</option>
+                  <option value="2025">২০২৫</option>
+                  <option value="2026">২০২৬</option>
+                </select>
+                <div className="w-px h-4 bg-slate-300 dark:bg-slate-700 self-center" />
+                <select
+                  value={revMonth}
+                  onChange={(e) => setRevMonth(e.target.value)}
+                  className="bg-transparent border-none text-[10px] font-black text-slate-600 dark:text-slate-400 outline-none cursor-pointer px-2 uppercase tracking-widest"
+                >
+                  <option value="All">সব মাস</option>
+                  <option value="01">জানুয়ারি</option>
+                  <option value="02">ফেব্রুয়ারি</option>
+                  <option value="03">মার্চ</option>
+                  <option value="04">এপ্রিল</option>
+                  <option value="05">মে</option>
+                  <option value="06">জুন</option>
+                  <option value="07">জুলাই</option>
+                  <option value="08">আগস্ট</option>
+                  <option value="09">সেপ্টেম্বর</option>
+                  <option value="10">অক্টোবর</option>
+                  <option value="11">নভেম্বর</option>
+                  <option value="12">ডিসেম্বর</option>
+                </select>
+              </div>
+              <div className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.3em] vertical-rl transform rotate-180">
+                FINANCIAL OVERVIEW 2026
+              </div>
+            </div>
           </div>
         </div>
-        <div className="h-px bg-slate-200 dark:bg-slate-800 w-full mt-3" />
       </div>
 
       <div className="bg-slate-900 dark:bg-slate-900 p-10 rounded-[48px] text-white shadow-2xl relative overflow-hidden border border-white/5">
@@ -168,23 +177,41 @@ export const Revenue = ({
       </div>
 
       <div className="bg-white dark:bg-slate-900 p-8 rounded-[40px] card-shadow border border-slate-100 dark:border-slate-800/50">
-        <h3 className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.3em] mb-8 flex items-center">
-          <div className="p-2 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl mr-3">
-            <Wallet size={16} className="text-emerald-600 dark:text-emerald-400" />
+        <div className="flex justify-between items-center mb-8">
+          <h3 className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.3em] flex items-center">
+            <div className="p-2 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl mr-3">
+              <Wallet size={16} className="text-emerald-600 dark:text-emerald-400" />
+            </div>
+            অ্যাডমিন ভিত্তিক হিসাব
+          </h3>
+          <div className="flex gap-2">
+            <button
+              onClick={exportToCSV}
+              className="p-2 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-xl hover:bg-emerald-500 hover:text-white transition-all"
+              title="Export CSV"
+            >
+              <Download size={16} />
+            </button>
+            <button
+              onClick={onResetDemo}
+              className="p-2 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-xl hover:bg-rose-500 hover:text-white transition-all"
+              title="Reset Demo Data"
+            >
+              <RotateCcw size={16} />
+            </button>
           </div>
-          অ্যাডমিন ভিত্তিক হিসাব
-        </h3>
+        </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           {["Dipu", "Shimanto"].map((admin) => {
             const net = revStats.admins[admin] - revStats.adminExps[admin];
             return (
               <div key={admin} className="bg-slate-50 dark:bg-slate-800/30 p-6 rounded-[32px] border border-slate-100 dark:border-slate-800/50 group hover:border-emerald-200 dark:hover:border-emerald-800 transition-all">
-                <p className="font-black text-slate-800 dark:text-slate-200 text-base mb-5 flex items-center">
+                <div className="font-black text-slate-800 dark:text-slate-200 text-base mb-5 flex items-center">
                   <div className="p-1.5 bg-white dark:bg-slate-900 rounded-lg mr-3 shadow-sm border border-slate-100 dark:border-slate-800">
                     <Icon icon={User} size={14} className="text-slate-400 dark:text-slate-600" />
                   </div>
                   {admin}
-                </p>
+                </div>
                 <div className="grid grid-cols-2 gap-3 mb-5">
                   <div className="bg-white dark:bg-slate-900 p-3 rounded-2xl border border-slate-100 dark:border-slate-800 text-center shadow-sm">
                     <p className="text-[9px] text-slate-400 dark:text-slate-500 font-black uppercase mb-1 tracking-widest">রিসিভ (+)</p>
@@ -205,61 +232,95 @@ export const Revenue = ({
         </div>
       </div>
 
-      <div className="bg-white dark:bg-slate-900 p-8 rounded-[40px] card-shadow border border-slate-100 dark:border-slate-800/50">
-        <h3 className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.3em] mb-8 flex items-center">
-          <div className="p-2 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl mr-3">
-            <Scale size={16} className="text-emerald-600 dark:text-emerald-400" />
-          </div>
-          ব্যালেন্স স্কেল (Hardware View)
-        </h3>
-
-        <div className="mb-8 relative">
-          <div className="flex h-10 rounded-[20px] overflow-hidden bg-slate-100 dark:bg-slate-800 p-1.5 border-2 border-slate-200 dark:border-slate-700 shadow-inner">
-            <div
-              className="bg-emerald-500 h-full transition-all duration-1000 rounded-xl shadow-[0_0_20px_rgba(16,185,129,0.4)]"
-              style={{
-                width: `${
-                  (Math.max(0, dNet) / (Math.max(0, dNet) + Math.max(0, sNet) || 1)) * 100
-                }%`,
-              }}
-            ></div>
-            <div
-              className="bg-amber-500 h-full transition-all duration-1000 rounded-xl shadow-[0_0_20px_rgba(245,158,11,0.4)]"
-              style={{
-                width: `${
-                  (Math.max(0, sNet) / (Math.max(0, dNet) + Math.max(0, sNet) || 1)) * 100
-                }%`,
-              }}
-            ></div>
-          </div>
-          
-          <div className="grid grid-cols-2 gap-6 mt-6">
-            <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-[24px] border border-slate-100 dark:border-slate-800/50">
-              <p className="text-[9px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-[0.2em] mb-1">Dipu's Net</p>
-              <p className="text-2xl font-black text-slate-900 dark:text-white tracking-tighter">৳{dNet.toLocaleString()}</p>
-            </div>
-            <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-[24px] border border-slate-100 dark:border-slate-800/50 text-right">
-              <p className="text-[9px] font-black text-amber-600 dark:text-amber-400 uppercase tracking-[0.2em] mb-1">Shimanto's Net</p>
-              <p className="text-2xl font-black text-slate-900 dark:text-white tracking-tighter">৳{sNet.toLocaleString()}</p>
-            </div>
-          </div>
-
-          <div
-            className={cn(
-              "mt-8 p-6 rounded-[32px] text-center text-xs font-black border-2 leading-relaxed backdrop-blur-sm shadow-xl transition-all",
-              isEq 
-              ? "bg-emerald-50/50 dark:bg-emerald-950/10 text-emerald-700 dark:text-emerald-400 border-emerald-100 dark:border-emerald-900/20" 
-              : "bg-emerald-50/30 dark:bg-emerald-950/5 text-emerald-800 dark:text-emerald-300 border-emerald-100/50 dark:border-emerald-900/10"
-            )}
-          >
-            <div className="flex items-center justify-center gap-3 mb-3">
-              <div className={cn("w-2.5 h-2.5 rounded-full animate-pulse shadow-[0_0_10px_currentColor]", isEq ? "bg-emerald-500" : "bg-emerald-500/50")} />
-              <span className="text-[10px] uppercase tracking-[0.3em] opacity-60">Status Check</span>
-            </div>
-            {msg}
+      <div className="bg-white dark:bg-slate-900 p-6 sm:p-8 rounded-[40px] card-shadow border border-slate-100 dark:border-slate-800/50 relative overflow-hidden group">
+        <div className="absolute -right-20 -bottom-20 w-64 h-64 bg-emerald-500/5 rounded-full blur-[100px] pointer-events-none group-hover:bg-emerald-500/10 transition-all duration-1000"></div>
+        
+        <div className="flex justify-between items-center mb-8">
+          <h3 className="text-[10px] font-mono font-bold text-emerald-500/60 uppercase tracking-[0.5em] flex items-center">
+            <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full mr-3 animate-pulse shadow-[0_0_10px_#10b981]"></div>
+            BALANCE_SCALE_V3.0
+          </h3>
+          <div className="flex gap-1">
+            <div className="w-1 h-1 rounded-full bg-emerald-500/40"></div>
+            <div className="w-1 h-1 rounded-full bg-emerald-500/20"></div>
+            <div className="w-1 h-1 rounded-full bg-emerald-500/10"></div>
           </div>
         </div>
 
+        <div className="space-y-10 mb-8">
+          <div className="relative pt-4">
+            <div className="flex justify-between text-[10px] font-black uppercase tracking-widest mb-4">
+              <span className="text-emerald-600 dark:text-emerald-400">Dipu ({Math.round(dWidth)}%)</span>
+              <span className="text-amber-600 dark:text-amber-400">Shimanto ({Math.round(sWidth)}%)</span>
+            </div>
+            <div className="h-4 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden flex shadow-inner">
+              <div 
+                style={{ width: `${dWidth}%` }} 
+                className="h-full bg-emerald-500 transition-all duration-1000 ease-out relative"
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent to-white/10"></div>
+              </div>
+              <div 
+                style={{ width: `${sWidth}%` }} 
+                className="h-full bg-amber-500 transition-all duration-1000 ease-out relative"
+              >
+                <div className="absolute inset-0 bg-gradient-to-l from-transparent to-white/10"></div>
+              </div>
+            </div>
+            <div className="absolute left-1/2 top-0 -translate-x-1/2 h-full w-px bg-white/20 dark:bg-slate-900/20 z-10"></div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full">
+            <div className="p-5 bg-slate-50/50 dark:bg-white/5 rounded-3xl border border-slate-100 dark:border-white/10 relative group-hover:border-emerald-500/30 transition-all duration-500">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-[8px] font-mono text-slate-400 dark:text-white/20 uppercase tracking-widest">Admin_01 / Dipu</span>
+                <div className="w-2 h-2 rounded-full bg-emerald-500/20 flex items-center justify-center">
+                  <div className="w-1 h-1 rounded-full bg-emerald-500"></div>
+                </div>
+              </div>
+              <p className="text-[9px] font-bold text-emerald-600 dark:text-emerald-500 uppercase tracking-[0.2em] mb-1">Current_Net</p>
+              <p className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tighter truncate">
+                <span className="text-emerald-500/30 mr-1 text-lg font-light">৳</span>
+                {dNet.toLocaleString()}
+              </p>
+            </div>
+            
+            <div className="p-5 bg-slate-50/50 dark:bg-white/5 rounded-3xl border border-slate-100 dark:border-white/10 relative group-hover:border-amber-500/30 transition-all duration-500">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-[8px] font-mono text-slate-400 dark:text-white/20 uppercase tracking-widest">Admin_02 / Shimanto</span>
+                <div className="w-2 h-2 rounded-full bg-amber-500/20 flex items-center justify-center">
+                  <div className="w-1 h-1 rounded-full bg-amber-500"></div>
+                </div>
+              </div>
+              <p className="text-[9px] font-bold text-amber-600 dark:text-amber-500 uppercase tracking-[0.2em] mb-1">Current_Net</p>
+              <p className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tighter truncate">
+                <span className="text-amber-500/30 mr-1 text-lg font-light">৳</span>
+                {sNet.toLocaleString()}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div
+          className={cn(
+            "p-6 rounded-3xl text-center font-medium text-xs border border-dashed transition-all duration-700",
+            isEq 
+            ? "bg-emerald-500/5 text-emerald-600 dark:text-emerald-400 border-emerald-500/20" 
+            : "bg-slate-50 dark:bg-white/5 text-slate-600 dark:text-white/80 border-slate-100 dark:border-white/10"
+          )}
+        >
+          <div className="flex items-center justify-center gap-4 mb-3">
+            <div className={cn("w-1.5 h-1.5 rounded-full", isEq ? "bg-emerald-500 animate-ping" : "bg-slate-300 dark:bg-white/20")} />
+            <span className="text-[9px] uppercase tracking-[0.4em] text-slate-400 dark:text-white/30 font-bold">System_Status</span>
+            <div className={cn("w-1.5 h-1.5 rounded-full", isEq ? "bg-emerald-500 animate-ping" : "bg-slate-300 dark:bg-white/20")} />
+          </div>
+          <p className="text-sm leading-relaxed tracking-tight font-bold">
+            {msg}
+          </p>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <div
           className={cn(
             "p-8 rounded-[40px] border transition-all duration-300",
@@ -277,6 +338,7 @@ export const Revenue = ({
               <button
                 onClick={() => {
                   setIsEditingExpense(false);
+                  setEditExpenseId(null);
                   setExpenseForm({ adminName: "", amount: "", purpose: "" });
                 }}
                 className="text-[10px] font-black text-slate-400 dark:text-slate-500 bg-white dark:bg-slate-900 px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-800 uppercase tracking-widest hover:bg-slate-50 transition-colors"
@@ -370,7 +432,7 @@ export const Revenue = ({
                 </button>
                 <div className="flex space-x-2">
                   <button
-                    onClick={() => onEditExpense(exp)}
+                    onClick={() => handleEditExpenseClick(exp)}
                     className="p-2.5 bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400 rounded-xl active:scale-90 transition-all hover:bg-emerald-50 hover:text-emerald-600 border border-slate-100 dark:border-slate-800"
                   >
                     <Icon icon={Edit} size={16} />
@@ -411,7 +473,7 @@ export const Revenue = ({
         message="আপনি কি নিশ্চিতভাবে এই খরচটি ডিলিট করতে চান? এই কাজটি আর ফিরিয়ে আনা যাবে না।"
         onConfirm={() => {
           if (confirmDeleteId) {
-            onDeleteExpense(confirmDeleteId);
+            deleteExpense(confirmDeleteId);
             setConfirmDeleteId(null);
           }
         }}

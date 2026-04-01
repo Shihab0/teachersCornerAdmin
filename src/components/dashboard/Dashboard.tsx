@@ -16,51 +16,44 @@ import {
   Edit,
   Trash2,
   Undo,
-  Clock,
   Bell,
   X,
-  Zap,
-  ClipboardList,
 } from "lucide-react";
 import { Deal, HistoryEntry } from "../../types";
 import { cn } from "../../lib/utils";
-import { TuitionUpdatePost } from "../stats/TuitionUpdatePost";
+import { useStore } from "../../store/useStore";
+import { useTuitionDeals } from "../../hooks/useTuitionDeals";
 
 interface DashboardProps {
-  deals: Deal[];
-  searchQuery: string;
-  setSearchQuery: (q: string) => void;
-  filterTuitionStatus: string;
-  setFilterTuitionStatus: (s: string) => void;
-  filterCommissionStatus: string;
-  setFilterCommissionStatus: (s: string) => void;
-  exportToCSV: () => void;
   onEdit: (deal: Deal) => void;
   onDelete: (id: string) => void;
   onStatusChange: (id: string, status: string) => void;
   onHistoryClick: (data: { title: string; history: HistoryEntry[] }) => void;
-  onCommissionClick: (deal: Deal) => void;
+  onPayment: (id: string) => void;
   onUndoPayment: (deal: Deal) => void;
   onResetDemo: () => void;
 }
 
 export const Dashboard = ({
-  deals,
-  searchQuery,
-  setSearchQuery,
-  filterTuitionStatus,
-  setFilterTuitionStatus,
-  filterCommissionStatus,
-  setFilterCommissionStatus,
-  exportToCSV,
   onEdit,
   onDelete,
   onStatusChange,
   onHistoryClick,
-  onCommissionClick,
+  onPayment,
   onUndoPayment,
   onResetDemo,
 }: DashboardProps) => {
+  const { exportToCSV } = useTuitionDeals();
+  const {
+    deals,
+    searchQuery,
+    setSearchQuery,
+    filterTuitionStatus,
+    setFilterTuitionStatus,
+    filterCommissionStatus,
+    setFilterCommissionStatus,
+  } = useStore();
+
   const [visibleCount, setVisibleCount] = useState(20);
   const [expandedCardId, setExpandedCardId] = useState<string | null>(null);
   const [showNotifications, setShowNotifications] = useState(false);
@@ -142,37 +135,15 @@ export const Dashboard = ({
     }
   };
 
-  const recentTuitions = useMemo(() => {
-    return deals
-      .filter((d) => d.tuitionStatus === "Confirmed" || d.tuitionStatus === "Running")
-      .sort((a, b) => b.createdAt - a.createdAt)
-      .slice(0, 5);
-  }, [deals]);
-
   return (
     <div className="space-y-6 fade-in transition-colors pb-10">
-      {/* Recent Updates Section */}
-      {recentTuitions.length > 0 && (
-        <div className="mb-8 animate-in fade-in slide-in-from-top-4 duration-700">
-          <div className="flex items-center gap-2 mb-4 px-1">
-            <div className="p-1.5 bg-amber-100 dark:bg-amber-900/30 rounded-lg">
-              <Zap size={16} className="text-amber-600 dark:text-amber-400" />
-            </div>
-            <h2 className="text-sm font-black text-slate-800 dark:text-slate-200 uppercase tracking-wider">
-              Last 5 Tuition Updates
-            </h2>
-          </div>
-          <TuitionUpdatePost deals={recentTuitions} />
-        </div>
-      )}
-
       <div className="flex items-center space-x-3">
         <div className="relative flex-1 group">
           <Icon icon={Search} size={18} className="absolute left-4 top-3.5 text-emerald-500/50 group-focus-within:text-emerald-500 transition-colors" />
           <input
             type="text"
             placeholder="আইডি, টিউটর বা ক্লাস খুঁজুন..."
-            className="w-full pl-11 pr-4 py-3.5 bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500/50 text-sm font-medium outline-none transition-all dark:text-white"
+            className="w-full pl-11 pr-4 py-3 md:py-3.5 bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500/50 text-sm font-medium outline-none transition-all dark:text-white"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
@@ -213,13 +184,13 @@ export const Dashboard = ({
                       <p className="font-black text-slate-800 dark:text-white text-base mb-1 group-hover:text-amber-600 transition-colors">
                         {n.tutorName}
                       </p>
-                      <span className="text-[10px] bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 px-2.5 py-1 rounded-lg font-black border border-slate-200 dark:border-slate-700 uppercase tracking-widest">
+                      <span className="text-[10px] bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 px-2.5 py-1 rounded-lg font-black border border-slate-200 dark:border-slate-700 uppercase tracking-widest">
                         ID: {n.tuitionId}
                       </span>
                     </div>
                     <div className="text-right">
                       <span className="text-amber-600 dark:text-amber-400 font-black text-lg block leading-none mb-1">৳ {n.commission}</span>
-                      <span className="text-[9px] text-slate-400 font-black uppercase tracking-widest">Pending</span>
+                      <span className="text-[9px] text-slate-500 font-black uppercase tracking-widest">Pending</span>
                     </div>
                   </div>
                   <div className="flex space-x-3 pt-4 border-t border-slate-50 dark:border-slate-800">
@@ -293,13 +264,13 @@ export const Dashboard = ({
 
       <div>
         <div className="flex justify-between items-center mb-5 px-1">
-          <h3 className="text-sm font-black text-slate-800 dark:text-slate-200 flex items-center uppercase tracking-wider">
+          <h3 className="text-[11px] font-black text-slate-500 dark:text-slate-400 flex items-center uppercase tracking-[0.2em]">
             <div className="p-1.5 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg mr-3">
-              <Users size={16} className="text-emerald-600 dark:text-emerald-400" />
+              <Users size={14} className="text-emerald-600 dark:text-emerald-400" />
             </div>
-            টিউশন ম্যানেজমেন্ট
+            TUITION REQUEST
           </h3>
-          <span className="text-[10px] font-black bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 px-3 py-1 rounded-full border border-slate-200 dark:border-slate-700 uppercase tracking-widest">
+          <span className="text-[10px] font-black bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 px-3 py-1 rounded-full border border-slate-200 dark:border-slate-700 uppercase tracking-widest">
             {filteredDeals.length} রেকর্ড
           </span>
         </div>
@@ -312,10 +283,10 @@ export const Dashboard = ({
             >
               <div
                 onClick={() => setExpandedCardId(expandedCardId === deal.id ? null : deal.id)}
-                className="p-5 cursor-pointer select-none flex justify-between items-start"
+                className="p-4 md:p-5 cursor-pointer select-none flex justify-between items-start"
               >
                 <div className="flex-1 pr-3">
-                  <p className="font-black text-slate-800 dark:text-white text-base mb-2 flex items-center group-hover:text-emerald-600 transition-colors">
+                  <p className="font-black text-slate-800 dark:text-white text-sm md:text-base mb-2 flex items-center group-hover:text-emerald-600 transition-colors">
                     {deal.tutorName}
                     {deal.tutorName !== "এখনো সিলেক্ট হয়নি" && tutorCounts[deal.tutorPhone] > 1 && (
                       <span className="inline-flex items-center ml-3 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 text-[9px] px-2 py-0.5 rounded-full font-black border border-emerald-100 dark:border-emerald-900/20">
@@ -324,7 +295,7 @@ export const Dashboard = ({
                     )}
                   </p>
                   <div className="flex items-center flex-wrap gap-2">
-                    <span className="text-[10px] bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400 font-black px-2.5 py-1 rounded-lg flex items-center border border-slate-200 dark:border-slate-700 uppercase tracking-widest">
+                    <span className="text-[10px] bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-400 font-black px-2.5 py-1 rounded-lg flex items-center border border-slate-200 dark:border-slate-700 uppercase tracking-widest">
                       <Icon icon={Hash} size={10} className="mr-1" /> {deal.tuitionId || "N/A"}
                     </span>
                     <span className="text-[10px] font-black px-2.5 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 uppercase tracking-widest border border-emerald-100 dark:border-emerald-900/20">
@@ -353,7 +324,7 @@ export const Dashboard = ({
                     <Icon
                       icon={ChevronDown}
                       size={16}
-                      className={cn("text-slate-400 transition-transform duration-500", expandedCardId === deal.id && "rotate-180 text-emerald-500")}
+                      className={cn("text-slate-500 transition-transform duration-500", expandedCardId === deal.id && "rotate-180 text-emerald-500")}
                     />
                   </div>
                 </div>
@@ -380,7 +351,7 @@ export const Dashboard = ({
                         <Icon icon={Phone} size={14} className="mr-2" /> অভিভাবক
                       </a>
                       {deal.referrerName && (
-                        <span className="inline-flex items-center px-4 py-2 bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-2xl text-[11px] font-black border border-slate-200 dark:border-slate-700">
+                        <span className="inline-flex items-center px-4 py-2 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-400 rounded-2xl text-[11px] font-black border border-slate-200 dark:border-slate-700">
                           <Icon icon={User} size={14} className="mr-2" /> রেফ: {deal.referrerName}
                         </span>
                       )}
@@ -405,12 +376,12 @@ export const Dashboard = ({
                           </select>
                           <ChevronDown size={12} className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none opacity-50" />
                         </div>
-                        <span className="font-black bg-white dark:bg-slate-900 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 text-[10px] text-slate-500 dark:text-slate-400 shadow-sm uppercase tracking-widest">
+                        <span className="font-black bg-white dark:bg-slate-900 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 text-[10px] text-slate-600 dark:text-slate-400 shadow-sm uppercase tracking-widest">
                           ম্যানেজমেন্ট: {deal.adminName}
                         </span>
                       </div>
 
-                      <div className="flex justify-between text-[10px] font-black text-slate-500 mb-2 uppercase tracking-widest">
+                      <div className="flex justify-between text-[10px] font-black text-slate-600 mb-2 uppercase tracking-widest">
                         <span>টিউশন ডিউরেশন (১ মাস)</span>
                         <span className={cn(getProgress(deal).days >= 30 ? "text-emerald-600" : "text-emerald-500")}>
                           {getProgress(deal).days >= 30 ? "১ মাস পূর্ণ" : `${getProgress(deal).days} দিন`}
@@ -425,7 +396,7 @@ export const Dashboard = ({
                           style={{ width: `${getProgress(deal).percent}%` }}
                         ></div>
                       </div>
-                      <div className="text-xs text-slate-600 dark:text-slate-400 font-medium leading-relaxed">
+                      <div className="text-xs text-slate-700 dark:text-slate-400 font-medium leading-relaxed">
                         <span className="font-black text-slate-800 dark:text-slate-200">বিষয়:</span> {deal.details} <span className="mx-2 text-slate-300">•</span>{" "}
                         <span className="font-black text-slate-800 dark:text-slate-200">সিলেক্ট:</span> {deal.selectionDate}
                       </div>
@@ -448,7 +419,7 @@ export const Dashboard = ({
                       <div className="flex space-x-2">
                         <button
                           onClick={() => onEdit(deal)}
-                          className="p-3 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-2xl hover:bg-emerald-50 dark:hover:bg-emerald-900/20 hover:text-emerald-600 transition-all active:scale-95"
+                          className="p-3 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-400 rounded-2xl hover:bg-emerald-50 dark:hover:bg-emerald-900/20 hover:text-emerald-600 transition-all active:scale-95"
                         >
                           <Icon icon={Edit} size={18} />
                         </button>
@@ -470,7 +441,7 @@ export const Dashboard = ({
                           </button>
                         )}
                         <button
-                          onClick={() => onCommissionClick(deal)}
+                          onClick={() => onPayment(deal.id)}
                           disabled={deal.commissionStatus !== "Pending"}
                           className={cn(
                             "flex items-center text-[11px] px-5 py-3 rounded-2xl font-black text-white transition-all shadow-lg uppercase tracking-[0.15em]",
@@ -503,7 +474,7 @@ export const Dashboard = ({
               <div className="w-20 h-20 bg-slate-50 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-6">
                 <Icon icon={Search} size={32} className="text-slate-200 dark:text-slate-700" />
               </div>
-              <p className="text-slate-400 dark:text-slate-600 text-sm font-black uppercase tracking-widest mb-8">কোনো ডেটা পাওয়া যায়নি।</p>
+              <p className="text-slate-500 dark:text-slate-400 text-sm font-black uppercase tracking-widest mb-8">কোনো ডেটা পাওয়া যায়নি।</p>
               <button
                 onClick={onResetDemo}
                 className="px-8 py-4 bg-emerald-600 text-white rounded-[24px] font-black text-xs uppercase tracking-[0.2em] shadow-xl shadow-emerald-600/20 active:scale-95 transition-all"

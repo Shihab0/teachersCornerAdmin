@@ -2,12 +2,13 @@ import React, { useState } from "react";
 import { motion } from "motion/react";
 import { Icon } from "../ui/Icon";
 import { Toaster, toast } from "sonner";
+import { cn } from "../../lib/utils";
 import { 
   ShieldAlert, LogIn, Phone, ExternalLink, GraduationCap, Sparkles, 
   Loader2, MapPin, School, BookOpen, User, Briefcase, Award, 
   Facebook, IdCard, Check, Send, Heart, Users, Star, ArrowRight,
   ClipboardList, CheckCircle2, Info, Image as ImageIcon, Lightbulb,
-  Rocket, Target, X, Moon, Sun
+  Rocket, Target, X, Moon, Sun, ShieldCheck, Zap
 } from "lucide-react";
 import { User as FirebaseUser } from "firebase/auth";
 import { collection, addDoc } from "firebase/firestore";
@@ -78,38 +79,42 @@ export const Login = ({ user, onLogin, onLogout, deals = [], isDarkMode, toggleD
   };
 
   return (
-    <div className="min-h-screen bg-[#fdfdfd] dark:bg-[#020617] selection:bg-emerald-500/30 font-sans overflow-x-hidden transition-colors duration-500">
+    <div className={cn(
+      "min-h-screen bg-[#fdfdfd] dark:bg-[#020617] selection:bg-emerald-500/30 font-sans overflow-x-hidden transition-colors duration-500",
+      isDarkMode && "dark"
+    )}>
       <Toaster position="top-center" richColors />
       
       {/* Navigation */}
-      <header className="fixed top-0 left-0 right-0 z-50 glass border-b border-slate-100 dark:border-slate-800/50 px-6 py-4 transition-all duration-500">
+      <header className="fixed top-0 left-0 right-0 z-50 glass border-b border-slate-100 dark:border-slate-800/50 px-4 py-3 sm:px-6 sm:py-4 transition-all duration-500">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <motion.div 
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
-            className="flex items-center gap-3"
+            className="flex items-center gap-2 sm:gap-3"
           >
-            <div className="w-10 h-10 bg-emerald-600 rounded-2xl flex items-center justify-center shadow-lg shadow-emerald-200 dark:shadow-none rotate-3 hover:rotate-0 transition-transform">
-              <GraduationCap className="text-white w-6 h-6" />
+            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-emerald-600 rounded-xl sm:rounded-2xl flex items-center justify-center shadow-lg shadow-emerald-200 dark:shadow-none rotate-3 hover:rotate-0 transition-transform">
+              <GraduationCap className="text-white w-5 h-5 sm:w-6 sm:h-6" />
             </div>
-            <span className="text-xl font-black text-slate-900 dark:text-white tracking-tighter">
+            <span className="text-lg sm:text-xl font-black text-slate-900 dark:text-white tracking-tighter">
               Teacher's <span className="text-emerald-600">CORNER</span>
             </span>
           </motion.div>
           
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 sm:gap-4">
             <button
               onClick={toggleDarkMode}
-              className="w-11 h-11 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-2xl flex items-center justify-center hover:bg-slate-200 dark:hover:bg-slate-700 transition-all active:scale-90"
+              className="w-9 h-9 sm:w-11 sm:h-11 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-xl sm:rounded-2xl flex items-center justify-center hover:bg-slate-200 dark:hover:bg-slate-700 transition-all active:scale-90"
+              title={isDarkMode ? "Light Mode" : "Dark Mode"}
             >
-              {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
+              {isDarkMode ? <Sun size={18} /> : <Moon size={18} />}
             </button>
             <button
               onClick={handleLogin}
               disabled={isLoggingIn}
-              className="px-6 py-2.5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-slate-200 dark:shadow-none hover:bg-slate-800 dark:hover:bg-slate-100 transition-all active:scale-95 disabled:opacity-50 flex items-center gap-2"
+              className="px-4 py-2 sm:px-6 sm:py-2.5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-xl sm:rounded-2xl font-black text-[10px] sm:text-xs uppercase tracking-widest shadow-xl shadow-slate-200 dark:shadow-none hover:bg-slate-800 dark:hover:bg-slate-100 transition-all active:scale-95 disabled:opacity-50 flex items-center gap-2"
             >
-              {isLoggingIn ? <Loader2 className="w-4 h-4 animate-spin" /> : <LogIn className="w-4 h-4" />}
+              {isLoggingIn ? <Loader2 className="w-3 h-3 sm:w-4 sm:h-4 animate-spin" /> : <LogIn className="w-3 h-3 sm:w-4 sm:h-4" />}
               Admin
             </button>
           </div>
@@ -117,40 +122,40 @@ export const Login = ({ user, onLogin, onLogout, deals = [], isDarkMode, toggleD
       </header>
 
       {/* Hero Section - Split Layout Style */}
-      <section className="relative pt-32 pb-20 px-6 min-h-[90vh] flex items-center">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+      <section className="relative pt-24 sm:pt-32 pb-12 sm:pb-20 px-4 sm:px-6 min-h-[85vh] flex items-center">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
           >
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-full text-[10px] font-black uppercase tracking-[0.2em] mb-8 border border-emerald-100 dark:border-emerald-500/20">
-              <Sparkles className="w-3.5 h-3.5" />
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-full text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em] mb-6 sm:mb-8 border border-emerald-100 dark:border-emerald-500/20">
+              <Sparkles className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
               Kishoreganj's Premier Tuition Media
             </div>
             
-            <h1 className="text-5xl md:text-7xl lg:text-8xl font-black text-slate-900 dark:text-white leading-[0.95] mb-8 tracking-tighter text-balance">
+            <h1 className="text-3xl sm:text-5xl md:text-7xl lg:text-8xl font-black text-slate-900 dark:text-white leading-[1.1] sm:leading-[0.95] mb-6 sm:mb-8 tracking-normal text-balance">
               আপনার সন্তানের <br />
               <span className="text-emerald-600 italic">ভবিষ্যৎ</span> গড়ুন
             </h1>
             
-            <p className="text-lg md:text-xl text-slate-500 dark:text-slate-400 max-w-xl mb-12 font-medium leading-relaxed">
+            <p className="text-sm sm:text-base md:text-xl text-slate-500 dark:text-slate-400 max-w-xl mb-8 sm:mb-12 font-medium leading-relaxed tracking-tight sm:tracking-normal">
               কিশোরগঞ্জের অভিজ্ঞ এবং মেধাবী শিক্ষকদের সাথে সরাসরি যোগাযোগ। আপনার প্রয়োজন অনুযায়ী সেরা শিক্ষক খুঁজে পেতে আমরা আছি আপনার পাশে।
             </p>
 
             <div className="flex flex-col sm:flex-row items-center gap-4">
               <button
                 onClick={() => setShowGuardianModal(true)}
-                className="w-full sm:w-auto px-10 py-5 bg-emerald-600 text-white rounded-[28px] font-black text-sm uppercase tracking-widest shadow-2xl shadow-emerald-200 dark:shadow-none hover:bg-emerald-700 hover:-translate-y-1 transition-all active:scale-95 flex items-center justify-center gap-3"
+                className="w-full sm:w-auto px-8 py-4 sm:px-10 sm:py-5 bg-emerald-600 text-white rounded-2xl sm:rounded-[28px] font-black text-xs sm:text-sm uppercase tracking-widest shadow-2xl shadow-emerald-200 dark:shadow-none hover:bg-emerald-700 hover:-translate-y-1 transition-all active:scale-95 flex items-center justify-center gap-3"
               >
-                <Heart className="w-5 h-5" />
+                <Heart className="w-4 h-4 sm:w-5 sm:h-5" />
                 টিউটর প্রয়োজন
               </button>
               <button
                 onClick={() => setShowTeacherModal(true)}
-                className="w-full sm:w-auto px-10 py-5 bg-white dark:bg-slate-900 text-slate-900 dark:text-white border-2 border-slate-100 dark:border-slate-800 rounded-[28px] font-black text-sm uppercase tracking-widest hover:bg-slate-50 dark:hover:bg-slate-800 hover:-translate-y-1 transition-all active:scale-95 flex items-center justify-center gap-3"
+                className="w-full sm:w-auto px-8 py-4 sm:px-10 sm:py-5 bg-white dark:bg-slate-900 text-slate-900 dark:text-white border-2 border-slate-100 dark:border-slate-800 rounded-2xl sm:rounded-[28px] font-black text-xs sm:text-sm uppercase tracking-widest hover:bg-slate-50 dark:hover:bg-slate-800 hover:-translate-y-1 transition-all active:scale-95 flex items-center justify-center gap-3"
               >
-                <Users className="w-5 h-5" />
+                <Users className="w-4 h-4 sm:w-5 sm:h-5" />
                 শিক্ষক হিসেবে যোগ দিন
               </button>
             </div>
@@ -199,9 +204,9 @@ export const Login = ({ user, onLogin, onLogout, deals = [], isDarkMode, toggleD
       </section>
 
       {/* Stats Grid - Bento Style */}
-      <section className="py-24 px-6 bg-slate-50 dark:bg-slate-900/30 transition-colors">
+      <section className="py-12 sm:py-24 px-4 sm:px-6 bg-slate-50 dark:bg-slate-900/30 transition-colors">
         <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
             {[
               { label: "সফল টিউশন", value: "৫০০+", icon: CheckCircle2, color: "text-emerald-500", bg: "bg-emerald-50 dark:bg-emerald-500/10" },
               { label: "অভিজ্ঞ শিক্ষক", value: "১০০০+", icon: Users, color: "text-blue-500", bg: "bg-blue-50 dark:bg-blue-500/10" },
@@ -214,23 +219,48 @@ export const Login = ({ user, onLogin, onLogout, deals = [], isDarkMode, toggleD
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1 }}
-                className="bg-white dark:bg-slate-900 p-8 rounded-[40px] border border-slate-100 dark:border-slate-800 card-shadow group hover:-translate-y-2 transition-all duration-500"
+                className="bg-white dark:bg-slate-900 p-5 sm:p-8 rounded-2xl sm:rounded-[40px] border border-slate-100 dark:border-slate-800 card-shadow group hover:-translate-y-2 transition-all duration-500"
               >
-                <div className={`w-14 h-14 ${stat.bg} ${stat.color} rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform`}>
-                  <stat.icon className="w-7 h-7" />
+                <div className={`w-10 h-10 sm:w-14 sm:h-14 ${stat.bg} ${stat.color} rounded-xl sm:rounded-2xl flex items-center justify-center mb-4 sm:mb-6 group-hover:scale-110 transition-transform`}>
+                  <stat.icon className="w-5 h-5 sm:w-7 sm:h-7" />
                 </div>
-                <div className="text-4xl font-black text-slate-900 dark:text-white mb-2 tracking-tighter">{stat.value}</div>
-                <div className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em]">{stat.label}</div>
+                <div className="text-xl sm:text-4xl font-black text-slate-900 dark:text-white mb-1 sm:mb-2 sm:tracking-tighter">{stat.value}</div>
+                <div className="text-[10px] sm:text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.1em] sm:tracking-[0.2em]">{stat.label}</div>
               </motion.div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Features / Tips Section */}
-      <section className="py-32 px-6 relative overflow-hidden">
+      {/* Why Choose Us Section */}
+      <section className="py-20 md:py-32 px-6 bg-white dark:bg-[#020617] transition-colors duration-500">
         <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col md:flex-row justify-between items-end mb-20 gap-8">
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 md:mb-16 gap-6">
+            <div className="max-w-2xl">
+              <h2 className="text-3xl md:text-5xl lg:text-6xl font-black text-slate-900 dark:text-white sm:tracking-tighter mb-6 leading-none">
+                কেন আমাদের <br />
+                <span className="text-emerald-600">পছন্দ করবেন?</span>
+              </h2>
+              <p className="text-base md:text-lg text-slate-500 dark:text-slate-400 font-medium tracking-tight sm:tracking-normal">
+                আমরা শুধু টিউটর খুঁজে দেই না, আপনার সন্তানের উজ্জ্বল ভবিষ্যৎ নিশ্চিত করতে কাজ করি।
+              </p>
+            </div>
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
+                <Target size={24} />
+              </div>
+              <div className="w-12 h-12 rounded-2xl bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center text-blue-600 dark:text-blue-400">
+                <Rocket size={24} />
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Features / Tips Section */}
+      <section className="py-20 md:py-32 px-6 relative overflow-hidden">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex flex-col md:flex-row justify-between items-end mb-12 md:mb-20 gap-8">
             <div className="max-w-2xl">
               <motion.div
                 initial={{ opacity: 0, x: -20 }}
@@ -240,12 +270,12 @@ export const Login = ({ user, onLogin, onLogout, deals = [], isDarkMode, toggleD
                 <Lightbulb className="w-4 h-4" />
                 Learning Strategy
               </motion.div>
-              <h2 className="text-4xl md:text-6xl font-black text-slate-900 dark:text-white tracking-tighter leading-[1.1]">
+              <h2 className="text-3xl md:text-6xl font-black text-slate-900 dark:text-white tracking-tighter leading-[1.1]">
                 পড়াশোনায় ভালো করার <br />
                 <span className="text-emerald-600">গোপন টিপস</span>
               </h2>
             </div>
-            <p className="text-slate-500 dark:text-slate-400 font-medium max-w-sm mb-2">
+            <p className="text-sm md:text-base text-slate-500 dark:text-slate-400 font-medium max-w-sm mb-2">
               আমাদের অভিজ্ঞ শিক্ষকদের পরামর্শ অনুযায়ী পড়াশোনার সঠিক কৌশল অবলম্বন করলে সাফল্য নিশ্চিত।
             </p>
           </div>
@@ -298,28 +328,28 @@ export const Login = ({ user, onLogin, onLogout, deals = [], isDarkMode, toggleD
       </section>
 
       {/* CTA Section - Visual Cards */}
-      <section className="py-32 px-6 bg-slate-900 dark:bg-slate-950 relative overflow-hidden transition-colors duration-500">
-        <div className="absolute top-0 left-0 w-full h-full opacity-20 bg-[radial-gradient(#10b981_1px,transparent_1px)] [background-size:40px_40px]"></div>
+      <section className="py-20 md:py-32 px-6 bg-slate-50 dark:bg-slate-950 relative overflow-hidden transition-colors duration-500">
+        <div className="absolute top-0 left-0 w-full h-full opacity-5 dark:opacity-20 bg-[radial-gradient(#10b981_1px,transparent_1px)] [background-size:40px_40px]"></div>
         
         <div className="max-w-6xl mx-auto relative z-10">
-          <div className="text-center mb-20">
-            <h2 className="text-4xl md:text-6xl font-black text-white tracking-tighter mb-6">আমাদের সাথে <span className="text-emerald-400">যুক্ত হোন</span></h2>
-            <p className="text-slate-400 font-medium max-w-2xl mx-auto">অভিভাবক হিসেবে সেরা শিক্ষক খুঁজুন অথবা শিক্ষক হিসেবে আপনার ক্যারিয়ার শুরু করুন।</p>
+          <div className="text-center mb-12 md:mb-20">
+            <h2 className="text-3xl md:text-6xl font-black text-slate-900 dark:text-white tracking-tighter mb-6">আমাদের সাথে <span className="text-emerald-400">যুক্ত হোন</span></h2>
+            <p className="text-base md:text-lg text-slate-500 dark:text-slate-400 font-medium max-w-2xl mx-auto">অভিভাবক হিসেবে সেরা শিক্ষক খুঁজুন অথবা শিক্ষক হিসেবে আপনার ক্যারিয়ার শুরু করুন।</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <motion.div
               whileHover={{ y: -10 }}
-              className="bg-white/5 backdrop-blur-xl p-12 rounded-[60px] border border-white/10 flex flex-col items-center text-center group"
+              className="bg-white dark:bg-white/5 backdrop-blur-xl p-8 md:p-12 rounded-[40px] md:rounded-[60px] border border-slate-100 dark:border-white/10 flex flex-col items-center text-center group shadow-xl shadow-slate-200/50 dark:shadow-none"
             >
-              <div className="w-24 h-24 bg-rose-500/20 text-rose-400 rounded-[32px] flex items-center justify-center mb-8 group-hover:scale-110 transition-transform">
-                <Heart className="w-12 h-12" />
+              <div className="w-20 h-20 md:w-24 md:h-24 bg-rose-500/20 text-rose-400 rounded-[28px] md:rounded-[32px] flex items-center justify-center mb-6 md:mb-8 group-hover:scale-110 transition-transform">
+                <Heart className="w-10 h-10 md:w-12 md:h-12" />
               </div>
-              <h3 className="text-3xl font-black text-white mb-4 tracking-tight">অভিভাবকদের জন্য</h3>
-              <p className="text-slate-400 font-medium mb-10 leading-relaxed">আপনার সন্তানের জন্য সেরা শিক্ষক খুঁজে পেতে এখান থেকে রিকোয়েস্ট করুন। আমরা দ্রুত আপনার সাথে যোগাযোগ করব।</p>
+              <h3 className="text-2xl md:text-3xl font-black text-slate-900 dark:text-white mb-4 tracking-tight">অভিভাবকদের জন্য</h3>
+              <p className="text-sm md:text-base text-slate-500 dark:text-slate-400 font-medium mb-8 md:mb-10 leading-relaxed">আপনার সন্তানের জন্য সেরা শিক্ষক খুঁজে পেতে এখান থেকে রিকোয়েস্ট করুন। আমরা দ্রুত আপনার সাথে যোগাযোগ করব।</p>
               <button
                 onClick={() => setShowGuardianModal(true)}
-                className="px-10 py-5 bg-rose-600 text-white rounded-[24px] font-black text-xs uppercase tracking-widest hover:bg-rose-700 transition-all active:scale-95 flex items-center gap-3"
+                className="w-full sm:w-auto px-8 md:px-10 py-4 md:py-5 bg-rose-600 text-white rounded-[20px] md:rounded-[24px] font-black text-xs uppercase tracking-widest hover:bg-rose-700 transition-all active:scale-95 flex items-center justify-center gap-3"
               >
                 রিকোয়েস্ট করুন <ArrowRight className="w-4 h-4" />
               </button>
@@ -327,16 +357,16 @@ export const Login = ({ user, onLogin, onLogout, deals = [], isDarkMode, toggleD
 
             <motion.div
               whileHover={{ y: -10 }}
-              className="bg-white/5 backdrop-blur-xl p-12 rounded-[60px] border border-white/10 flex flex-col items-center text-center group"
+              className="bg-white dark:bg-white/5 backdrop-blur-xl p-8 md:p-12 rounded-[40px] md:rounded-[60px] border border-slate-100 dark:border-white/10 flex flex-col items-center text-center group shadow-xl shadow-slate-200/50 dark:shadow-none"
             >
-              <div className="w-24 h-24 bg-emerald-500/20 text-emerald-400 rounded-[32px] flex items-center justify-center mb-8 group-hover:scale-110 transition-transform">
-                <GraduationCap className="w-12 h-12" />
+              <div className="w-20 h-20 md:w-24 md:h-24 bg-emerald-500/20 text-emerald-400 rounded-[28px] md:rounded-[32px] flex items-center justify-center mb-6 md:mb-8 group-hover:scale-110 transition-transform">
+                <GraduationCap className="w-10 h-10 md:w-12 md:h-12" />
               </div>
-              <h3 className="text-3xl font-black text-white mb-4 tracking-tight">শিক্ষকদের জন্য</h3>
-              <p className="text-slate-400 font-medium mb-10 leading-relaxed">আমাদের সাথে শিক্ষক হিসেবে কাজ করতে চাইলে আপনার সিভি জমা দিন। কিশোরগঞ্জের সেরা টিউশনগুলো আপনার অপেক্ষায়।</p>
+              <h3 className="text-2xl md:text-3xl font-black text-slate-900 dark:text-white mb-4 tracking-tight">শিক্ষকদের জন্য</h3>
+              <p className="text-sm md:text-base text-slate-500 dark:text-slate-400 font-medium mb-8 md:mb-10 leading-relaxed">আমাদের সাথে শিক্ষক হিসেবে কাজ করতে চাইলে আপনার সিভি জমা দিন। কিশোরগঞ্জের সেরা টিউশনগুলো আপনার অপেক্ষায়।</p>
               <button
                 onClick={() => setShowTeacherModal(true)}
-                className="px-10 py-5 bg-emerald-600 text-white rounded-[24px] font-black text-xs uppercase tracking-widest hover:bg-emerald-700 transition-all active:scale-95 flex items-center gap-3"
+                className="w-full sm:w-auto px-8 md:px-10 py-4 md:py-5 bg-emerald-600 text-white rounded-[20px] md:rounded-[24px] font-black text-xs uppercase tracking-widest hover:bg-emerald-700 transition-all active:scale-95 flex items-center justify-center gap-3"
               >
                 সিভি জমা দিন <ArrowRight className="w-4 h-4" />
               </button>
@@ -369,36 +399,36 @@ export const Login = ({ user, onLogin, onLogout, deals = [], isDarkMode, toggleD
       )}
 
       {/* Footer */}
-      <footer className="py-20 px-6 bg-slate-900 dark:bg-slate-950 text-white border-t border-white/5 transition-colors duration-500">
+      <footer className="py-12 sm:py-20 px-4 sm:px-6 bg-white dark:bg-slate-950 text-slate-900 dark:text-white border-t border-slate-100 dark:border-white/5 transition-colors duration-500">
         <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-12 items-center mb-16">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-emerald-600 rounded-2xl flex items-center justify-center">
-                <GraduationCap className="text-white w-6 h-6" />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 sm:gap-12 items-center mb-10 sm:mb-16">
+            <div className="flex items-center gap-2 sm:gap-3 justify-center md:justify-start">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-emerald-600 rounded-xl sm:rounded-2xl flex items-center justify-center">
+                <GraduationCap className="text-white w-5 h-5 sm:w-6 sm:h-6" />
               </div>
-              <span className="text-2xl font-black tracking-tighter">
-                Teacher's <span className="text-emerald-400">CORNER</span>
+              <span className="text-xl sm:text-2xl font-black tracking-tighter">
+                Teacher's <span className="text-emerald-500">CORNER</span>
               </span>
             </div>
             
-            <div className="flex flex-col items-center gap-4">
-              <div className="flex items-center gap-6">
-                <a href="tel:+8801611536951" className="text-sm font-bold text-slate-400 hover:text-white transition-colors">01611-536951</a>
-                <a href="tel:+8801609775933" className="text-sm font-bold text-slate-400 hover:text-white transition-colors">01609-775933</a>
+            <div className="flex flex-col items-center gap-3 sm:gap-4">
+              <div className="flex items-center gap-4 sm:gap-6">
+                <a href="tel:+8801611536951" className="text-[11px] sm:text-sm font-bold text-slate-500 dark:text-slate-400 hover:text-emerald-600 transition-colors">01611-536951</a>
+                <a href="tel:+8801609775933" className="text-[11px] sm:text-sm font-bold text-slate-500 dark:text-slate-400 hover:text-emerald-600 transition-colors">01609-775933</a>
               </div>
-              <a href="https://facebook.com/groups/436666579040846" target="_blank" className="px-6 py-2 bg-white/5 hover:bg-white/10 rounded-full text-xs font-black uppercase tracking-widest transition-all">Facebook Group</a>
+              <a href="https://facebook.com/groups/436666579040846" target="_blank" className="px-5 py-2 sm:px-6 sm:py-2.5 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 rounded-full text-[10px] sm:text-xs font-black uppercase tracking-widest transition-all">Facebook Group</a>
             </div>
 
             <div className="text-center md:text-right">
-              <p className="text-xs font-black text-slate-500 uppercase tracking-[0.3em]">
+              <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">
                 © 2026 Teacher's Corner
               </p>
-              <p className="text-[10px] text-slate-600 mt-2">Kishoreganj, Bangladesh</p>
+              <p className="text-[9px] sm:text-[10px] text-slate-600 mt-1 sm:mt-2">Kishoreganj, Bangladesh</p>
             </div>
           </div>
           
-          <div className="pt-8 border-t border-white/5 text-center">
-            <p className="text-[10px] text-slate-500 font-medium max-w-2xl mx-auto leading-relaxed">
+          <div className="pt-6 sm:pt-8 border-t border-white/5 text-center">
+            <p className="text-[9px] sm:text-[10px] text-slate-500 font-medium max-w-2xl mx-auto leading-relaxed">
               আমরা কিশোরগঞ্জের শিক্ষার্থীদের মানসম্মত শিক্ষা নিশ্চিত করতে প্রতিশ্রুতিবদ্ধ। আমাদের সাথে যুক্ত হয়ে আপনার সন্তানের উজ্জ্বল ভবিষ্যৎ নিশ্চিত করুন।
             </p>
           </div>

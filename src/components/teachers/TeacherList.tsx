@@ -90,7 +90,7 @@ export const TeacherList: React.FC<TeacherListProps> = ({
         <button
           onClick={() => setActiveSubTab("Approved")}
           className={`flex-1 py-2.5 text-xs font-black uppercase tracking-widest rounded-xl transition-all ${
-            activeSubTab === "Approved" ? "bg-white dark:bg-slate-900 text-emerald-600 dark:text-emerald-400 shadow-sm" : "text-slate-400 dark:text-slate-500"
+            activeSubTab === "Approved" ? "bg-white dark:bg-slate-900 text-emerald-600 dark:text-emerald-400 shadow-sm" : "text-slate-500 dark:text-slate-500"
           }`}
         >
           Approved ({teachers.filter(t => t.status === "Approved").length})
@@ -98,7 +98,7 @@ export const TeacherList: React.FC<TeacherListProps> = ({
         <button
           onClick={() => setActiveSubTab("Pending")}
           className={`flex-1 py-2.5 text-xs font-black uppercase tracking-widest rounded-xl transition-all ${
-            activeSubTab === "Pending" ? "bg-white dark:bg-slate-900 text-emerald-600 dark:text-emerald-400 shadow-sm" : "text-slate-400 dark:text-slate-500"
+            activeSubTab === "Pending" ? "bg-white dark:bg-slate-900 text-emerald-600 dark:text-emerald-400 shadow-sm" : "text-slate-500 dark:text-slate-500"
           }`}
         >
           Pending ({teachers.filter(t => t.status === "Pending").length})
@@ -122,39 +122,39 @@ export const TeacherList: React.FC<TeacherListProps> = ({
             <select
               value={filterArea}
               onChange={(e) => setFilterArea(e.target.value)}
-              className="w-full px-4 py-3 bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 text-xs font-bold text-slate-600 dark:text-slate-400 focus:outline-none appearance-none"
+              className="w-full px-4 py-3 bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 text-xs font-bold text-slate-700 dark:text-slate-400 focus:outline-none appearance-none"
             >
               {areas.map(area => (
                 <option key={area} value={area}>{area === "All" ? "সব এলাকা" : area}</option>
               ))}
             </select>
-            <Icon icon={Filter} size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+            <Icon icon={Filter} size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
           </div>
 
           <div className="relative flex-1 min-w-[120px]">
             <select
               value={filterCollege}
               onChange={(e) => setFilterCollege(e.target.value)}
-              className="w-full px-4 py-3 bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 text-xs font-bold text-slate-600 dark:text-slate-400 focus:outline-none appearance-none"
+              className="w-full px-4 py-3 bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 text-xs font-bold text-slate-700 dark:text-slate-400 focus:outline-none appearance-none"
             >
               {colleges.map(college => (
                 <option key={college} value={college}>{college === "All" ? "সব কলেজ" : college}</option>
               ))}
             </select>
-            <Icon icon={Filter} size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+            <Icon icon={Filter} size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
           </div>
 
           <div className="relative flex-1 min-w-[120px]">
             <select
               value={filterSpecialCategory}
               onChange={(e) => setFilterSpecialCategory(e.target.value)}
-              className="w-full px-4 py-3 bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 text-xs font-bold text-slate-600 dark:text-slate-400 focus:outline-none appearance-none"
+              className="w-full px-4 py-3 bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 text-xs font-bold text-slate-700 dark:text-slate-400 focus:outline-none appearance-none"
             >
               {specialCategories.map(category => (
                 <option key={category} value={category}>{category === "All" ? "সব ক্যাটাগরি" : category}</option>
               ))}
             </select>
-            <Icon icon={Filter} size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+            <Icon icon={Filter} size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
           </div>
         </div>
       </div>
@@ -186,7 +186,7 @@ export const TeacherList: React.FC<TeacherListProps> = ({
                         {teacher.rating}
                       </div>
                     </div>
-                    <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 truncate">
+                    <div className="text-xs text-slate-600 dark:text-slate-400 mt-0.5 truncate">
                       {teacher.collegeName}
                     </div>
                   </div>
@@ -199,7 +199,7 @@ export const TeacherList: React.FC<TeacherListProps> = ({
                   >
                     <Phone size={14} />
                   </a>
-                  <div className="text-slate-400 dark:text-slate-600">
+                  <div className="text-slate-500 dark:text-slate-600">
                     {isExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
                   </div>
                 </div>
@@ -239,14 +239,14 @@ export const TeacherList: React.FC<TeacherListProps> = ({
                       {/* Addresses */}
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
                         <div className="bg-white dark:bg-slate-900 p-3 rounded-xl border border-slate-100 dark:border-slate-800">
-                          <div className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1">বর্তমান ঠিকানা</div>
+                          <div className="text-[10px] font-black text-slate-500 dark:text-slate-500 uppercase tracking-widest mb-1">বর্তমান ঠিকানা</div>
                           <div className="flex items-start gap-2 text-slate-700 dark:text-slate-300 text-xs font-medium leading-relaxed">
                             <MapPin size={14} className="text-emerald-500 shrink-0 mt-0.5" />
                             {teacher.presentAddress}
                           </div>
                         </div>
                         <div className="bg-white dark:bg-slate-900 p-3 rounded-xl border border-slate-100 dark:border-slate-800">
-                          <div className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1">স্থায়ী ঠিকানা</div>
+                          <div className="text-[10px] font-black text-slate-500 dark:text-slate-500 uppercase tracking-widest mb-1">স্থায়ী ঠিকানা</div>
                           <div className="flex items-start gap-2 text-slate-700 dark:text-slate-300 text-xs font-medium leading-relaxed">
                             <MapPin size={14} className="text-emerald-500 shrink-0 mt-0.5" />
                             {teacher.permanentAddress}
@@ -256,26 +256,26 @@ export const TeacherList: React.FC<TeacherListProps> = ({
 
                       {/* Education */}
                       <div className="bg-white dark:bg-slate-900 p-3 rounded-xl border border-slate-100 dark:border-slate-800">
-                        <div className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2 flex items-center gap-1">
+                        <div className="text-[10px] font-black text-slate-500 dark:text-slate-500 uppercase tracking-widest mb-2 flex items-center gap-1">
                           <GraduationCap size={12} className="text-emerald-500" /> শিক্ষাগত যোগ্যতা
                         </div>
                         <div className="space-y-2">
                           <div className="grid grid-cols-4 gap-2 text-xs">
                             <div className="font-bold text-slate-700 dark:text-slate-200">SSC</div>
-                            <div className="text-slate-600 dark:text-slate-400">{teacher.education?.ssc?.year}</div>
-                            <div className="text-slate-600 dark:text-slate-400">{teacher.education?.ssc?.group}</div>
+                            <div className="text-slate-700 dark:text-slate-400">{teacher.education?.ssc?.year}</div>
+                            <div className="text-slate-700 dark:text-slate-400">{teacher.education?.ssc?.group}</div>
                             <div className="text-emerald-600 dark:text-emerald-400 font-medium">GPA: {teacher.education?.ssc?.gpa}</div>
                           </div>
                           <div className="grid grid-cols-4 gap-2 text-xs border-t border-slate-50 dark:border-slate-800 pt-2">
                             <div className="font-bold text-slate-700 dark:text-slate-200">HSC</div>
-                            <div className="text-slate-600 dark:text-slate-400">{teacher.education?.hsc?.year}</div>
-                            <div className="text-slate-600 dark:text-slate-400">{teacher.education?.hsc?.group}</div>
+                            <div className="text-slate-700 dark:text-slate-400">{teacher.education?.hsc?.year}</div>
+                            <div className="text-slate-700 dark:text-slate-400">{teacher.education?.hsc?.group}</div>
                             <div className="text-emerald-600 dark:text-emerald-400 font-medium">GPA: {teacher.education?.hsc?.gpa}</div>
                           </div>
                           <div className="grid grid-cols-4 gap-2 text-xs border-t border-slate-50 dark:border-slate-800 pt-2">
                             <div className="font-bold text-slate-700 dark:text-slate-200">Honours</div>
-                            <div className="text-slate-600 dark:text-slate-400">{teacher.education?.honours?.year}</div>
-                            <div className="text-slate-600 dark:text-slate-400 truncate">{teacher.education?.honours?.subject} ({teacher.education?.honours?.studyYear})</div>
+                            <div className="text-slate-700 dark:text-slate-400">{teacher.education?.honours?.year}</div>
+                            <div className="text-slate-700 dark:text-slate-400 truncate">{teacher.education?.honours?.subject} ({teacher.education?.honours?.studyYear})</div>
                             <div className="text-emerald-600 dark:text-emerald-400 font-medium">GPA: {teacher.education?.honours?.gpa}</div>
                           </div>
                         </div>
@@ -284,7 +284,7 @@ export const TeacherList: React.FC<TeacherListProps> = ({
                       {/* Experience & Tuition */}
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                         <div className="bg-white dark:bg-slate-900 p-3 rounded-xl border border-slate-100 dark:border-slate-800">
-                          <div className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1 flex items-center gap-1">
+                          <div className="text-[10px] font-black text-slate-500 dark:text-slate-500 uppercase tracking-widest mb-1 flex items-center gap-1">
                             <Briefcase size={12} className="text-emerald-500" /> অভিজ্ঞতা
                           </div>
                           <div className="text-slate-700 dark:text-slate-300 text-xs font-medium">
@@ -292,7 +292,7 @@ export const TeacherList: React.FC<TeacherListProps> = ({
                           </div>
                         </div>
                         <div className="bg-white dark:bg-slate-900 p-3 rounded-xl border border-slate-100 dark:border-slate-800">
-                          <div className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1 flex items-center gap-1">
+                          <div className="text-[10px] font-black text-slate-500 dark:text-slate-500 uppercase tracking-widest mb-1 flex items-center gap-1">
                             <BookOpen size={12} className="text-emerald-500" /> বর্তমানে টিউশনি
                           </div>
                           <div className="text-slate-700 dark:text-slate-300 text-xs font-medium">
@@ -307,7 +307,7 @@ export const TeacherList: React.FC<TeacherListProps> = ({
 
                       {/* Interested Subjects */}
                       <div className="bg-white dark:bg-slate-900 p-3 rounded-xl border border-slate-100 dark:border-slate-800">
-                        <div className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1">যেসব বিষয়ে এবং শ্রেণীতে পড়াতে আগ্রহী</div>
+                        <div className="text-[10px] font-black text-slate-500 dark:text-slate-500 uppercase tracking-widest mb-1">যেসব বিষয়ে এবং শ্রেণীতে পড়াতে আগ্রহী</div>
                         <div className="text-slate-700 dark:text-slate-300 text-xs font-medium leading-relaxed">
                           {teacher.interestedSubjectsAndClasses || "উল্লেখ নেই"}
                         </div>
@@ -318,7 +318,7 @@ export const TeacherList: React.FC<TeacherListProps> = ({
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                           {teacher.facebookLink && (
                             <div className="bg-white dark:bg-slate-900 p-3 rounded-xl border border-slate-100 dark:border-slate-800">
-                              <div className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1 flex items-center gap-1">
+                              <div className="text-[10px] font-black text-slate-500 dark:text-slate-500 uppercase tracking-widest mb-1 flex items-center gap-1">
                                 <Facebook size={12} className="text-emerald-500" /> ফেসবুক প্রোফাইল
                               </div>
                               <a href={teacher.facebookLink} target="_blank" rel="noopener noreferrer" className="text-emerald-600 dark:text-emerald-400 text-xs font-medium hover:underline truncate block">
@@ -328,7 +328,7 @@ export const TeacherList: React.FC<TeacherListProps> = ({
                           )}
                           {teacher.studentIdUrl && (
                             <div className="bg-white dark:bg-slate-900 p-3 rounded-xl border border-slate-100 dark:border-slate-800">
-                              <div className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1 flex items-center gap-1">
+                              <div className="text-[10px] font-black text-slate-500 dark:text-slate-500 uppercase tracking-widest mb-1 flex items-center gap-1">
                                 <IdCard size={12} className="text-emerald-500" /> স্টুডেন্ট আইডি
                               </div>
                               <a href={teacher.studentIdUrl} target="_blank" rel="noopener noreferrer" className="text-emerald-600 dark:text-emerald-400 text-xs font-medium hover:underline truncate block">
@@ -374,7 +374,7 @@ export const TeacherList: React.FC<TeacherListProps> = ({
         {filteredTeachers.length === 0 && (
           <div className="text-center py-12 bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm">
             <Icon icon={Search} size={40} className="mx-auto text-slate-200 dark:text-slate-700 mb-3" />
-            <p className="text-slate-400 dark:text-slate-500 text-sm font-bold mb-6">কোনো শিক্ষক পাওয়া যায়নি!</p>
+            <p className="text-slate-500 dark:text-slate-400 text-sm font-bold mb-6">কোনো শিক্ষক পাওয়া যায়নি!</p>
             {teachers.length === 0 && (
               <button
                 onClick={onResetDemo}
