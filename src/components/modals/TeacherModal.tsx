@@ -267,6 +267,9 @@ export const TeacherModal: React.FC<TeacherModalProps> = ({
                             <input type="file" accept="image/*" className="hidden" onChange={(e) => handleImageUpload(e, 'photoUrl')} />
                           </label>
                         </div>
+                        <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold ml-4 mt-1">
+                          * প্রোফাইল ভেরিফাই করার জন্য ছবি দেওয়া প্রয়োজন।
+                        </p>
                       </div>
                     </div>
                   )}
@@ -430,6 +433,9 @@ export const TeacherModal: React.FC<TeacherModalProps> = ({
                             </p>
                             <input type="file" accept="image/*" className="hidden" onChange={(e) => handleImageUpload(e, 'studentIdUrl')} />
                           </label>
+                          <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold ml-4 mt-1">
+                            * ভেরিফাইড টিচার ব্যাজ পেতে স্টুডেন্ট আইডি কার্ডের ছবি দিন।
+                          </p>
                         </div>
                       </div>
                     </div>
