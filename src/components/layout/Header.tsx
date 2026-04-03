@@ -1,6 +1,8 @@
+import { useState, useRef, useEffect } from "react";
 import { Icon } from "../ui/Icon";
-import { Smartphone, LogOut, Moon, Sun, ClipboardList, GraduationCap } from "lucide-react";
+import { Smartphone, LogOut, Moon, Sun, ClipboardList, GraduationCap, ChevronDown } from "lucide-react";
 import { useStore } from "../../store/useStore";
+import { cn } from "../../lib/utils";
 
 interface HeaderProps {
   onLogout: () => void;
@@ -9,6 +11,18 @@ interface HeaderProps {
 
 export const Header = ({ onLogout, onInstall }: HeaderProps) => {
   const { user, isDarkMode, toggleDarkMode, setActiveTab } = useStore();
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   return (
     <header className="glass sticky top-0 z-50 flex justify-between items-center p-4 pt-6 shadow-sm transition-all duration-500">
@@ -38,33 +52,39 @@ export const Header = ({ onLogout, onInstall }: HeaderProps) => {
         >
           <Icon icon={isDarkMode ? Sun : Moon} size={20} />
         </button>
-        <div className="group relative">
-          <div className="bg-slate-900 dark:bg-white px-3 py-2 rounded-xl flex items-center text-[10px] font-black text-white dark:text-slate-900 cursor-pointer hover:opacity-90 transition-all shadow-lg shadow-slate-900/10 dark:shadow-white/5">
+        <div className="relative" ref={dropdownRef}>
+          <div 
+            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+            className="bg-slate-900 dark:bg-white px-3 py-2 rounded-xl flex items-center text-[10px] font-black text-white dark:text-slate-900 cursor-pointer hover:opacity-90 transition-all shadow-lg shadow-slate-900/10 dark:shadow-white/5"
+          >
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-2 animate-pulse"></span>
             ADMIN
+            <ChevronDown size={12} className={cn("ml-1.5 transition-transform duration-300", isDropdownOpen && "rotate-180")} />
           </div>
-          <div className="absolute right-0 mt-3 w-64 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-100 dark:border-slate-800 hidden group-hover:block overflow-hidden animate-in fade-in slide-in-from-top-2 duration-300">
-            <div className="px-6 py-5 border-b border-slate-50 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50">
-              <p className="text-[10px] text-slate-400 dark:text-slate-500 font-black uppercase tracking-widest mb-1.5">
-                লগ-ইন আছেন:
-              </p>
-              <p className="text-xs font-bold text-slate-900 dark:text-slate-100 truncate">
-                {user?.email}
-              </p>
+          {isDropdownOpen && (
+            <div className="absolute right-0 mt-3 w-64 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-100 dark:border-slate-800 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-300 z-[60]">
+              <div className="px-6 py-5 border-b border-slate-50 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50">
+                <p className="text-[10px] text-slate-400 dark:text-slate-500 font-black uppercase tracking-widest mb-1.5">
+                  লগ-ইন আছেন:
+                </p>
+                <p className="text-xs font-bold text-slate-900 dark:text-slate-100 truncate">
+                  {user?.email}
+                </p>
+              </div>
+              <button
+                onClick={() => { onInstall(); setIsDropdownOpen(false); }}
+                className="w-full text-left px-6 py-4 text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 font-bold flex items-center transition-colors"
+              >
+                <Icon icon={Smartphone} size={18} className="mr-3" /> অ্যাপ ইনস্টল করুন
+              </button>
+              <button
+                onClick={() => { onLogout(); setIsDropdownOpen(false); }}
+                className="w-full text-left px-6 py-4 text-sm text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-900/20 font-black flex items-center transition-colors"
+              >
+                <Icon icon={LogOut} size={18} className="mr-3" /> লগ-আউট
+              </button>
             </div>
-            <button
-              onClick={onInstall}
-              className="w-full text-left px-6 py-4 text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 font-bold flex items-center transition-colors"
-            >
-              <Icon icon={Smartphone} size={18} className="mr-3" /> অ্যাপ ইনস্টল করুন
-            </button>
-            <button
-              onClick={onLogout}
-              className="w-full text-left px-6 py-4 text-sm text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-900/20 font-black flex items-center transition-colors"
-            >
-              <Icon icon={LogOut} size={18} className="mr-3" /> লগ-আউট
-            </button>
-          </div>
+          )}
         </div>
       </div>
     </header>

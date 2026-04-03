@@ -493,6 +493,7 @@ export default function App() {
         user={user} 
         onLogin={handleLogin} 
         onLogout={handleLogout} 
+        onInstall={handleInstallClick}
         deals={publicDeals} 
         isDarkMode={isDarkMode}
         toggleDarkMode={toggleDarkMode}

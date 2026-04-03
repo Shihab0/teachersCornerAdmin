@@ -8,7 +8,7 @@ import {
   Loader2, MapPin, School, BookOpen, User, Briefcase, Award, 
   Facebook, IdCard, Check, Send, Heart, Users, Star, ArrowRight,
   ClipboardList, CheckCircle2, Info, Image as ImageIcon, Lightbulb,
-  Rocket, Target, X, Moon, Sun, ShieldCheck, Zap
+  Rocket, Target, X, Moon, Sun, ShieldCheck, Zap, Smartphone
 } from "lucide-react";
 import { User as FirebaseUser } from "firebase/auth";
 import { collection, addDoc } from "firebase/firestore";
@@ -23,12 +23,13 @@ interface LoginProps {
   user: FirebaseUser | null;
   onLogin: () => Promise<void>;
   onLogout: () => void;
+  onInstall?: () => void;
   deals?: Deal[];
   isDarkMode: boolean;
   toggleDarkMode: () => void;
 }
 
-export const Login = ({ user, onLogin, onLogout, deals = [], isDarkMode, toggleDarkMode }: LoginProps) => {
+export const Login = ({ user, onLogin, onLogout, onInstall, deals = [], isDarkMode, toggleDarkMode }: LoginProps) => {
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [showGuardianModal, setShowGuardianModal] = useState(false);
   const [showTeacherModal, setShowTeacherModal] = useState(false);
@@ -102,6 +103,15 @@ export const Login = ({ user, onLogin, onLogout, deals = [], isDarkMode, toggleD
           </motion.div>
           
           <div className="flex items-center gap-2 sm:gap-4">
+            {onInstall && (
+              <button
+                onClick={onInstall}
+                className="hidden sm:flex px-4 py-2 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-emerald-100 dark:hover:bg-emerald-500/20 transition-all active:scale-95 items-center gap-2"
+              >
+                <Smartphone size={14} />
+                Install App
+              </button>
+            )}
             <button
               onClick={toggleDarkMode}
               className="w-9 h-9 sm:w-11 sm:h-11 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-xl sm:rounded-2xl flex items-center justify-center hover:bg-slate-200 dark:hover:bg-slate-700 transition-all active:scale-90"
@@ -158,6 +168,15 @@ export const Login = ({ user, onLogin, onLogout, deals = [], isDarkMode, toggleD
                 <Users className="w-4 h-4 sm:w-5 sm:h-5" />
                 শিক্ষক হিসেবে যোগ দিন
               </button>
+              {onInstall && (
+                <button
+                  onClick={onInstall}
+                  className="sm:hidden w-full px-8 py-4 bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-slate-200 dark:hover:bg-slate-700 transition-all active:scale-95 flex items-center justify-center gap-3"
+                >
+                  <Smartphone className="w-4 h-4" />
+                  অ্যাপ ইনস্টল করুন
+                </button>
+              )}
             </div>
           </motion.div>
 
