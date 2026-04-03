@@ -3,7 +3,7 @@ import { doc, addDoc, updateDoc, deleteDoc, collection, getDocs, getDocFromServe
 import { auth, db } from "./lib/firebase";
 import { Toaster, toast } from "sonner";
 import { cn } from "./lib/utils";
-import { Deal, Expense, HistoryEntry, Teacher } from "./types";
+import { Deal, Expense, HistoryEntry, Teacher, TuitionRequest } from "./types";
 import { Header } from "./components/layout/Header";
 import { Dashboard } from "./components/dashboard/Dashboard";
 import { AddDeal } from "./components/add/AddDeal";
@@ -83,12 +83,18 @@ export default function App() {
     tutorPhone: "",
     guardianPhone: "",
     studentClass: "",
+    subjects: "",
+    weeklyDays: "",
+    salary: "",
+    location: "",
+    tutorGender: "Any" as "Male" | "Female" | "Any",
     details: "",
     referrerName: "",
     adminName: "",
     selectionDate: "",
     confirmDate: "",
     commission: "",
+    paidAmount: "0",
     tuitionStatus: "Processing",
     commissionStatus: "Pending",
     isTutorNotSelected: false,
@@ -231,6 +237,7 @@ export default function App() {
       tutorName: formData.isTutorNotSelected ? "এখনো সিলেক্ট হয়নি" : formData.tutorName,
       tutorPhone: formData.isTutorNotSelected ? "" : formData.tutorPhone,
       commission: Number(formData.commission),
+      paidAmount: Number(formData.paidAmount || 0),
       updatedAt: Date.now(),
     };
 
@@ -238,9 +245,27 @@ export default function App() {
       const colRef = collection(db, COLLECTIONS.DEALS);
       if (isEditing && editId) {
         const old = deals.find((d) => d.id === editId);
+        
+        // Detailed history logging
+        const changes: string[] = [];
+        if (old) {
+          if (old.tuitionId !== payload.tuitionId) changes.push(`আইডি: ${old.tuitionId} -> ${payload.tuitionId}`);
+          if (old.tutorName !== payload.tutorName) changes.push(`টিউটর: ${old.tutorName} -> ${payload.tutorName}`);
+          if (old.studentClass !== payload.studentClass) changes.push(`ক্লাস: ${old.studentClass} -> ${payload.studentClass}`);
+          if (old.subjects !== payload.subjects) changes.push(`বিষয়: ${old.subjects} -> ${payload.subjects}`);
+          if (old.salary !== payload.salary) changes.push(`স্যালারি: ${old.salary} -> ${payload.salary}`);
+          if (old.location !== payload.location) changes.push(`লোকেশন: ${old.location} -> ${payload.location}`);
+          if (old.commission !== payload.commission) changes.push(`কমিশন: ${old.commission} -> ${payload.commission}`);
+          if (old.paidAmount !== payload.paidAmount) changes.push(`আদায়: ${old.paidAmount} -> ${payload.paidAmount}`);
+          if (old.tuitionStatus !== payload.tuitionStatus) changes.push(`স্ট্যাটাস: ${old.tuitionStatus} -> ${payload.tuitionStatus}`);
+        }
+
         const history = [
           ...(old?.history || []),
-          { date: new Date().toISOString(), log: "তথ্য আপডেট করা হয়েছে" },
+          { 
+            date: new Date().toISOString(), 
+            log: changes.length > 0 ? `আপডেট: ${changes.join(", ")}` : "তথ্য আপডেট করা হয়েছে (কোনো পরিবর্তন নেই)" 
+          },
         ];
         await updateDoc(doc(colRef, editId), { ...payload, history });
         toast.success("টিউশন সফলভাবে আপডেট করা হয়েছে!");
@@ -259,6 +284,11 @@ export default function App() {
         tutorPhone: "",
         guardianPhone: "",
         studentClass: "",
+        subjects: "",
+        weeklyDays: "",
+        salary: "",
+        location: "",
+        tutorGender: "Any",
         details: "",
         referrerName: "",
         adminName: "",
@@ -287,12 +317,18 @@ export default function App() {
       tutorPhone: deal.tutorPhone || "",
       guardianPhone: deal.guardianPhone || "",
       studentClass: deal.studentClass || "",
+      subjects: deal.subjects || "",
+      weeklyDays: deal.weeklyDays || "",
+      salary: deal.salary || "",
+      location: deal.location || "",
+      tutorGender: deal.tutorGender || "Any",
       details: deal.details || "",
       referrerName: deal.referrerName || "",
       adminName: deal.adminName || "",
       selectionDate: deal.selectionDate || "",
       confirmDate: deal.confirmDate || "",
       commission: deal.commission.toString() || "",
+      paidAmount: (deal.paidAmount || 0).toString(),
       tuitionStatus: deal.tuitionStatus || "Processing",
       commissionStatus: deal.commissionStatus || "Pending",
       isTutorNotSelected: deal.tutorName === "এখনো সিলেক্ট হয়নি",
@@ -304,7 +340,14 @@ export default function App() {
   };
 
   const changeTuitionStatus = async (id: string, newStatus: any) => {
-    const updates: any = { tuitionStatus: newStatus };
+    const deal = deals.find(d => d.id === id);
+    const updates: any = { 
+      tuitionStatus: newStatus,
+      history: [
+        ...(deal?.history || []),
+        { date: new Date().toISOString(), log: `টিউশন স্ট্যাটাস পরিবর্তন: ${newStatus}` }
+      ]
+    };
     if (newStatus === "Rejected") {
       updates.commissionStatus = "Rejected";
     }
@@ -328,16 +371,25 @@ export default function App() {
     });
   };
 
-  const processPayment = async (collector: string) => {
+  const processPayment = async (collector: string, amount: number) => {
     if (!paymentModalDealId) return;
     const deal = deals.find((d) => d.id === paymentModalDealId);
     if (!deal) return;
+
+    const newPaidAmount = (deal.paidAmount || 0) + amount;
+    const isFullyPaid = newPaidAmount >= deal.commission;
+
     const history = [
       ...(deal.history || []),
-      { date: new Date().toISOString(), log: `৳${deal.commission} আদায় করেছেন ${collector}` },
+      { 
+        date: new Date().toISOString(), 
+        log: `৳${amount} আদায় করেছেন ${collector}. মোট আদায়: ৳${newPaidAmount}${!isFullyPaid ? `, বাকি: ৳${deal.commission - newPaidAmount}` : ''}` 
+      },
     ];
+
     await updateDoc(doc(db, COLLECTIONS.DEALS, deal.id), {
-      commissionStatus: "Paid",
+      commissionStatus: isFullyPaid ? "Paid" : "Partial",
+      paidAmount: newPaidAmount,
       collectedBy: collector,
       history,
     });
@@ -355,25 +407,13 @@ export default function App() {
         ];
         await updateDoc(doc(db, COLLECTIONS.DEALS, deal.id), {
           commissionStatus: "Pending",
+          paidAmount: 0,
           collectedBy: null,
           history,
         });
       },
       false
     );
-  };
-
-  const exportToCSV = () => {
-    const headers = ["Tuition ID", "Tutor Name", "Tutor Phone", "Guardian Phone", "Class", "Subject/Area", "Management", "Commission", "Tuition Status", "Payment Status", "Collected By", "Selection Date"];
-    const rows = deals.map((d) => [d.tuitionId, d.tutorName, d.tutorPhone, d.guardianPhone, d.studentClass, `"${d.details || ""}"`, d.adminName, d.commission, d.tuitionStatus, d.commissionStatus, d.collectedBy || "N/A", d.selectionDate]);
-    const csvContent = "data:text/csv;charset=utf-8,\uFEFF" + [headers.join(","), ...rows.map((e) => e.join(","))].join("\n");
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `TC_Data_Backup_${new Date().toLocaleDateString()}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
   };
 
   const handleAddTeacher = async (teacherData: Partial<Teacher>) => {
@@ -384,6 +424,19 @@ export default function App() {
     } catch (error) {
       console.error("Error adding teacher:", error);
       toast.error("শিক্ষক যুক্ত করতে সমস্যা হয়েছে");
+    }
+  };
+
+  const handleAddManualTuitionRequest = async (request: Omit<TuitionRequest, "id" | "createdAt">) => {
+    try {
+      await addDoc(collection(db, COLLECTIONS.REQUESTS), {
+        ...request,
+        createdAt: Date.now(),
+      });
+      toast.success("রিকোয়েস্ট সফলভাবে যোগ করা হয়েছে!");
+    } catch (error) {
+      console.error(error);
+      toast.error("রিকোয়েস্ট যোগ করতে সমস্যা হয়েছে");
     }
   };
 
@@ -448,14 +501,14 @@ export default function App() {
   }
 
   return (
-    <div className={cn("flex flex-col h-screen max-w-md mx-auto bg-gray-50 dark:bg-slate-950 overflow-hidden shadow-2xl transition-colors duration-500", isDarkMode && "dark")}>
+    <div className={cn("flex flex-col h-screen max-w-screen-xl mx-auto bg-gray-50 dark:bg-slate-950 overflow-hidden shadow-2xl transition-colors duration-500", isDarkMode && "dark")}>
       <Toaster position="top-center" richColors />
       <Header 
         onLogout={handleLogout} 
         onInstall={handleInstallClick} 
       />
       
-      <main className="flex-1 overflow-y-auto pb-24 scrollbar-hide">
+      <main className="flex-1 overflow-y-auto pb-24 no-scrollbar">
         {activeTab === "dashboard" && (
           <Dashboard 
             onEdit={handleEditClick} 
@@ -483,6 +536,7 @@ export default function App() {
         {activeTab === "revenue" && (
           <Revenue 
             onResetDemo={handleResetDemoData}
+            onHistoryClick={(data) => setHistoryModalData(data)}
           />
         )}
         {activeTab === "stats" && (
@@ -492,12 +546,21 @@ export default function App() {
             onResetDemo={handleResetDemoData} 
           />
         )}
-        {activeTab === "teachers" && <TeacherList teachers={teachers} onAddTeacher={() => setIsTeacherModalOpen(true)} />}
+        {activeTab === "teachers" && (
+          <TeacherList 
+            teachers={teachers} 
+            onAddTeacher={() => setIsTeacherModalOpen(true)} 
+            onResetDemo={handleResetDemoData}
+            onUpdateStatus={handleUpdateTeacherStatus}
+            onDelete={handleDeleteTeacher}
+          />
+        )}
         {activeTab === "admin_requests" && (
           <RequestsList 
             requests={tuitionRequests} 
             onUpdateStatus={handleUpdateTuitionRequestStatus} 
             onDelete={handleDeleteTuitionRequest} 
+            onAddRequest={handleAddManualTuitionRequest}
           />
         )}
         {activeTab === "admin_pending_teachers" && (

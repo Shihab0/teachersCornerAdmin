@@ -1,7 +1,9 @@
 import React, { useRef, useState } from "react";
-import html2canvas from "html2canvas";
-import { Download, CheckCircle2, Loader2, Award, GraduationCap } from "lucide-react";
+import * as htmlToImage from "html-to-image";
+import { Download, CheckCircle2, Loader2, GraduationCap } from "lucide-react";
+import { motion } from "motion/react";
 import { Deal } from "../../types";
+import { cn } from "../../lib/utils";
 
 interface TuitionUpdatePostProps {
   deals: Deal[];
@@ -18,18 +20,16 @@ export const TuitionUpdatePost: React.FC<TuitionUpdatePostProps> = ({ deals, hid
     try {
       await new Promise(resolve => setTimeout(resolve, 200));
       
-      const canvas = await html2canvas(containerRef.current, {
-        scale: 3,
-        useCORS: true,
+      const dataUrl = await htmlToImage.toPng(containerRef.current, {
+        quality: 1.0,
+        pixelRatio: 3,
         backgroundColor: "#020617",
-        logging: false,
         width: 360,
         height: 480,
       });
       
-      const image = canvas.toDataURL("image/png", 1.0);
       const link = document.createElement("a");
-      link.href = image;
+      link.href = dataUrl;
       link.download = `Tuition-Updates-${new Date().toISOString().split('T')[0]}.png`;
       link.click();
     } catch (error) {
@@ -45,59 +45,120 @@ export const TuitionUpdatePost: React.FC<TuitionUpdatePostProps> = ({ deals, hid
       <div
         id="tuition-post-container"
         ref={containerRef}
-        className="w-[360px] h-[480px] bg-[#020617] rounded-[40px] p-10 shadow-2xl relative overflow-hidden flex flex-col items-center justify-between border border-white/5"
+        className="w-[360px] h-[480px] bg-[#020617] rounded-[40px] p-8 shadow-2xl relative overflow-hidden flex flex-col items-center justify-between border border-white/5"
         style={{ display: 'flex', boxSizing: 'border-box' }}
       >
         {/* Premium Background Elements */}
         <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute -top-40 -right-40 w-96 h-96 bg-emerald-500/10 rounded-full blur-[120px]"></div>
-          <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-indigo-500/10 rounded-full blur-[120px]"></div>
-          <div className="absolute top-0 left-0 w-full h-full opacity-[0.03] bg-[radial-gradient(#ffffff_1px,transparent_1px)] [background-size:20px_20px]"></div>
+          <div 
+            className="absolute -top-40 -right-40 w-96 h-96 rounded-full blur-[120px]"
+            style={{ backgroundColor: 'rgba(16, 185, 129, 0.15)' }}
+          ></div>
+          <div 
+            className="absolute -bottom-40 -left-40 w-96 h-96 rounded-full blur-[120px]"
+            style={{ backgroundColor: 'rgba(99, 102, 241, 0.15)' }}
+          ></div>
+          <div className="absolute top-0 left-0 w-full h-full opacity-[0.05] bg-[radial-gradient(#ffffff_1px,transparent_1px)] [background-size:20px_20px]"></div>
         </div>
 
         {/* Header Section */}
         <div className="relative z-10 text-center w-full">
-          <div className="inline-flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[9px] font-black uppercase tracking-[0.3em] px-5 py-1.5 rounded-full mb-5">
-            <GraduationCap size={12} className="text-emerald-400" />
+          <motion.div 
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="inline-flex items-center gap-2 text-[8px] font-black uppercase tracking-[0.3em] px-4 py-1.5 rounded-full mb-3"
+            style={{ 
+              backgroundColor: 'rgba(16, 185, 129, 0.1)', 
+              border: '1px solid rgba(16, 185, 129, 0.2)',
+              color: '#34d399'
+            }}
+          >
+            <GraduationCap size={10} style={{ color: '#34d399' }} />
             Teacher's Corner
-          </div>
-          <h2 className="text-[26px] font-black text-white tracking-tighter leading-tight mb-3">
-            Tuition <span className="text-emerald-400">Updates</span>
-          </h2>
-          <div className="w-16 h-1 bg-gradient-to-r from-emerald-500 to-emerald-300 mx-auto rounded-full shadow-[0_0_15px_rgba(16,185,129,0.4)]"></div>
+          </motion.div>
+          <motion.h2 
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.1 }}
+            className="text-[24px] font-black text-white tracking-tight leading-tight mb-2"
+          >
+            Tuition <span style={{ color: '#34d399' }}>Updates</span>
+          </motion.h2>
+          <motion.div 
+            initial={{ width: 0 }}
+            animate={{ width: 48 }}
+            transition={{ delay: 0.2, duration: 0.5 }}
+            className="h-1 mx-auto rounded-full shadow-[0_0_15px_rgba(16,185,129,0.4)]"
+            style={{ background: 'linear-gradient(to right, #10b981, #6ee7b7)' }}
+          ></motion.div>
         </div>
 
         {/* Rows Section */}
-        <div className="relative z-10 w-full space-y-3">
-          {deals.slice(0, 5).map((deal, index) => (
-            <div
-              key={deal.id}
-              className="bg-white/[0.03] border border-white/5 rounded-[20px] p-3.5 flex items-center gap-4 transition-all"
-            >
-              <div className="w-9 h-9 rounded-xl bg-emerald-500/10 flex items-center justify-center shrink-0 border border-emerald-500/20 shadow-inner">
-                <CheckCircle2 className="w-4.5 h-4.5 text-emerald-400" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex justify-between items-center mb-1">
-                  <span className="text-[9px] font-black text-slate-500 uppercase tracking-[0.15em]">
-                    ID: {deal.tuitionId}
-                  </span>
-                  <span className="text-[8px] font-black text-white/10 uppercase tabular-nums">
-                    {index + 1}
-                  </span>
+        <div className="relative z-10 w-full space-y-4">
+          {Array.from({ length: 5 }).map((_, index) => {
+            const deal = deals[index];
+            return (
+              <motion.div
+                key={deal?.id || `placeholder-${index}`}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.1 * index + 0.3 }}
+                className={cn(
+                  "border rounded-[22px] p-4 flex items-center gap-4 transition-all",
+                  deal 
+                    ? "bg-white/[0.04] border-white/10 hover:bg-white/[0.08] hover:border-white/20" 
+                    : "bg-white/[0.01] border-white/[0.02] opacity-30"
+                )}
+                style={{ 
+                  backgroundColor: deal ? 'rgba(255, 255, 255, 0.04)' : 'rgba(255, 255, 255, 0.01)',
+                  borderColor: deal ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 255, 255, 0.02)'
+                }}
+              >
+                <div 
+                  className={cn(
+                    "w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 border shadow-inner",
+                    deal 
+                      ? "bg-emerald-500/10 border-emerald-500/20" 
+                      : "bg-slate-500/5 border-slate-500/10"
+                  )}
+                  style={{
+                    backgroundColor: deal ? 'rgba(16, 185, 129, 0.1)' : 'rgba(100, 116, 139, 0.05)',
+                    borderColor: deal ? 'rgba(16, 185, 129, 0.2)' : 'rgba(100, 116, 139, 0.1)'
+                  }}
+                >
+                  {deal ? (
+                    <CheckCircle2 className="w-5 h-5" style={{ color: '#34d399' }} />
+                  ) : (
+                    <div className="w-2 h-2 rounded-full bg-slate-600" />
+                  )}
                 </div>
-                <h3 className="text-[15px] font-bold text-white truncate leading-none tracking-tight">
-                  {deal.tutorName}
-                </h3>
-              </div>
-            </div>
-          ))}
+                <div className="flex-1 min-w-0">
+                  <div className="flex justify-between items-center mb-1">
+                    <span className="text-[9px] font-black text-slate-500 uppercase tracking-[0.2em]">
+                      {deal ? `ID: ${deal.tuitionId}` : "Waiting for update..."}
+                    </span>
+                    <span className="text-[9px] font-black text-white/20 uppercase tabular-nums">
+                      {index + 1}
+                    </span>
+                  </div>
+                  <h3 className={cn(
+                    "text-[15px] font-black truncate leading-tight tracking-tight",
+                    deal ? "text-white" : "text-slate-700"
+                  )}
+                  style={{ color: deal ? '#ffffff' : '#334155' }}
+                  >
+                    {deal ? deal.tutorName : "••••••••••••"}
+                  </h3>
+                </div>
+              </motion.div>
+            );
+          })}
         </div>
 
         {/* Footer Section */}
         <div className="relative z-10 w-full text-center">
-          <div className="w-full h-px bg-gradient-to-r from-transparent via-white/10 to-transparent mb-4"></div>
-          <p className="text-white/20 text-[9px] font-black uppercase tracking-[0.25em]">
+          <div className="w-full h-px bg-gradient-to-r from-transparent via-white/10 to-transparent mb-3"></div>
+          <p className="text-white/30 text-[8px] font-black uppercase tracking-[0.25em]">
             Quality Education Support • Kishoreganj
           </p>
         </div>

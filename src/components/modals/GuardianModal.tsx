@@ -103,7 +103,7 @@ export const GuardianModal: React.FC<GuardianModalProps> = ({ isOpen, onClose, o
             <p className="text-slate-500 dark:text-slate-400 font-medium">আমরা শীঘ্রই আপনার সাথে যোগাযোগ করব।</p>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="p-6 space-y-4 max-h-[70vh] overflow-y-auto custom-scrollbar bg-white dark:bg-slate-900">
+          <form onSubmit={handleSubmit} className="p-6 space-y-4 max-h-[70vh] overflow-y-auto no-scrollbar bg-white dark:bg-slate-900">
             <div className="space-y-1">
               <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-4">অভিভাবকের নাম *</label>
               <div className="relative">

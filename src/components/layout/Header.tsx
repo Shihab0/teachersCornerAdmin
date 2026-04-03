@@ -17,7 +17,7 @@ export const Header = ({ onLogout, onInstall }: HeaderProps) => {
           <Icon icon={GraduationCap} size={22} className="text-white" />
         </div>
         <div className="flex flex-col">
-          <h1 className="text-lg font-black text-slate-900 dark:text-white leading-none tracking-tighter uppercase">
+          <h1 className="text-lg font-black text-slate-900 dark:text-white leading-none tracking-wide uppercase [word-spacing:0.1em]">
             Teacher's
           </h1>
           <span className="text-emerald-500 font-black text-[10px] tracking-[0.2em] uppercase leading-none mt-0.5">CORNER</span>

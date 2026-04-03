@@ -205,7 +205,7 @@ export const TeacherModal: React.FC<TeacherModalProps> = ({
               />
             </div>
 
-            <div className="flex-1 overflow-y-auto custom-scrollbar p-6 bg-white dark:bg-slate-900">
+            <div className="flex-1 overflow-y-auto no-scrollbar p-6 bg-white dark:bg-slate-900">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={step}

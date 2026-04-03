@@ -114,8 +114,8 @@ export const PendingTeachersList: React.FC<PendingTeachersListProps> = ({
     <div className="space-y-6">
       <div className="flex flex-col gap-1 mb-8">
         <div className="flex items-center justify-between">
-          <h2 className="text-4xl font-black text-gray-900 dark:text-white tracking-tighter uppercase leading-none">
-            পেন্ডিং <span className="text-amber-600 dark:text-amber-400 italic font-serif lowercase tracking-normal">শিক্ষক</span>
+          <h2 className="text-4xl font-black text-gray-900 dark:text-white tracking-wide uppercase leading-none [word-spacing:0.2em]">
+            পেন্ডিং <span className="ml-2 text-amber-600 dark:text-amber-400 italic font-serif lowercase tracking-normal">শিক্ষক</span>
           </h2>
           <div className="bg-gray-900 dark:bg-white text-white dark:text-gray-900 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">
             Total: {filteredTeachers.length}

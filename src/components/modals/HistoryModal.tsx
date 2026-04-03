@@ -15,7 +15,7 @@ export const HistoryModal = () => {
       onClick={() => setHistoryModalData(null)}
     >
       <div
-        className="bg-white rounded-t-[40px] p-6 w-full max-w-md max-h-[80vh] overflow-y-auto animate-in slide-in-from-bottom-full duration-300"
+        className="bg-white rounded-t-[40px] p-6 w-full max-w-md max-h-[80vh] overflow-y-auto no-scrollbar animate-in slide-in-from-bottom-full duration-300"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex justify-between items-center mb-6 pb-4 border-b border-gray-100">

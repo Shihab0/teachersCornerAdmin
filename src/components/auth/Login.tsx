@@ -134,7 +134,7 @@ export const Login = ({ user, onLogin, onLogout, deals = [], isDarkMode, toggleD
               Kishoreganj's Premier Tuition Media
             </div>
             
-            <h1 className="text-3xl sm:text-5xl md:text-7xl lg:text-8xl font-black text-slate-900 dark:text-white leading-[1.1] sm:leading-[0.95] mb-6 sm:mb-8 tracking-wide [word-spacing:0.1em] text-balance">
+            <h1 className="text-3xl sm:text-5xl md:text-7xl lg:text-8xl font-black text-slate-900 dark:text-white leading-[1.1] sm:leading-[0.95] mb-6 sm:mb-8 tracking-wide [word-spacing:0.2em] text-balance">
               আপনার সন্তানের <br />
               <span className="text-emerald-600 italic">ভবিষ্যৎ</span> গড়ুন
             </h1>
@@ -237,7 +237,7 @@ export const Login = ({ user, onLogin, onLogout, deals = [], isDarkMode, toggleD
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 md:mb-16 gap-6">
             <div className="max-w-2xl">
-              <h2 className="text-3xl md:text-5xl lg:text-6xl font-black text-slate-900 dark:text-white sm:tracking-tighter mb-6 leading-none">
+              <h2 className="text-3xl md:text-5xl lg:text-6xl font-black text-slate-900 dark:text-white tracking-wide [word-spacing:0.2em] mb-6 leading-none">
                 কেন আমাদের <br />
                 <span className="text-emerald-600">পছন্দ করবেন?</span>
               </h2>
@@ -270,7 +270,7 @@ export const Login = ({ user, onLogin, onLogout, deals = [], isDarkMode, toggleD
                 <Lightbulb className="w-4 h-4" />
                 Learning Strategy
               </motion.div>
-              <h2 className="text-3xl md:text-6xl font-black text-slate-900 dark:text-white tracking-tighter leading-[1.1]">
+              <h2 className="text-3xl md:text-6xl font-black text-slate-900 dark:text-white tracking-wide [word-spacing:0.2em] leading-[1.1]">
                 পড়াশোনায় ভালো করার <br />
                 <span className="text-emerald-600">গোপন টিপস</span>
               </h2>
@@ -333,7 +333,7 @@ export const Login = ({ user, onLogin, onLogout, deals = [], isDarkMode, toggleD
         
         <div className="max-w-6xl mx-auto relative z-10">
           <div className="text-center mb-12 md:mb-20">
-            <h2 className="text-3xl md:text-6xl font-black text-slate-900 dark:text-white tracking-tighter mb-6">আমাদের সাথে <span className="text-emerald-400">যুক্ত হোন</span></h2>
+            <h2 className="text-3xl md:text-6xl font-black text-slate-900 dark:text-white tracking-wide [word-spacing:0.2em] mb-6">আমাদের সাথে <span className="text-emerald-400">যুক্ত হোন</span></h2>
             <p className="text-base md:text-lg text-slate-500 dark:text-slate-400 font-medium max-w-2xl mx-auto">অভিভাবক হিসেবে সেরা শিক্ষক খুঁজুন অথবা শিক্ষক হিসেবে আপনার ক্যারিয়ার শুরু করুন।</p>
           </div>
 
@@ -388,7 +388,7 @@ export const Login = ({ user, onLogin, onLogout, deals = [], isDarkMode, toggleD
                 <Award className="w-4 h-4" />
                 Success Stories
               </motion.div>
-              <h2 className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter mb-4">সর্বশেষ ৫টি <span className="text-emerald-600">সফল টিউশন</span></h2>
+              <h2 className="text-4xl font-black text-slate-900 dark:text-white tracking-wide [word-spacing:0.2em] mb-4">সর্বশেষ ৫টি <span className="text-emerald-600">সফল টিউশন</span></h2>
             </div>
             
             <div className="flex justify-center">

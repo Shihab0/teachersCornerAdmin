@@ -10,7 +10,10 @@ export const COLLECTIONS = {
 
 export const ALLOWED_EMAILS = [
   "ataharshihab1@gmail.com",
+  "atahershihab151@gmail.com",
+  "teacherscorner01@gmail.com",
   "dipu.tc@gmail.com",
   "shimanto.tc@gmail.com",
-  "admin@tc.com"
+  "admin@tc.com",
+  "admin@test.com"
 ];

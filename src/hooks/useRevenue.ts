@@ -102,12 +102,28 @@ export const useRevenue = () => {
       return (revYear === "All" || y === revYear) && (revMonth === "All" || m === revMonth);
     });
 
-    const collected = fDeals.filter((d) => d.commissionStatus === "Paid").reduce((s, d) => s + Number(d.commission), 0);
-    const pending = fDeals.filter((d) => d.commissionStatus === "Pending" && !["Rejected", "Cancelled"].includes(d.tuitionStatus)).reduce((s, d) => s + Number(d.commission), 0);
+    const collected = fDeals.reduce((s, d) => {
+      if (d.commissionStatus === "Paid") return s + Number(d.commission);
+      if (d.commissionStatus === "Partial") return s + Number(d.paidAmount || 0);
+      return s;
+    }, 0);
+
+    const pending = fDeals.reduce((s, d) => {
+      if (["Rejected", "Cancelled"].includes(d.tuitionStatus)) return s;
+      if (d.commissionStatus === "Pending") return s + Number(d.commission);
+      if (d.commissionStatus === "Partial") return s + (Number(d.commission) - Number(d.paidAmount || 0));
+      return s;
+    }, 0);
+
     const totalExp = fExps.reduce((s, e) => s + Number(e.amount), 0);
 
     const admins: Record<string, number> = { Dipu: 0, Shimanto: 0 };
-    fDeals.forEach((d) => { if (d.commissionStatus === "Paid" && d.collectedBy) admins[d.collectedBy] += Number(d.commission); });
+    fDeals.forEach((d) => { 
+      if (d.collectedBy && admins[d.collectedBy] !== undefined) {
+        if (d.commissionStatus === "Paid") admins[d.collectedBy] += Number(d.commission);
+        if (d.commissionStatus === "Partial") admins[d.collectedBy] += Number(d.paidAmount || 0);
+      }
+    });
 
     const adminExps: Record<string, number> = { Dipu: 0, Shimanto: 0 };
     fExps.forEach((e) => { if (adminExps[e.adminName] !== undefined) adminExps[e.adminName] += Number(e.amount); });
@@ -118,14 +134,17 @@ export const useRevenue = () => {
   const exportToCSV = () => {
     const headers = ["Tuition ID", "Tutor Name", "Tutor Phone", "Guardian Phone", "Class", "Subject/Area", "Management", "Commission", "Tuition Status", "Payment Status", "Collected By", "Selection Date"];
     const rows = deals.map((d) => [d.tuitionId, d.tutorName, d.tutorPhone, d.guardianPhone, d.studentClass, `"${d.details || ""}"`, d.adminName, d.commission, d.tuitionStatus, d.commissionStatus, d.collectedBy || "N/A", d.selectionDate]);
-    const csvContent = "data:text/csv;charset=utf-8,\uFEFF" + [headers.join(","), ...rows.map((e) => e.join(","))].join("\n");
-    const encodedUri = encodeURI(csvContent);
+    
+    const csvContent = "\uFEFF" + [headers.join(","), ...rows.map((e) => e.join(","))].join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
+    link.setAttribute("href", url);
     link.setAttribute("download", `TC_Data_Backup_${new Date().toLocaleDateString()}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
   return {

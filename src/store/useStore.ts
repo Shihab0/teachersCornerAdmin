@@ -59,6 +59,8 @@ interface AppState {
   setHistoryModalData: (data: { title: string; history: any[] } | null) => void;
   isTeacherModalOpen: boolean;
   setIsTeacherModalOpen: (val: boolean) => void;
+  isManualEntryModalOpen: boolean;
+  setIsManualEntryModalOpen: (val: boolean) => void;
 }
 
 export const useStore = create<AppState>((set) => ({
@@ -143,4 +145,6 @@ export const useStore = create<AppState>((set) => ({
   setHistoryModalData: (historyModalData) => set({ historyModalData }),
   isTeacherModalOpen: false,
   setIsTeacherModalOpen: (isTeacherModalOpen) => set({ isTeacherModalOpen }),
+  isManualEntryModalOpen: false,
+  setIsManualEntryModalOpen: (isManualEntryModalOpen) => set({ isManualEntryModalOpen }),
 }));

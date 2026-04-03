@@ -3,6 +3,7 @@ import { Teacher } from "../../types";
 import { Search, Filter, Phone, MapPin, GraduationCap, Star, Plus, ChevronDown, ChevronUp, Briefcase, BookOpen, Award, Check, Facebook, IdCard } from "lucide-react";
 import { Icon } from "../ui/Icon";
 import { motion, AnimatePresence } from "motion/react";
+import { cn } from "../../lib/utils";
 
 const KISHOREGANJ_AREAS = [
   "Harua (হারুয়া)", "Rathkhola (রথখোলা)", "Gaital (গাইট্যাল)", "Botrish (বত্রিশ)",
@@ -74,133 +75,144 @@ export const TeacherList: React.FC<TeacherListProps> = ({
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-2xl font-black text-slate-800 dark:text-white tracking-tight">শিক্ষক তালিকা</h2>
+    <div className="space-y-10 pb-12 pt-6 px-4 md:px-8 lg:px-12 max-w-6xl mx-auto fade-in transition-colors">
+      <div className="flex justify-between items-center px-4 mb-8">
+        <div className="flex items-center gap-6">
+          <div className="p-4 bg-emerald-100 dark:bg-emerald-900/30 rounded-[24px] shadow-sm border border-emerald-50 dark:border-emerald-900/20">
+            <GraduationCap className="text-emerald-600 dark:text-emerald-400 w-8 h-8" />
+          </div>
+          <div>
+            <h2 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tight">শিক্ষক তালিকা</h2>
+            <p className="text-[11px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.3em] mt-1">Total: {filteredTeachers.length} Teachers</p>
+          </div>
+        </div>
         <button 
           onClick={onAddTeacher}
-          className="p-3 bg-emerald-600 text-white rounded-2xl shadow-lg shadow-emerald-100 dark:shadow-none active:scale-95 transition-transform"
+          className="w-14 h-14 bg-slate-950 dark:bg-white text-white dark:text-slate-950 rounded-[20px] shadow-2xl shadow-slate-950/20 dark:shadow-white/10 active:scale-95 transition-all flex items-center justify-center"
         >
-          <Plus size={20} />
+          <Plus size={28} />
         </button>
       </div>
 
       {/* Sub-tabs for Approved/Pending */}
-      <div className="flex p-1 bg-slate-100 dark:bg-slate-800 rounded-2xl mb-4">
+      <div className="flex p-3 bg-slate-100 dark:bg-slate-800/50 rounded-[40px] mb-12 border border-slate-200 dark:border-slate-700 shadow-inner">
         <button
           onClick={() => setActiveSubTab("Approved")}
-          className={`flex-1 py-2.5 text-xs font-black uppercase tracking-widest rounded-xl transition-all ${
-            activeSubTab === "Approved" ? "bg-white dark:bg-slate-900 text-emerald-600 dark:text-emerald-400 shadow-sm" : "text-slate-500 dark:text-slate-500"
-          }`}
+          className={cn(
+            "flex-1 py-5 text-[11px] font-black uppercase tracking-[0.3em] rounded-[28px] transition-all duration-500",
+            activeSubTab === "Approved" ? "bg-white dark:bg-slate-900 text-emerald-600 dark:text-emerald-400 shadow-2xl shadow-emerald-500/10 border border-emerald-100 dark:border-emerald-900/30" : "text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
+          )}
         >
           Approved ({teachers.filter(t => t.status === "Approved").length})
         </button>
         <button
           onClick={() => setActiveSubTab("Pending")}
-          className={`flex-1 py-2.5 text-xs font-black uppercase tracking-widest rounded-xl transition-all ${
-            activeSubTab === "Pending" ? "bg-white dark:bg-slate-900 text-emerald-600 dark:text-emerald-400 shadow-sm" : "text-slate-500 dark:text-slate-500"
-          }`}
+          className={cn(
+            "flex-1 py-5 text-[11px] font-black uppercase tracking-[0.3em] rounded-[28px] transition-all duration-500",
+            activeSubTab === "Pending" ? "bg-white dark:bg-slate-900 text-amber-600 dark:text-amber-400 shadow-2xl shadow-amber-500/10 border border-amber-100 dark:border-amber-900/30" : "text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
+          )}
         >
           Pending ({teachers.filter(t => t.status === "Pending").length})
         </button>
       </div>
 
-      <div className="space-y-4">
+      <div className="space-y-10 mb-12">
         <div className="relative group">
-          <Icon icon={Search} size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-emerald-500 transition-colors" />
+          <Icon icon={Search} size={24} className="absolute left-8 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-emerald-500 transition-colors" />
           <input
             type="text"
             placeholder="নাম বা প্রতিষ্ঠান দিয়ে খুঁজুন..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-12 pr-4 py-4 bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 dark:text-white font-medium text-sm transition-all"
+            className="w-full pl-20 pr-10 py-8 bg-white dark:bg-slate-900 rounded-[40px] border border-slate-100 dark:border-slate-800 shadow-sm focus:outline-none focus:ring-8 focus:ring-emerald-500/5 dark:text-white font-black text-base transition-all placeholder:text-slate-400 tracking-tight"
           />
         </div>
 
-        <div className="flex flex-wrap gap-2">
-          <div className="relative flex-1 min-w-[120px]">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+          <div className="relative group">
             <select
               value={filterArea}
               onChange={(e) => setFilterArea(e.target.value)}
-              className="w-full px-4 py-3 bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 text-xs font-bold text-slate-700 dark:text-slate-400 focus:outline-none appearance-none"
+              className="w-full px-8 py-6 bg-white dark:bg-slate-900 rounded-[28px] border border-slate-100 dark:border-slate-800 text-[11px] font-black uppercase tracking-[0.2em] text-slate-700 dark:text-slate-400 focus:outline-none appearance-none shadow-sm focus:ring-4 focus:ring-emerald-500/10 transition-all"
             >
               {areas.map(area => (
                 <option key={area} value={area}>{area === "All" ? "সব এলাকা" : area}</option>
               ))}
             </select>
-            <Icon icon={Filter} size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
+            <Icon icon={ChevronDown} size={18} className="absolute right-8 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
           </div>
 
-          <div className="relative flex-1 min-w-[120px]">
+          <div className="relative group">
             <select
               value={filterCollege}
               onChange={(e) => setFilterCollege(e.target.value)}
-              className="w-full px-4 py-3 bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 text-xs font-bold text-slate-700 dark:text-slate-400 focus:outline-none appearance-none"
+              className="w-full px-8 py-6 bg-white dark:bg-slate-900 rounded-[28px] border border-slate-100 dark:border-slate-800 text-[11px] font-black uppercase tracking-[0.2em] text-slate-700 dark:text-slate-400 focus:outline-none appearance-none shadow-sm focus:ring-4 focus:ring-emerald-500/10 transition-all"
             >
               {colleges.map(college => (
                 <option key={college} value={college}>{college === "All" ? "সব কলেজ" : college}</option>
               ))}
             </select>
-            <Icon icon={Filter} size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
+            <Icon icon={ChevronDown} size={18} className="absolute right-8 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
           </div>
 
-          <div className="relative flex-1 min-w-[120px]">
+          <div className="relative group">
             <select
               value={filterSpecialCategory}
               onChange={(e) => setFilterSpecialCategory(e.target.value)}
-              className="w-full px-4 py-3 bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 text-xs font-bold text-slate-700 dark:text-slate-400 focus:outline-none appearance-none"
+              className="w-full px-8 py-6 bg-white dark:bg-slate-900 rounded-[28px] border border-slate-100 dark:border-slate-800 text-[11px] font-black uppercase tracking-[0.2em] text-slate-700 dark:text-slate-400 focus:outline-none appearance-none shadow-sm focus:ring-4 focus:ring-emerald-500/10 transition-all"
             >
               {specialCategories.map(category => (
                 <option key={category} value={category}>{category === "All" ? "সব ক্যাটাগরি" : category}</option>
               ))}
             </select>
-            <Icon icon={Filter} size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
+            <Icon icon={ChevronDown} size={18} className="absolute right-8 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
           </div>
         </div>
       </div>
 
-      <div className="space-y-3">
+      <div className="space-y-8">
         {filteredTeachers.map(teacher => {
           const isExpanded = expandedId === teacher.id;
           return (
-            <div key={teacher.id} className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 overflow-hidden transition-all">
+            <div key={teacher.id} className="bg-white dark:bg-slate-900 rounded-[48px] shadow-sm border border-slate-100 dark:border-slate-800/50 overflow-hidden transition-all hover:border-emerald-200 dark:hover:border-emerald-800/50 hover:shadow-2xl hover:shadow-emerald-500/5">
               <div 
                 onClick={() => toggleExpand(teacher.id)}
-                className="py-3 px-4 flex items-center justify-between cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50 active:bg-slate-100 dark:active:bg-slate-800 transition-colors"
+                className="py-10 px-12 flex items-center justify-between cursor-pointer hover:bg-slate-50/50 dark:hover:bg-slate-800/30 active:bg-slate-100 dark:active:bg-slate-800 transition-all"
               >
-                <div className="flex items-center gap-3 flex-1">
-                  <div className="w-10 h-10 rounded-full bg-emerald-100 dark:bg-emerald-900/30 overflow-hidden shrink-0 border border-emerald-50 dark:border-emerald-900/20">
+                <div className="flex items-center gap-10 flex-1">
+                  <div className="w-24 h-24 rounded-[32px] bg-emerald-100 dark:bg-emerald-900/30 overflow-hidden shrink-0 border border-emerald-50 dark:border-emerald-900/20 shadow-inner group-hover:scale-110 transition-transform">
                     {teacher.photoUrl ? (
                       <img src={teacher.photoUrl} alt={teacher.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-emerald-400 font-bold text-lg">
+                      <div className="w-full h-full flex items-center justify-center text-emerald-500 font-black text-3xl">
                         {teacher.name.charAt(0)}
                       </div>
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <h3 className="font-bold text-slate-800 dark:text-white text-sm truncate">{teacher.name}</h3>
-                      <div className="flex items-center gap-1 bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 px-1.5 py-0.5 rounded-lg text-[10px] font-black shrink-0 border border-amber-100 dark:border-amber-900/30">
-                        <Star size={10} fill="currentColor" />
+                    <div className="flex items-center gap-6 mb-3">
+                      <h3 className="font-black text-slate-950 dark:text-white text-3xl truncate tracking-tight uppercase">{teacher.name}</h3>
+                      <div className="flex items-center gap-2 bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 px-4 py-2 rounded-2xl text-[12px] font-black shrink-0 border border-amber-100 dark:border-amber-900/30 shadow-sm">
+                        <Star size={16} fill="currentColor" />
                         {teacher.rating}
                       </div>
                     </div>
-                    <div className="text-xs text-slate-600 dark:text-slate-400 mt-0.5 truncate">
+                    <div className="text-base font-black text-slate-500 dark:text-slate-400 truncate flex items-center gap-4 uppercase tracking-wider">
+                      <div className="w-2 h-2 rounded-full bg-emerald-500" />
                       {teacher.collegeName}
                     </div>
                   </div>
                 </div>
-                <div className="flex items-center gap-3 shrink-0 ml-2">
+                <div className="flex items-center gap-8 shrink-0 ml-8">
                   <a 
                     href={`tel:${teacher.phone}`} 
                     onClick={(e) => e.stopPropagation()}
-                    className="p-2 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-full hover:bg-emerald-600 hover:text-white transition-all"
+                    className="w-16 h-16 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-[24px] flex items-center justify-center hover:bg-emerald-600 hover:text-white transition-all shadow-sm active:scale-90 border border-emerald-100 dark:border-emerald-900/20"
                   >
-                    <Phone size={14} />
+                    <Phone size={24} />
                   </a>
-                  <div className="text-slate-500 dark:text-slate-600">
-                    {isExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+                  <div className="text-slate-300 dark:text-slate-700">
+                    {isExpanded ? <ChevronUp size={32} /> : <ChevronDown size={32} />}
                   </div>
                 </div>
               </div>
@@ -211,127 +223,130 @@ export const TeacherList: React.FC<TeacherListProps> = ({
                     initial={{ height: 0, opacity: 0 }}
                     animate={{ height: "auto", opacity: 1 }}
                     exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.2 }}
+                    transition={{ duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
                   >
-                    <div className="p-4 pt-0 border-t border-slate-50 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 space-y-4">
+                    <div className="p-12 pt-4 border-t border-slate-100 dark:border-slate-800/50 bg-slate-50/30 dark:bg-slate-900/30 space-y-12">
                       
                       {/* Special Categories Badge */}
                       {(teacher.isMedical || teacher.isPublicUniversity || teacher.canTeachHSC) && (
-                        <div className="flex flex-wrap gap-2 mt-3">
+                        <div className="flex flex-wrap gap-4 mt-6">
                           {teacher.isMedical && (
-                            <div className="flex items-center gap-1 bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400 px-2 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest border border-rose-100 dark:border-rose-900/30">
-                              <Award size={12} /> Medical {teacher.medicalInstitution ? `(${teacher.medicalInstitution})` : ''}
+                            <div className="flex items-center gap-3 bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400 px-6 py-3 rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] border border-rose-100 dark:border-rose-900/30 shadow-sm">
+                              <Award size={18} /> Medical {teacher.medicalInstitution ? `(${teacher.medicalInstitution})` : ''}
                             </div>
                           )}
                           {teacher.isPublicUniversity && (
-                            <div className="flex items-center gap-1 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 px-2 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest border border-blue-100 dark:border-blue-900/30">
-                              <Award size={12} /> Public University {teacher.publicUniversityName ? `(${teacher.publicUniversityName})` : ''}
+                            <div className="flex items-center gap-3 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 px-6 py-3 rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] border border-blue-100 dark:border-blue-900/30 shadow-sm">
+                              <Award size={18} /> Public University {teacher.publicUniversityName ? `(${teacher.publicUniversityName})` : ''}
                             </div>
                           )}
                           {teacher.canTeachHSC && (
-                            <div className="flex items-center gap-1 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 px-2 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest border border-emerald-100 dark:border-emerald-900/30">
-                              <Award size={12} /> HSC ({teacher.hscSubject || "All"})
+                            <div className="flex items-center gap-3 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 px-6 py-3 rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] border border-emerald-100 dark:border-emerald-900/30 shadow-sm">
+                              <Award size={18} /> HSC ({teacher.hscSubject || "All"})
                             </div>
                           )}
                         </div>
                       )}
 
                       {/* Addresses */}
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
-                        <div className="bg-white dark:bg-slate-900 p-3 rounded-xl border border-slate-100 dark:border-slate-800">
-                          <div className="text-[10px] font-black text-slate-500 dark:text-slate-500 uppercase tracking-widest mb-1">বর্তমান ঠিকানা</div>
-                          <div className="flex items-start gap-2 text-slate-700 dark:text-slate-300 text-xs font-medium leading-relaxed">
-                            <MapPin size={14} className="text-emerald-500 shrink-0 mt-0.5" />
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div className="bg-white dark:bg-slate-900 p-8 rounded-[32px] border border-slate-100 dark:border-slate-800 shadow-sm">
+                          <div className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.3em] mb-4">বর্তমান ঠিকানা</div>
+                          <div className="flex items-start gap-4 text-slate-700 dark:text-slate-300 text-sm font-black leading-relaxed">
+                            <MapPin size={20} className="text-emerald-500 shrink-0 mt-0.5" />
                             {teacher.presentAddress}
                           </div>
                         </div>
-                        <div className="bg-white dark:bg-slate-900 p-3 rounded-xl border border-slate-100 dark:border-slate-800">
-                          <div className="text-[10px] font-black text-slate-500 dark:text-slate-500 uppercase tracking-widest mb-1">স্থায়ী ঠিকানা</div>
-                          <div className="flex items-start gap-2 text-slate-700 dark:text-slate-300 text-xs font-medium leading-relaxed">
-                            <MapPin size={14} className="text-emerald-500 shrink-0 mt-0.5" />
+                        <div className="bg-white dark:bg-slate-900 p-8 rounded-[32px] border border-slate-100 dark:border-slate-800 shadow-sm">
+                          <div className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.3em] mb-4">স্থায়ী ঠিকানা</div>
+                          <div className="flex items-start gap-4 text-slate-700 dark:text-slate-300 text-sm font-black leading-relaxed">
+                            <MapPin size={20} className="text-emerald-500 shrink-0 mt-0.5" />
                             {teacher.permanentAddress}
                           </div>
                         </div>
                       </div>
 
                       {/* Education */}
-                      <div className="bg-white dark:bg-slate-900 p-3 rounded-xl border border-slate-100 dark:border-slate-800">
-                        <div className="text-[10px] font-black text-slate-500 dark:text-slate-500 uppercase tracking-widest mb-2 flex items-center gap-1">
-                          <GraduationCap size={12} className="text-emerald-500" /> শিক্ষাগত যোগ্যতা
+                      <div className="bg-white dark:bg-slate-900 p-10 rounded-[40px] border border-slate-100 dark:border-slate-800 shadow-sm">
+                        <div className="text-[12px] font-black text-slate-500 dark:text-slate-500 uppercase tracking-[0.4em] mb-8 flex items-center gap-4">
+                          <div className="p-3 bg-emerald-50 dark:bg-emerald-900/20 rounded-2xl">
+                            <GraduationCap size={20} className="text-emerald-500" />
+                          </div>
+                          শিক্ষাগত যোগ্যতা
                         </div>
-                        <div className="space-y-2">
-                          <div className="grid grid-cols-4 gap-2 text-xs">
-                            <div className="font-bold text-slate-700 dark:text-slate-200">SSC</div>
-                            <div className="text-slate-700 dark:text-slate-400">{teacher.education?.ssc?.year}</div>
-                            <div className="text-slate-700 dark:text-slate-400">{teacher.education?.ssc?.group}</div>
-                            <div className="text-emerald-600 dark:text-emerald-400 font-medium">GPA: {teacher.education?.ssc?.gpa}</div>
+                        <div className="space-y-6">
+                          <div className="grid grid-cols-4 gap-6 text-sm">
+                            <div className="font-black text-slate-900 dark:text-white uppercase tracking-[0.2em]">SSC</div>
+                            <div className="text-slate-600 dark:text-slate-400 font-black">{teacher.education?.ssc?.year}</div>
+                            <div className="text-slate-600 dark:text-slate-400 font-black">{teacher.education?.ssc?.group}</div>
+                            <div className="text-emerald-600 dark:text-emerald-400 font-black">GPA: {teacher.education?.ssc?.gpa}</div>
                           </div>
-                          <div className="grid grid-cols-4 gap-2 text-xs border-t border-slate-50 dark:border-slate-800 pt-2">
-                            <div className="font-bold text-slate-700 dark:text-slate-200">HSC</div>
-                            <div className="text-slate-700 dark:text-slate-400">{teacher.education?.hsc?.year}</div>
-                            <div className="text-slate-700 dark:text-slate-400">{teacher.education?.hsc?.group}</div>
-                            <div className="text-emerald-600 dark:text-emerald-400 font-medium">GPA: {teacher.education?.hsc?.gpa}</div>
+                          <div className="grid grid-cols-4 gap-6 text-sm border-t border-slate-100 dark:border-slate-800 pt-6">
+                            <div className="font-black text-slate-900 dark:text-white uppercase tracking-[0.2em]">HSC</div>
+                            <div className="text-slate-600 dark:text-slate-400 font-black">{teacher.education?.hsc?.year}</div>
+                            <div className="text-slate-600 dark:text-slate-400 font-black">{teacher.education?.hsc?.group}</div>
+                            <div className="text-emerald-600 dark:text-emerald-400 font-black">GPA: {teacher.education?.hsc?.gpa}</div>
                           </div>
-                          <div className="grid grid-cols-4 gap-2 text-xs border-t border-slate-50 dark:border-slate-800 pt-2">
-                            <div className="font-bold text-slate-700 dark:text-slate-200">Honours</div>
-                            <div className="text-slate-700 dark:text-slate-400">{teacher.education?.honours?.year}</div>
-                            <div className="text-slate-700 dark:text-slate-400 truncate">{teacher.education?.honours?.subject} ({teacher.education?.honours?.studyYear})</div>
-                            <div className="text-emerald-600 dark:text-emerald-400 font-medium">GPA: {teacher.education?.honours?.gpa}</div>
+                          <div className="grid grid-cols-4 gap-6 text-sm border-t border-slate-100 dark:border-slate-800 pt-6">
+                            <div className="font-black text-slate-900 dark:text-white uppercase tracking-[0.2em]">Honours</div>
+                            <div className="text-slate-600 dark:text-slate-400 font-black">{teacher.education?.honours?.year}</div>
+                            <div className="text-slate-600 dark:text-slate-400 font-black truncate">{teacher.education?.honours?.subject} ({teacher.education?.honours?.studyYear})</div>
+                            <div className="text-emerald-600 dark:text-emerald-400 font-black">GPA: {teacher.education?.honours?.gpa}</div>
                           </div>
                         </div>
                       </div>
 
                       {/* Experience & Tuition */}
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        <div className="bg-white dark:bg-slate-900 p-3 rounded-xl border border-slate-100 dark:border-slate-800">
-                          <div className="text-[10px] font-black text-slate-500 dark:text-slate-500 uppercase tracking-widest mb-1 flex items-center gap-1">
-                            <Briefcase size={12} className="text-emerald-500" /> অভিজ্ঞতা
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div className="bg-white dark:bg-slate-900 p-8 rounded-[32px] border border-slate-100 dark:border-slate-800 shadow-sm">
+                          <div className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.3em] mb-4 flex items-center gap-3">
+                            <Briefcase size={18} className="text-emerald-500" /> অভিজ্ঞতা
                           </div>
-                          <div className="text-slate-700 dark:text-slate-300 text-xs font-medium">
+                          <div className="text-slate-700 dark:text-slate-300 text-sm font-black leading-relaxed">
                             {teacher.experience || "উল্লেখ নেই"}
                           </div>
                         </div>
-                        <div className="bg-white dark:bg-slate-900 p-3 rounded-xl border border-slate-100 dark:border-slate-800">
-                          <div className="text-[10px] font-black text-slate-500 dark:text-slate-500 uppercase tracking-widest mb-1 flex items-center gap-1">
-                            <BookOpen size={12} className="text-emerald-500" /> বর্তমানে টিউশনি
+                        <div className="bg-white dark:bg-slate-900 p-8 rounded-[32px] border border-slate-100 dark:border-slate-800 shadow-sm">
+                          <div className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.3em] mb-4 flex items-center gap-3">
+                            <BookOpen size={18} className="text-emerald-500" /> বর্তমানে টিউশনি
                           </div>
-                          <div className="text-slate-700 dark:text-slate-300 text-xs font-medium">
+                          <div className="text-slate-700 dark:text-slate-300 text-sm font-black">
                             {teacher.hasCurrentTuition ? (
-                              <span className="text-emerald-600 dark:text-emerald-400 font-bold bg-emerald-50 dark:bg-emerald-900/20 px-2 py-0.5 rounded-md">আছে</span>
+                              <span className="text-emerald-600 dark:text-emerald-400 font-black bg-emerald-50 dark:bg-emerald-900/20 px-6 py-2 rounded-2xl border border-emerald-100 dark:border-emerald-900/20 uppercase tracking-[0.2em]">আছে</span>
                             ) : (
-                              <span className="text-rose-600 dark:text-rose-400 font-bold bg-rose-50 dark:bg-rose-900/20 px-2 py-0.5 rounded-md">নেই</span>
+                              <span className="text-rose-600 dark:text-rose-400 font-black bg-rose-50 dark:bg-rose-900/20 px-6 py-2 rounded-2xl border border-rose-100 dark:border-rose-900/20 uppercase tracking-[0.2em]">নেই</span>
                             )}
                           </div>
                         </div>
                       </div>
 
                       {/* Interested Subjects */}
-                      <div className="bg-white dark:bg-slate-900 p-3 rounded-xl border border-slate-100 dark:border-slate-800">
-                        <div className="text-[10px] font-black text-slate-500 dark:text-slate-500 uppercase tracking-widest mb-1">যেসব বিষয়ে এবং শ্রেণীতে পড়াতে আগ্রহী</div>
-                        <div className="text-slate-700 dark:text-slate-300 text-xs font-medium leading-relaxed">
+                      <div className="bg-white dark:bg-slate-900 p-8 rounded-[32px] border border-slate-100 dark:border-slate-800 shadow-sm">
+                        <div className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.3em] mb-4">যেসব বিষয়ে এবং শ্রেণীতে পড়াতে আগ্রহী</div>
+                        <div className="text-lg font-black text-slate-800 dark:text-slate-200 leading-relaxed">
                           {teacher.interestedSubjectsAndClasses || "উল্লেখ নেই"}
                         </div>
                       </div>
 
                       {/* Social & ID */}
                       {(teacher.facebookLink || teacher.studentIdUrl) && (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                           {teacher.facebookLink && (
-                            <div className="bg-white dark:bg-slate-900 p-3 rounded-xl border border-slate-100 dark:border-slate-800">
-                              <div className="text-[10px] font-black text-slate-500 dark:text-slate-500 uppercase tracking-widest mb-1 flex items-center gap-1">
-                                <Facebook size={12} className="text-emerald-500" /> ফেসবুক প্রোফাইল
+                            <div className="bg-white dark:bg-slate-900 p-8 rounded-[32px] border border-slate-100 dark:border-slate-800 shadow-sm">
+                              <div className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.3em] mb-4 flex items-center gap-3">
+                                <Facebook size={18} className="text-emerald-500" /> ফেসবুক প্রোফাইল
                               </div>
-                              <a href={teacher.facebookLink} target="_blank" rel="noopener noreferrer" className="text-emerald-600 dark:text-emerald-400 text-xs font-medium hover:underline truncate block">
+                              <a href={teacher.facebookLink} target="_blank" rel="noopener noreferrer" className="text-emerald-600 dark:text-emerald-400 text-sm font-black hover:underline truncate block tracking-tight">
                                 {teacher.facebookLink}
                               </a>
                             </div>
                           )}
                           {teacher.studentIdUrl && (
-                            <div className="bg-white dark:bg-slate-900 p-3 rounded-xl border border-slate-100 dark:border-slate-800">
-                              <div className="text-[10px] font-black text-slate-500 dark:text-slate-500 uppercase tracking-widest mb-1 flex items-center gap-1">
-                                <IdCard size={12} className="text-emerald-500" /> স্টুডেন্ট আইডি
+                            <div className="bg-white dark:bg-slate-900 p-8 rounded-[32px] border border-slate-100 dark:border-slate-800 shadow-sm">
+                              <div className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.3em] mb-4 flex items-center gap-3">
+                                <IdCard size={18} className="text-emerald-500" /> স্টুডেন্ট আইডি
                               </div>
-                              <a href={teacher.studentIdUrl} target="_blank" rel="noopener noreferrer" className="text-emerald-600 dark:text-emerald-400 text-xs font-medium hover:underline truncate block">
+                              <a href={teacher.studentIdUrl} target="_blank" rel="noopener noreferrer" className="text-emerald-600 dark:text-emerald-400 text-sm font-black hover:underline truncate block tracking-tight">
                                 ছবি দেখুন
                               </a>
                             </div>
@@ -341,22 +356,22 @@ export const TeacherList: React.FC<TeacherListProps> = ({
 
                       {/* Admin Actions for Pending Teachers */}
                       {activeSubTab === "Pending" && onUpdateStatus && onDelete && (
-                        <div className="flex gap-2 pt-2">
+                        <div className="flex gap-6 pt-6">
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
                               onUpdateStatus(teacher.id, "Approved");
                             }}
-                            className="flex-1 py-3 bg-emerald-600 text-white rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-emerald-100 dark:shadow-none active:scale-95 transition-transform flex items-center justify-center gap-2"
+                            className="flex-1 py-6 bg-emerald-600 text-white rounded-[28px] font-black text-[13px] uppercase tracking-[0.3em] shadow-2xl shadow-emerald-500/20 active:scale-95 transition-all flex items-center justify-center gap-4"
                           >
-                            <Check size={14} /> Approve
+                            <Check size={24} /> Approve
                           </button>
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
                               onDelete(teacher.id);
                             }}
-                            className="flex-1 py-3 bg-rose-600 text-white rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-rose-100 dark:shadow-none active:scale-95 transition-transform flex items-center justify-center gap-2"
+                            className="flex-1 py-6 bg-rose-600 text-white rounded-[28px] font-black text-[13px] uppercase tracking-[0.3em] shadow-2xl shadow-rose-500/20 active:scale-95 transition-all flex items-center justify-center gap-4"
                           >
                             Reject & Delete
                           </button>
@@ -372,13 +387,16 @@ export const TeacherList: React.FC<TeacherListProps> = ({
         })}
 
         {filteredTeachers.length === 0 && (
-          <div className="text-center py-12 bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm">
-            <Icon icon={Search} size={40} className="mx-auto text-slate-200 dark:text-slate-700 mb-3" />
-            <p className="text-slate-500 dark:text-slate-400 text-sm font-bold mb-6">কোনো শিক্ষক পাওয়া যায়নি!</p>
+          <div className="text-center py-24 bg-white dark:bg-slate-900 rounded-[56px] border border-slate-100 dark:border-slate-800 shadow-sm">
+            <div className="w-24 h-24 bg-slate-50 dark:bg-slate-800 rounded-[32px] flex items-center justify-center mx-auto mb-8 text-slate-200 dark:text-slate-700">
+              <Search size={48} />
+            </div>
+            <h3 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tight mb-2">কোনো শিক্ষক পাওয়া যায়নি!</h3>
+            <p className="text-slate-400 dark:text-slate-500 font-black uppercase tracking-[0.2em] text-[11px] mb-8">অন্য কোনো কি-ওয়ার্ড দিয়ে চেষ্টা করুন</p>
             {teachers.length === 0 && (
               <button
                 onClick={onResetDemo}
-                className="px-6 py-3 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 rounded-2xl font-black text-xs uppercase tracking-widest border-2 border-emerald-100 dark:border-emerald-900/20 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition-colors"
+                className="px-10 py-5 bg-emerald-500 text-white rounded-[28px] font-black text-[11px] uppercase tracking-[0.3em] shadow-2xl shadow-emerald-500/20 hover:bg-emerald-600 transition-all active:scale-95"
               >
                 ডেমো ডাটা লোড করুন
               </button>
@@ -387,10 +405,10 @@ export const TeacherList: React.FC<TeacherListProps> = ({
         )}
 
         {teachers.length > 0 && (
-          <div className="pt-4 pb-8">
+          <div className="pt-8 pb-12">
             <button
               onClick={onResetDemo}
-              className="w-full py-4 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 rounded-[24px] font-black text-xs uppercase tracking-widest border-2 border-emerald-100 dark:border-emerald-900/20 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition-colors"
+              className="w-full py-6 bg-slate-100 dark:bg-slate-800/50 text-slate-400 dark:text-slate-500 rounded-[32px] font-black text-[11px] uppercase tracking-[0.4em] border-2 border-dashed border-slate-200 dark:border-slate-700 hover:bg-rose-50 hover:text-rose-500 hover:border-rose-200 transition-all"
             >
               Reset Demo Data
             </button>

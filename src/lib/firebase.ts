@@ -12,9 +12,3 @@ export const googleProvider = new GoogleAuthProvider();
 googleProvider.setCustomParameters({ prompt: "select_account" });
 
 export const appId = "tc-admin-panel";
-export const allowedEmails = [
-  "admin@test.com",
-  "ataharshihab1@gmail.com",
-  "atahershihab151@gmail.com",
-  "teacherscorner01@gmail.com",
-];
