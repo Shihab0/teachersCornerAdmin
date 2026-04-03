@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { Icon } from "../ui/Icon";
-import { DollarSign, User, CreditCard } from "lucide-react";
+import { CreditCard, DollarSign, User } from "lucide-react";
 import { useStore } from "../../store/useStore";
 import { cn } from "../../lib/utils";
+import { toast } from "sonner";
 
 interface PaymentModalProps {
   onConfirm: (collector: string, amount: number) => void;
@@ -30,11 +31,11 @@ export const PaymentModal = ({ onConfirm }: PaymentModalProps) => {
   const handleConfirm = (selectedCollector: string) => {
     const payAmount = Number(amount);
     if (isNaN(payAmount) || payAmount <= 0) {
-      alert("সঠিক টাকার পরিমাণ দিন");
+      toast.error("সঠিক টাকার পরিমাণ দিন");
       return;
     }
     if (payAmount > remaining) {
-      alert("বকেয়া টাকার চেয়ে বেশি পেমেন্ট সম্ভব নয়");
+      toast.error("বকেয়া টাকার চেয়ে বেশি পেমেন্ট সম্ভব নয়");
       return;
     }
     onConfirm(selectedCollector, payAmount);

@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import { User as FirebaseUser } from "firebase/auth";
 import { collection, addDoc } from "firebase/firestore";
-import { db, appId } from "../../lib/firebase";
+import { auth, db, appId } from "../../lib/firebase";
 import { TeacherModal } from "../modals/TeacherModal";
 import { GuardianModal } from "../modals/GuardianModal";
 import { TuitionUpdatePost } from "../stats/TuitionUpdatePost";
@@ -34,7 +34,22 @@ export const Login = ({ user, onLogin, onLogout, onInstall, deals = [], isDarkMo
   const [showGuardianModal, setShowGuardianModal] = useState(false);
   const [showTeacherModal, setShowTeacherModal] = useState(false);
 
+  const handleFirestoreError = (error: any, operation: string, path: string) => {
+    const errInfo = {
+      error: error instanceof Error ? error.message : String(error),
+      operation,
+      path,
+      authInfo: {
+        userId: auth.currentUser?.uid || 'unauthenticated',
+        email: auth.currentUser?.email || 'none',
+      }
+    };
+    console.error(`Firestore ${operation} Error at ${path}:`, JSON.stringify(errInfo));
+    return error;
+  };
+
   const handleTeacherSubmit = async (teacherData: any) => {
+    const path = `artifacts/${appId}/public/data/tc_teachers`;
     try {
       const payload = {
         ...teacherData,
@@ -46,13 +61,14 @@ export const Login = ({ user, onLogin, onLogout, onInstall, deals = [], isDarkMo
       await addDoc(collection(db, "artifacts", appId, "public", "data", "tc_teachers"), payload);
       toast.success("আপনার সিভি সফলভাবে জমা হয়েছে! আমরা শীঘ্রই আপনার সাথে যোগাযোগ করব।");
     } catch (error) {
-      console.error("Error submitting CV:", error);
+      handleFirestoreError(error, "CREATE", path);
       toast.error("CV জমা দিতে সমস্যা হয়েছে। আবার চেষ্টা করুন।");
       throw error;
     }
   };
 
   const handleGuardianSubmit = async (guardianData: any) => {
+    const path = `artifacts/${appId}/public/data/tc_tuition_requests`;
     try {
       const payload = {
         ...guardianData,
@@ -62,7 +78,7 @@ export const Login = ({ user, onLogin, onLogout, onInstall, deals = [], isDarkMo
       await addDoc(collection(db, "artifacts", appId, "public", "data", "tc_tuition_requests"), payload);
       toast.success("আপনার রিকোয়েস্ট সফলভাবে জমা হয়েছে! আমরা শীঘ্রই যোগাযোগ করব।");
     } catch (error) {
-      console.error("Error submitting request:", error);
+      handleFirestoreError(error, "CREATE", path);
       toast.error("অনুরোধ জমা দিতে সমস্যা হয়েছে। আবার চেষ্টা করুন।");
       throw error;
     }

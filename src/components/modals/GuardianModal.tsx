@@ -65,7 +65,8 @@ export const GuardianModal: React.FC<GuardianModalProps> = ({ isOpen, onClose, o
       }, 2000);
     } catch (error) {
       console.error("Error submitting request:", error);
-      alert("অনুরোধ জমা দিতে সমস্যা হয়েছে। আবার চেষ্টা করুন।");
+      // Error is handled by the parent component
+      throw error;
     } finally {
       setIsSubmitting(false);
     }

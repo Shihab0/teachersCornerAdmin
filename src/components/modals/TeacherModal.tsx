@@ -144,7 +144,8 @@ export const TeacherModal: React.FC<TeacherModalProps> = ({
       setStep(1);
       onClose();
     } catch (error) {
-      toast.error("কিছু সমস্যা হয়েছে। আবার চেষ্টা করুন।");
+      // Error is handled by the parent component
+      throw error;
     } finally {
       setIsSubmitting(false);
     }

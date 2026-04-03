@@ -3,6 +3,7 @@ import { onAuthStateChanged, signInWithPopup, signOut } from "firebase/auth";
 import { auth, googleProvider } from "../lib/firebase";
 import { useStore } from "../store/useStore";
 import { ALLOWED_EMAILS } from "../constants";
+import { toast } from "sonner";
 
 export const useAuth = () => {
   const { setUser, setIsAdmin, setAuthLoading, setIsLoading } = useStore();
@@ -56,7 +57,7 @@ export const useAuth = () => {
       await signInWithPopup(auth, googleProvider);
     } catch (error) {
       console.error("Login failed:", error);
-      alert("লগইন ব্যর্থ হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।");
+      toast.error("লগইন ব্যর্থ হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।");
     } finally {
       setAuthLoading(false);
     }
