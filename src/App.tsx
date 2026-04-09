@@ -483,94 +483,95 @@ export default function App() {
     );
   }
 
-  if (!isAdmin) {
-    return (
-      <Login 
-        user={user} 
-        onLogin={handleLogin} 
-        onLogout={handleLogout} 
-        onInstall={handleInstallClick}
-        deals={publicDeals} 
-        teachers={teachers}
-        isDarkMode={isDarkMode}
-        toggleDarkMode={toggleDarkMode}
-      />
-    );
-  }
-
   return (
     <div className={cn("flex flex-col h-screen max-w-screen-xl mx-auto bg-gray-50 dark:bg-slate-950 overflow-hidden shadow-2xl transition-colors duration-500", isDarkMode && "dark")}>
       <Toaster position="top-center" richColors />
-      <Header 
-        onLogout={handleLogout} 
-        onInstall={handleInstallClick} 
-      />
       
-      <main className="flex-1 overflow-y-auto pb-24 no-scrollbar">
-        {activeTab === "dashboard" && (
-          <Dashboard 
-            onEdit={handleEditClick} 
-            onDelete={deleteDeal} 
-            onStatusChange={changeTuitionStatus} 
-            onHistoryClick={(data) => setHistoryModalData(data)}
-            onPayment={(id) => setPaymentModalDealId(id)} 
-            onUndoPayment={handleUndoPayment}
+      {!isAdmin ? (
+        <Login 
+          user={user} 
+          onLogin={handleLogin} 
+          onLogout={handleLogout} 
+          onInstall={handleInstallClick}
+          deals={publicDeals} 
+          teachers={teachers}
+          isDarkMode={isDarkMode}
+          toggleDarkMode={toggleDarkMode}
+        />
+      ) : (
+        <>
+          <Header 
+            onLogout={handleLogout} 
+            onInstall={handleInstallClick} 
           />
-        )}
-        {activeTab === "add" && (
-          <AddDeal 
-            formData={formData} 
-            onInputChange={handleInputChange} 
-            onSubmit={handleAddDeal} 
-            isEditing={isEditing} 
-            idError={idError} 
-            onCancel={() => { setIsEditing(false); setEditId(null); setActiveTab("dashboard"); }} 
-            onDelete={handleDeleteFromEdit}
-            setFormData={setFormData}
-            setIdError={setIdError}
-          />
-        )}
-        {activeTab === "revenue" && (
-          <Revenue 
-            onHistoryClick={(data) => setHistoryModalData(data)}
-          />
-        )}
-        {activeTab === "stats" && (
-          <Stats 
-            deals={deals} 
-            teachers={teachers} 
-          />
-        )}
-        {activeTab === "teachers" && (
-          <TeacherList 
-            teachers={teachers} 
-            onAddTeacher={() => setIsTeacherModalOpen(true)} 
-            onUpdateStatus={handleUpdateTeacherStatus}
-            onDelete={handleDeleteTeacher}
-          />
-        )}
-        {activeTab === "admin_requests" && (
-          <RequestsList 
-            requests={tuitionRequests} 
-            onUpdateStatus={handleUpdateTuitionRequestStatus} 
-            onDelete={handleDeleteTuitionRequest} 
-            onAddRequest={handleAddManualTuitionRequest}
-          />
-        )}
-        {activeTab === "admin_pending_teachers" && (
-          <PendingTeachersList 
-            teachers={teachers} 
-            onUpdateStatus={handleUpdateTeacherStatus} 
-            onDelete={handleDeleteTeacher} 
-          />
-        )}
-      </main>
+          
+          <main className="flex-1 overflow-y-auto pb-24 no-scrollbar">
+            {activeTab === "dashboard" && (
+              <Dashboard 
+                onEdit={handleEditClick} 
+                onDelete={deleteDeal} 
+                onStatusChange={changeTuitionStatus} 
+                onHistoryClick={(data) => setHistoryModalData(data)}
+                onPayment={(id) => setPaymentModalDealId(id)} 
+                onUndoPayment={handleUndoPayment}
+              />
+            )}
+            {activeTab === "add" && (
+              <AddDeal 
+                formData={formData} 
+                onInputChange={handleInputChange} 
+                onSubmit={handleAddDeal} 
+                isEditing={isEditing} 
+                idError={idError} 
+                onCancel={() => { setIsEditing(false); setEditId(null); setActiveTab("dashboard"); }} 
+                onDelete={handleDeleteFromEdit}
+                setFormData={setFormData}
+                setIdError={setIdError}
+              />
+            )}
+            {activeTab === "revenue" && (
+              <Revenue 
+                onHistoryClick={(data) => setHistoryModalData(data)}
+              />
+            )}
+            {activeTab === "stats" && (
+              <Stats 
+                deals={deals} 
+                teachers={teachers} 
+              />
+            )}
+            {activeTab === "teachers" && (
+              <TeacherList 
+                teachers={teachers} 
+                onAddTeacher={() => setIsTeacherModalOpen(true)} 
+                onUpdateStatus={handleUpdateTeacherStatus}
+                onDelete={handleDeleteTeacher}
+              />
+            )}
+            {activeTab === "admin_requests" && (
+              <RequestsList 
+                requests={tuitionRequests} 
+                onUpdateStatus={handleUpdateTuitionRequestStatus} 
+                onDelete={handleDeleteTuitionRequest} 
+                onAddRequest={handleAddManualTuitionRequest}
+              />
+            )}
+            {activeTab === "admin_pending_teachers" && (
+              <PendingTeachersList 
+                teachers={teachers} 
+                onUpdateStatus={handleUpdateTeacherStatus} 
+                onDelete={handleDeleteTeacher} 
+              />
+            )}
+          </main>
 
-      <Footer 
-        isEditing={isEditing} 
-        onEntryClick={() => setActiveTab("add")} 
-        onInstall={handleInstallClick} 
-      />
+          <Footer 
+            isEditing={isEditing} 
+            onEntryClick={() => setActiveTab("add")} 
+            onInstall={handleInstallClick} 
+          />
+        </>
+      )}
 
       <PaymentModal onConfirm={processPayment} />
       <HistoryModal />
