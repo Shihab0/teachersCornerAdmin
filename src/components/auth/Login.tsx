@@ -23,7 +23,7 @@ interface LoginProps {
   user: FirebaseUser | null;
   onLogin: () => Promise<void>;
   onLogout: () => void;
-  onInstall?: () => void;
+  onInstall: () => void;
   deals?: Deal[];
   teachers?: any[];
   isDarkMode: boolean;
@@ -119,7 +119,7 @@ export const Login = ({ user, onLogin, onLogout, onInstall, deals = [], teachers
 
   return (
     <div className={cn(
-      "min-h-screen bg-[#fdfdfd] dark:bg-[#020617] selection:bg-emerald-500/30 font-sans overflow-x-hidden transition-colors duration-500",
+      "min-h-screen bg-[#fdfdfd] dark:bg-[#020617] selection:bg-emerald-500/30 font-sans overflow-x-hidden no-scrollbar transition-colors duration-500",
       isDarkMode && "dark"
     )}>
       <Toaster position="top-center" richColors />
@@ -479,7 +479,7 @@ export const Login = ({ user, onLogin, onLogout, onInstall, deals = [], teachers
                 <a href="tel:+8801611536951" className="text-[11px] sm:text-sm font-bold text-slate-500 dark:text-slate-400 hover:text-emerald-600 transition-colors">01611-536951</a>
                 <a href="tel:+8801609775933" className="text-[11px] sm:text-sm font-bold text-slate-500 dark:text-slate-400 hover:text-emerald-600 transition-colors">01609-775933</a>
               </div>
-              <a href="https://facebook.com/groups/436666579040846" target="_blank" className="px-5 py-2 sm:px-6 sm:py-2.5 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 rounded-full text-[10px] sm:text-xs font-black uppercase tracking-widest transition-all">Facebook Group</a>
+              <a href="https://facebook.com/teacherscorner0" target="_blank" className="px-5 py-2 sm:px-6 sm:py-2.5 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 rounded-full text-[10px] sm:text-xs font-black uppercase tracking-widest transition-all">Facebook Group</a>
             </div>
 
             <div className="text-center md:text-right">

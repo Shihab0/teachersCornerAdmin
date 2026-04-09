@@ -1,6 +1,6 @@
 {
-  "short_name": "TC Admin",
-  "name": "Teacher's Corner Admin Panel",
+  "short_name": "Teacher's Corner",
+  "name": "Teacher's Corner",
   "description": "Admin management tool for Teacher's Corner",
   "icons": [
     {
