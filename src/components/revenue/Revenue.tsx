@@ -50,11 +50,19 @@ export const Revenue = ({
     exportToCSV,
   } = useRevenue();
 
+  // Ensure both Dipu and Shimanto are always available in the list
+  const adminList = React.useMemo(() => {
+    const defaultAdmins = ["Dipu", "Shimanto"];
+    const dynamicAdmins = revStats.sortedAdmins;
+    const combined = Array.from(new Set([...defaultAdmins, ...dynamicAdmins]));
+    return combined.sort();
+  }, [revStats.sortedAdmins]);
+
   const [showAllExpenses, setShowAllExpenses] = useState(false);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
-  const admin1 = revStats.sortedAdmins[0];
-  const admin2 = revStats.sortedAdmins[1];
+  const admin1 = adminList.includes("Dipu") ? "Dipu" : adminList[0];
+  const admin2 = adminList.includes("Shimanto") ? "Shimanto" : adminList[1];
 
   const dNet = admin1 ? (revStats.admins[admin1] || 0) - (revStats.adminExps[admin1] || 0) : 0;
   const sNet = admin2 ? (revStats.admins[admin2] || 0) - (revStats.adminExps[admin2] || 0) : 0;
@@ -206,7 +214,7 @@ export const Revenue = ({
           </div>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
-          {revStats.sortedAdmins.map((admin) => {
+          {adminList.map((admin) => {
             const net = (revStats.admins[admin] || 0) - (revStats.adminExps[admin] || 0);
             return (
               <div key={admin} className="bg-slate-50/50 dark:bg-slate-800/30 p-8 rounded-[40px] border border-slate-100 dark:border-slate-800/50 group hover:border-emerald-200 dark:hover:border-emerald-800 transition-all hover:shadow-xl">
@@ -362,7 +370,7 @@ export const Revenue = ({
                   className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 rounded-3xl p-6 text-sm font-bold text-slate-700 dark:text-slate-300 outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 appearance-none uppercase tracking-widest shadow-sm transition-all"
                 >
                   <option value="" disabled>অ্যাডমিন সিলেক্ট করুন</option>
-                  {revStats.sortedAdmins.map(name => (
+                  {adminList.map(name => (
                     <option key={name} value={name}>{name}</option>
                   ))}
                 </select>

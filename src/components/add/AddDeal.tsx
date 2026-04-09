@@ -1,5 +1,5 @@
 import { useStore } from "../../store/useStore";
-import type { ChangeEvent, FormEvent } from "react";
+import { useMemo, type ChangeEvent, type FormEvent } from "react";
 import { Icon } from "../ui/Icon";
 import { Plus, Edit, CheckCircle, PlusCircle, Trash2, ChevronDown } from "lucide-react";
 import { Deal } from "../../types";
@@ -31,7 +31,14 @@ export const AddDeal = ({
 }: AddDealProps) => {
   const { isProcessing } = useStore();
   const { revStats } = useRevenue();
-  const adminList = revStats.sortedAdmins.length > 0 ? revStats.sortedAdmins : ["Dipu", "Shimanto"];
+  
+  // Ensure both Dipu and Shimanto are always available in the list
+  const adminList = useMemo(() => {
+    const defaultAdmins = ["Dipu", "Shimanto"];
+    const dynamicAdmins = revStats.sortedAdmins;
+    const combined = Array.from(new Set([...defaultAdmins, ...dynamicAdmins]));
+    return combined.sort();
+  }, [revStats.sortedAdmins]);
 
   return (
     <div className="max-w-4xl mx-auto px-4 md:px-8 lg:px-12 py-12 fade-in">
