@@ -190,52 +190,52 @@ export const PendingTeachersList: React.FC<PendingTeachersListProps> = ({
                 isSelected ? 'border-emerald-500 ring-4 ring-emerald-500/10' : 'border-gray-100 dark:border-slate-800'
               }`}
             >
-              <div className="flex items-center px-6 py-5">
+              <div className="flex items-center px-4 py-3">
                 <button 
                   onClick={() => toggleSelect(teacher.id)}
-                  className={`p-2.5 rounded-xl transition-all transform active:scale-90 ${
+                  className={`p-2 rounded-lg transition-all transform active:scale-90 ${
                     isSelected ? 'text-emerald-600 bg-emerald-50 dark:bg-emerald-950/30' : 'text-gray-200 dark:text-slate-700 hover:text-gray-400 dark:hover:text-slate-500'
                   }`}
                 >
-                  {isSelected ? <CheckSquare size={24} /> : <Square size={24} />}
+                  {isSelected ? <CheckSquare size={18} /> : <Square size={18} />}
                 </button>
                 <div 
                   onClick={() => toggleExpand(teacher.id)}
-                  className="flex-1 flex items-center justify-between cursor-pointer ml-4"
+                  className="flex-1 flex items-center justify-between cursor-pointer ml-3"
                 >
-                  <div className="flex items-center gap-4 flex-1">
-                    <div className="w-14 h-14 rounded-2xl bg-gray-50 dark:bg-slate-800 overflow-hidden shrink-0 border-2 border-white dark:border-slate-700 shadow-sm">
+                  <div className="flex items-center gap-3 flex-1">
+                    <div className="w-10 h-10 rounded-xl bg-gray-50 dark:bg-slate-800 overflow-hidden shrink-0 border border-slate-100 dark:border-slate-700 shadow-sm">
                       {teacher.photoUrl ? (
                         <img src={teacher.photoUrl} alt={teacher.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center text-emerald-400 font-black text-xl">
+                        <div className="w-full h-full flex items-center justify-center text-emerald-400 font-black text-sm">
                           {teacher.name.charAt(0)}
                         </div>
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <h3 className="font-black text-gray-900 dark:text-white text-base tracking-tight truncate">{teacher.name}</h3>
-                        <div className="flex items-center gap-1 bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 px-2 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-widest shrink-0 border border-amber-100 dark:border-amber-900/30">
+                      <div className="flex items-center gap-2 mb-0.5">
+                        <h3 className="font-black text-gray-900 dark:text-white text-sm tracking-tight truncate uppercase">{teacher.name}</h3>
+                        <div className="flex items-center gap-1 bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 px-1.5 py-0.5 rounded-md text-[8px] font-black uppercase tracking-widest shrink-0 border border-amber-100 dark:border-amber-900/30">
                           {teacher.status}
                         </div>
                       </div>
-                      <div className="text-xs font-bold text-gray-400 dark:text-slate-500 truncate flex items-center gap-1.5">
-                        <GraduationCap size={14} className="text-emerald-500" />
+                      <div className="text-[9px] font-black text-gray-400 dark:text-slate-500 truncate flex items-center gap-1.5 uppercase tracking-wider">
+                        <GraduationCap size={12} className="text-emerald-500" />
                         {teacher.collegeName}
                       </div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-4 shrink-0 ml-4">
+                  <div className="flex items-center gap-3 shrink-0 ml-3">
                     <a 
                       href={`tel:${teacher.phone}`} 
                       onClick={(e) => e.stopPropagation()}
-                      className="w-10 h-10 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 rounded-xl flex items-center justify-center hover:bg-emerald-600 hover:text-white transition-all shadow-sm"
+                      className="w-8 h-8 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 rounded-lg flex items-center justify-center hover:bg-emerald-600 hover:text-white transition-all shadow-sm"
                     >
-                      <Phone size={18} />
+                      <Phone size={14} />
                     </a>
                     <div className="text-gray-300 dark:text-slate-700">
-                      {isExpanded ? <ChevronUp size={24} /> : <ChevronDown size={24} />}
+                      {isExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
                     </div>
                   </div>
                 </div>
@@ -249,24 +249,24 @@ export const PendingTeachersList: React.FC<PendingTeachersListProps> = ({
                     exit={{ height: 0, opacity: 0 }}
                     transition={{ duration: 0.2 }}
                   >
-                    <div className="p-6 pt-0 border-t border-gray-100 dark:border-slate-800 bg-gray-50/30 dark:bg-slate-900/50 space-y-6">
+                    <div className="p-6 pt-2 border-t border-gray-100 dark:border-slate-800 bg-gray-50/30 dark:bg-slate-900/50 space-y-6">
                       
                       {/* Special Categories Badge */}
                       {(teacher.isMedical || teacher.isPublicUniversity || teacher.canTeachHSC) && (
-                        <div className="flex flex-wrap gap-2 mt-4">
+                        <div className="flex flex-wrap gap-2 mt-2">
                           {teacher.isMedical && (
-                            <div className="flex items-center gap-1.5 bg-rose-50 dark:bg-rose-950/30 text-rose-600 dark:text-rose-400 px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-[0.15em] border border-rose-100 dark:border-rose-900/30">
-                              <Award size={14} /> Medical {teacher.medicalInstitution ? `(${teacher.medicalInstitution})` : ''}
+                            <div className="flex items-center gap-1.5 bg-rose-50 dark:bg-rose-950/30 text-rose-600 dark:text-rose-400 px-3 py-1.5 rounded-lg text-[8px] font-black uppercase tracking-[0.15em] border border-rose-100 dark:border-rose-900/30">
+                              <Award size={12} /> Medical {teacher.medicalInstitution ? `(${teacher.medicalInstitution})` : ''}
                             </div>
                           )}
                           {teacher.isPublicUniversity && (
-                            <div className="flex items-center gap-1.5 bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400 px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-[0.15em] border border-blue-100 dark:border-blue-900/30">
-                              <Award size={14} /> Public University {teacher.publicUniversityName ? `(${teacher.publicUniversityName})` : ''}
+                            <div className="flex items-center gap-1.5 bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400 px-3 py-1.5 rounded-lg text-[8px] font-black uppercase tracking-[0.15em] border border-blue-100 dark:border-blue-900/30">
+                              <Award size={12} /> Public University {teacher.publicUniversityName ? `(${teacher.publicUniversityName})` : ''}
                             </div>
                           )}
                           {teacher.canTeachHSC && (
-                            <div className="flex items-center gap-1.5 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-[0.15em] border border-emerald-100 dark:border-emerald-900/30">
-                              <Award size={14} /> HSC ({teacher.hscSubject || "All"})
+                            <div className="flex items-center gap-1.5 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 px-3 py-1.5 rounded-lg text-[8px] font-black uppercase tracking-[0.15em] border border-emerald-100 dark:border-emerald-900/30">
+                              <Award size={12} /> HSC ({teacher.hscSubject || "All"})
                             </div>
                           )}
                         </div>
@@ -274,47 +274,47 @@ export const PendingTeachersList: React.FC<PendingTeachersListProps> = ({
 
                       {/* Addresses */}
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm">
-                          <div className="text-[9px] font-black text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-2">বর্তমান ঠিকানা</div>
-                          <div className="flex items-start gap-2.5 text-gray-800 dark:text-slate-200 text-xs font-bold leading-relaxed">
-                            <MapPin size={16} className="text-emerald-500 shrink-0 mt-0.5" />
+                        <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-gray-100 dark:border-slate-800 shadow-sm">
+                          <div className="text-[8px] font-black text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-2">বর্তমান ঠিকানা</div>
+                          <div className="flex items-start gap-2 text-gray-800 dark:text-slate-200 text-[10px] font-black leading-relaxed">
+                            <MapPin size={14} className="text-emerald-500 shrink-0 mt-0.5" />
                             {teacher.presentAddress}
                           </div>
                         </div>
-                        <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm">
-                          <div className="text-[9px] font-black text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-2">স্থায়ী ঠিকানা</div>
-                          <div className="flex items-start gap-2.5 text-gray-800 dark:text-slate-200 text-xs font-bold leading-relaxed">
-                            <MapPin size={16} className="text-emerald-500 shrink-0 mt-0.5" />
+                        <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-gray-100 dark:border-slate-800 shadow-sm">
+                          <div className="text-[8px] font-black text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-2">স্থায়ী ঠিকানা</div>
+                          <div className="flex items-start gap-2 text-gray-800 dark:text-slate-200 text-[10px] font-black leading-relaxed">
+                            <MapPin size={14} className="text-emerald-500 shrink-0 mt-0.5" />
                             {teacher.permanentAddress}
                           </div>
                         </div>
                       </div>
 
                       {/* Education */}
-                      <div className="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-gray-100 dark:border-slate-800 shadow-sm">
-                        <div className="text-[10px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
+                      <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm">
+                        <div className="text-[9px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
                           <div className="p-1.5 bg-emerald-50 dark:bg-emerald-950/30 rounded-lg">
                             <GraduationCap size={14} />
                           </div>
                           শিক্ষাগত যোগ্যতা
                         </div>
-                        <div className="space-y-4">
-                          <div className="grid grid-cols-4 gap-4 text-xs">
+                        <div className="space-y-3">
+                          <div className="grid grid-cols-4 gap-2 text-[10px]">
                             <div className="font-black text-gray-900 dark:text-white uppercase tracking-tighter">SSC</div>
-                            <div className="text-gray-500 dark:text-slate-400 font-bold">{teacher.education?.ssc?.year}</div>
-                            <div className="text-gray-500 dark:text-slate-400 font-bold">{teacher.education?.ssc?.group}</div>
+                            <div className="text-gray-500 dark:text-slate-400 font-black">{teacher.education?.ssc?.year}</div>
+                            <div className="text-gray-500 dark:text-slate-400 font-black">{teacher.education?.ssc?.group}</div>
                             <div className="text-emerald-600 dark:text-emerald-400 font-black">GPA: {teacher.education?.ssc?.gpa}</div>
                           </div>
-                          <div className="grid grid-cols-4 gap-4 text-xs border-t border-gray-50 dark:border-slate-800 pt-4">
+                          <div className="grid grid-cols-4 gap-2 text-[10px] border-t border-gray-50 dark:border-slate-800 pt-3">
                             <div className="font-black text-gray-900 dark:text-white uppercase tracking-tighter">HSC</div>
-                            <div className="text-gray-500 dark:text-slate-400 font-bold">{teacher.education?.hsc?.year}</div>
-                            <div className="text-gray-500 dark:text-slate-400 font-bold">{teacher.education?.hsc?.group}</div>
+                            <div className="text-gray-500 dark:text-slate-400 font-black">{teacher.education?.hsc?.year}</div>
+                            <div className="text-gray-500 dark:text-slate-400 font-black">{teacher.education?.hsc?.group}</div>
                             <div className="text-emerald-600 dark:text-emerald-400 font-black">GPA: {teacher.education?.hsc?.gpa}</div>
                           </div>
-                          <div className="grid grid-cols-4 gap-4 text-xs border-t border-gray-50 dark:border-slate-800 pt-4">
+                          <div className="grid grid-cols-4 gap-2 text-[10px] border-t border-gray-50 dark:border-slate-800 pt-3">
                             <div className="font-black text-gray-900 dark:text-white uppercase tracking-tighter">Honours</div>
-                            <div className="text-gray-500 dark:text-slate-400 font-bold">{teacher.education?.honours?.year}</div>
-                            <div className="text-gray-500 dark:text-slate-400 font-bold truncate">{teacher.education?.honours?.subject} ({teacher.education?.honours?.studyYear})</div>
+                            <div className="text-gray-500 dark:text-slate-400 font-black">{teacher.education?.honours?.year}</div>
+                            <div className="text-gray-500 dark:text-slate-400 font-black truncate">{teacher.education?.honours?.subject} ({teacher.education?.honours?.studyYear})</div>
                             <div className="text-emerald-600 dark:text-emerald-400 font-black">GPA: {teacher.education?.honours?.gpa}</div>
                           </div>
                         </div>
@@ -322,32 +322,32 @@ export const PendingTeachersList: React.FC<PendingTeachersListProps> = ({
 
                       {/* Experience & Tuition */}
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm">
-                          <div className="text-[9px] font-black text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-2 flex items-center gap-1.5">
-                            <Briefcase size={14} className="text-emerald-500" /> অভিজ্ঞতা
+                        <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-gray-100 dark:border-slate-800 shadow-sm">
+                          <div className="text-[8px] font-black text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                            <Briefcase size={12} className="text-emerald-500" /> অভিজ্ঞতা
                           </div>
-                          <div className="text-gray-800 dark:text-slate-200 text-xs font-bold leading-relaxed">
+                          <div className="text-gray-800 dark:text-slate-200 text-[10px] font-black leading-relaxed">
                             {teacher.experience || "উল্লেখ নেই"}
                           </div>
                         </div>
-                        <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm">
-                          <div className="text-[9px] font-black text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-2 flex items-center gap-1.5">
-                            <BookOpen size={14} className="text-emerald-500" /> বর্তমানে টিউশনি
+                        <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-gray-100 dark:border-slate-800 shadow-sm">
+                          <div className="text-[8px] font-black text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                            <BookOpen size={12} className="text-emerald-500" /> বর্তমানে টিউশনি
                           </div>
-                          <div className="text-gray-800 dark:text-slate-200 text-xs font-bold">
+                          <div className="text-gray-800 dark:text-slate-200 text-[10px] font-black">
                             {teacher.hasCurrentTuition ? (
-                              <span className="text-emerald-600 dark:text-emerald-400 font-black bg-emerald-50 dark:bg-emerald-950/30 px-3 py-1 rounded-xl border border-emerald-100 dark:border-emerald-900/20">আছে</span>
+                              <span className="text-emerald-600 dark:text-emerald-400 font-black bg-emerald-50 dark:bg-emerald-950/30 px-3 py-1 rounded-md border border-emerald-100 dark:border-emerald-900/20">আছে</span>
                             ) : (
-                              <span className="text-rose-600 dark:text-rose-400 font-black bg-rose-50 dark:bg-rose-950/30 px-3 py-1 rounded-xl border border-rose-100 dark:border-rose-900/20">নেই</span>
+                              <span className="text-rose-600 dark:text-rose-400 font-black bg-rose-50 dark:bg-rose-950/30 px-3 py-1 rounded-md border border-rose-100 dark:border-rose-900/20">নেই</span>
                             )}
                           </div>
                         </div>
                       </div>
 
                       {/* Interested Subjects */}
-                      <div className="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-gray-100 dark:border-slate-800 shadow-sm">
-                        <div className="text-[9px] font-black text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-2">আগ্রহী বিষয় ও শ্রেণী</div>
-                        <div className="text-gray-800 dark:text-slate-200 text-sm font-bold leading-relaxed">
+                      <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-gray-100 dark:border-slate-800 shadow-sm">
+                        <div className="text-[8px] font-black text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-2">আগ্রহী বিষয় ও শ্রেণী</div>
+                        <div className="text-gray-800 dark:text-slate-200 text-xs font-black leading-relaxed">
                           {teacher.interestedSubjectsAndClasses || "উল্লেখ নেই"}
                         </div>
                       </div>
@@ -356,23 +356,42 @@ export const PendingTeachersList: React.FC<PendingTeachersListProps> = ({
                       {(teacher.facebookLink || teacher.studentIdUrl) && (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           {teacher.facebookLink && (
-                            <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm">
-                              <div className="text-[9px] font-black text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-2 flex items-center gap-1.5">
-                                <Facebook size={14} className="text-emerald-500" /> ফেসবুক প্রোফাইল
+                            <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-gray-100 dark:border-slate-800 shadow-sm">
+                              <div className="text-[8px] font-black text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                                <Facebook size={12} className="text-emerald-500" /> ফেসবুক প্রোফাইল
                               </div>
-                              <a href={teacher.facebookLink} target="_blank" rel="noopener noreferrer" className="text-emerald-600 dark:text-emerald-400 text-xs font-black hover:underline truncate block">
+                              <a href={teacher.facebookLink} target="_blank" rel="noopener noreferrer" className="text-emerald-600 dark:text-emerald-400 text-[10px] font-black hover:underline truncate block">
                                 {teacher.facebookLink}
                               </a>
                             </div>
                           )}
                           {teacher.studentIdUrl && (
-                            <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm">
-                              <div className="text-[9px] font-black text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-2 flex items-center gap-1.5">
-                                <IdCard size={14} className="text-emerald-500" /> স্টুডেন্ট আইডি
+                            <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-gray-100 dark:border-slate-800 shadow-sm">
+                              <div className="text-[8px] font-black text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                                <IdCard size={12} className="text-emerald-500" /> স্টুডেন্ট আইডি
                               </div>
-                              <a href={teacher.studentIdUrl} target="_blank" rel="noopener noreferrer" className="group flex items-center gap-2 text-emerald-600 dark:text-emerald-400 text-xs font-black hover:underline">
-                                ছবি দেখুন <Star size={12} className="group-hover:rotate-12 transition-transform" />
-                              </a>
+                              <div className="relative group/id overflow-hidden rounded-lg border border-slate-100 dark:border-slate-800 aspect-video bg-slate-50 dark:bg-slate-800/50">
+                                <img 
+                                  src={teacher.studentIdUrl} 
+                                  alt="Student ID" 
+                                  className="w-full h-full object-contain transition-transform duration-500 group-hover/id:scale-105"
+                                  referrerPolicy="no-referrer"
+                                />
+                                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/id:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                                  <button 
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      const win = window.open();
+                                      if (win) {
+                                        win.document.write(`<img src="${teacher.studentIdUrl}" style="max-width:100%; height:auto;" />`);
+                                      }
+                                    }}
+                                    className="px-3 py-1.5 bg-white text-slate-900 rounded-md text-[8px] font-black uppercase tracking-widest hover:bg-emerald-50 transition-colors"
+                                  >
+                                    বড় করে দেখুন
+                                  </button>
+                                </div>
+                              </div>
                             </div>
                           )}
                         </div>
@@ -383,25 +402,25 @@ export const PendingTeachersList: React.FC<PendingTeachersListProps> = ({
                         <button
                           onClick={() => handleStatusChange(teacher.id, "Approved")}
                           disabled={processingId === teacher.id}
-                          className="flex-1 flex items-center justify-center gap-2 py-4 bg-emerald-500 text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-emerald-600 transition-all shadow-lg shadow-emerald-100 dark:shadow-none disabled:opacity-50"
+                          className="flex-1 flex items-center justify-center gap-2 py-3 bg-emerald-500 text-white rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-emerald-600 transition-all shadow-lg shadow-emerald-100 dark:shadow-none disabled:opacity-50"
                         >
-                          {processingId === teacher.id ? <Loader2 size={18} className="animate-spin" /> : <CheckCircle2 size={18} />}
+                          {processingId === teacher.id ? <Loader2 size={16} className="animate-spin" /> : <CheckCircle2 size={16} />}
                           Approve
                         </button>
                         <button
                           onClick={() => handleStatusChange(teacher.id, "Rejected")}
                           disabled={processingId === teacher.id}
-                          className="flex-1 flex items-center justify-center gap-2 py-4 bg-rose-500 text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-rose-600 transition-all shadow-lg shadow-rose-100 dark:shadow-none disabled:opacity-50"
+                          className="flex-1 flex items-center justify-center gap-2 py-3 bg-rose-500 text-white rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-rose-600 transition-all shadow-lg shadow-rose-100 dark:shadow-none disabled:opacity-50"
                         >
-                          {processingId === teacher.id ? <Loader2 size={18} className="animate-spin" /> : <XCircle size={18} />}
+                          {processingId === teacher.id ? <Loader2 size={16} className="animate-spin" /> : <XCircle size={16} />}
                           Reject
                         </button>
                         <button
                           onClick={() => setConfirmDeleteId(teacher.id)}
                           disabled={processingId === teacher.id}
-                          className="p-4 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-2xl hover:bg-gray-800 dark:hover:bg-gray-100 transition-all shadow-lg shadow-gray-200 dark:shadow-none disabled:opacity-50"
+                          className="p-3 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-xl hover:bg-gray-800 dark:hover:bg-gray-100 transition-all shadow-lg shadow-gray-200 dark:shadow-none disabled:opacity-50"
                         >
-                          <Trash2 size={20} />
+                          <Trash2 size={18} />
                         </button>
                       </div>
 

@@ -35,14 +35,16 @@ interface TeacherModalProps {
   buttonText?: string;
   isOpen?: boolean;
   onClose?: () => void;
+  initialData?: Partial<Teacher>;
 }
 
 export const TeacherModal: React.FC<TeacherModalProps> = ({ 
   onAdd,
-  title = "নতুন শিক্ষক যোগ করুন",
-  buttonText = "শিক্ষক যোগ করুন",
+  title: propTitle,
+  buttonText: propButtonText,
   isOpen: propIsOpen,
-  onClose: propOnClose
+  onClose: propOnClose,
+  initialData
 }) => {
   const { isTeacherModalOpen, setIsTeacherModalOpen } = useStore();
   const isOpen = propIsOpen !== undefined ? propIsOpen : isTeacherModalOpen;
@@ -53,28 +55,71 @@ export const TeacherModal: React.FC<TeacherModalProps> = ({
   const years = Array.from({length: 2030 - 2010 + 1}, (_, i) => (2030 - i).toString());
 
   const [formData, setFormData] = useState({
-    name: "",
-    phone: "",
-    photoUrl: "",
-    collegeName: "",
-    presentAddress: "",
-    permanentAddress: "",
-    sscYear: "", sscGroup: "", sscGpa: "",
-    hscYear: "", hscGroup: "", hscGpa: "",
-    honoursYear: "", honoursSubject: "", honoursStudyYear: "", honoursGpa: "",
-    experience: "",
-    hasCurrentTuition: false,
-    interestedSubjectsAndClasses: "",
-    isMedical: false,
-    medicalInstitution: "",
-    isPublicUniversity: false,
-    publicUniversityName: "",
-    canTeachHSC: false,
-    hscSubject: "",
-    facebookLink: "",
-    studentIdUrl: "",
-    rating: "5.0",
+    name: initialData?.name || "",
+    phone: initialData?.phone || "",
+    photoUrl: initialData?.photoUrl || "",
+    collegeName: initialData?.collegeName || "",
+    presentAddress: initialData?.presentAddress || "",
+    permanentAddress: initialData?.permanentAddress || "",
+    sscYear: initialData?.education?.ssc?.year || "",
+    sscGroup: initialData?.education?.ssc?.group || "",
+    sscGpa: initialData?.education?.ssc?.gpa || "",
+    hscYear: initialData?.education?.hsc?.year || "",
+    hscGroup: initialData?.education?.hsc?.group || "",
+    hscGpa: initialData?.education?.hsc?.gpa || "",
+    honoursYear: initialData?.education?.honours?.year || "",
+    honoursSubject: initialData?.education?.honours?.subject || "",
+    honoursStudyYear: initialData?.education?.honours?.studyYear || "",
+    honoursGpa: initialData?.education?.honours?.gpa || "",
+    experience: initialData?.experience || "",
+    hasCurrentTuition: initialData?.hasCurrentTuition || false,
+    interestedSubjectsAndClasses: initialData?.interestedSubjectsAndClasses || "",
+    isMedical: initialData?.isMedical || false,
+    medicalInstitution: initialData?.medicalInstitution || "",
+    isPublicUniversity: initialData?.isPublicUniversity || false,
+    publicUniversityName: initialData?.publicUniversityName || "",
+    canTeachHSC: initialData?.canTeachHSC || false,
+    hscSubject: initialData?.hscSubject || "",
+    facebookLink: initialData?.facebookLink || "",
+    studentIdUrl: initialData?.studentIdUrl || "",
+    rating: initialData?.rating?.toString() || "5.0",
   });
+
+  React.useEffect(() => {
+    if (initialData) {
+      setFormData({
+        name: initialData.name || "",
+        phone: initialData.phone || "",
+        photoUrl: initialData.photoUrl || "",
+        collegeName: initialData.collegeName || "",
+        presentAddress: initialData.presentAddress || "",
+        permanentAddress: initialData.permanentAddress || "",
+        sscYear: initialData.education?.ssc?.year || "",
+        sscGroup: initialData.education?.ssc?.group || "",
+        sscGpa: initialData.education?.ssc?.gpa || "",
+        hscYear: initialData.education?.hsc?.year || "",
+        hscGroup: initialData.education?.hsc?.group || "",
+        hscGpa: initialData.education?.hsc?.gpa || "",
+        honoursYear: initialData.education?.honours?.year || "",
+        honoursSubject: initialData.education?.honours?.subject || "",
+        honoursStudyYear: initialData.education?.honours?.studyYear || "",
+        honoursGpa: initialData.education?.honours?.gpa || "",
+        experience: initialData.experience || "",
+        hasCurrentTuition: initialData.hasCurrentTuition || false,
+        interestedSubjectsAndClasses: initialData.interestedSubjectsAndClasses || "",
+        isMedical: initialData.isMedical || false,
+        medicalInstitution: initialData.medicalInstitution || "",
+        isPublicUniversity: initialData.isPublicUniversity || false,
+        publicUniversityName: initialData.publicUniversityName || "",
+        canTeachHSC: initialData.canTeachHSC || false,
+        hscSubject: initialData.hscSubject || "",
+        facebookLink: initialData.facebookLink || "",
+        studentIdUrl: initialData.studentIdUrl || "",
+        rating: initialData.rating?.toString() || "5.0",
+      });
+      setStep(1);
+    }
+  }, [initialData]);
 
   const [customCollege, setCustomCollege] = useState("");
   const [customPresentAddress, setCustomPresentAddress] = useState("");
@@ -217,7 +262,9 @@ export const TeacherModal: React.FC<TeacherModalProps> = ({
                   <GraduationCap className="w-6 h-6" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-black text-white tracking-tight">{title}</h3>
+                  <h3 className="text-xl font-black text-white tracking-tight">
+                    {initialData ? "শিক্ষক তথ্য আপডেট" : (propTitle || "নতুন শিক্ষক যোগ করুন")}
+                  </h3>
                   <p className="text-[10px] font-bold text-emerald-100 uppercase tracking-widest">ধাপ {step} / {totalSteps}</p>
                 </div>
               </div>
@@ -287,15 +334,27 @@ export const TeacherModal: React.FC<TeacherModalProps> = ({
                       <div className="space-y-1">
                         <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-4">ছবি (অপশনাল)</label>
                         <div className="relative">
-                          <label className="cursor-pointer flex flex-col items-center justify-center w-full h-32 bg-slate-50/50 dark:bg-slate-800/50 rounded-xl border-2 border-dashed border-slate-100 dark:border-slate-800 hover:bg-white dark:hover:bg-slate-800 hover:border-emerald-400 transition-colors">
-                            <div className="flex flex-col items-center justify-center">
-                              <Icon icon={ImageIcon} size={32} className="text-slate-400 mb-2" />
-                              <p className="text-sm font-medium text-slate-600 dark:text-slate-400">
-                                {formData.photoUrl ? "ছবি আপলোড হয়েছে" : "ক্লিক করে ছবি আপলোড করুন"}
-                              </p>
+                          {formData.photoUrl ? (
+                            <div className="relative group w-full h-40 rounded-xl overflow-hidden border-2 border-emerald-500 shadow-lg">
+                              <img src={formData.photoUrl} alt="Profile Preview" className="w-full h-full object-cover" />
+                              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                <label className="cursor-pointer px-4 py-2 bg-white text-slate-900 rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-emerald-50 transition-colors">
+                                  পরিবর্তন করুন
+                                  <input type="file" accept="image/*" className="hidden" onChange={(e) => handleImageUpload(e, 'photoUrl')} />
+                                </label>
+                              </div>
                             </div>
-                            <input type="file" accept="image/*" className="hidden" onChange={(e) => handleImageUpload(e, 'photoUrl')} />
-                          </label>
+                          ) : (
+                            <label className="cursor-pointer flex flex-col items-center justify-center w-full h-32 bg-slate-50/50 dark:bg-slate-800/50 rounded-xl border-2 border-dashed border-slate-100 dark:border-slate-800 hover:bg-white dark:hover:bg-slate-800 hover:border-emerald-400 transition-colors">
+                              <div className="flex flex-col items-center justify-center">
+                                <Icon icon={ImageIcon} size={32} className="text-slate-400 mb-2" />
+                                <p className="text-sm font-medium text-slate-600 dark:text-slate-400">
+                                  ক্লিক করে ছবি আপলোড করুন
+                                </p>
+                              </div>
+                              <input type="file" accept="image/*" className="hidden" onChange={(e) => handleImageUpload(e, 'photoUrl')} />
+                            </label>
+                          )}
                         </div>
                         <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold ml-4 mt-1">
                           * প্রোফাইল ভেরিফাই করার জন্য ছবি দেওয়া প্রয়োজন।
@@ -446,6 +505,27 @@ export const TeacherModal: React.FC<TeacherModalProps> = ({
                           </div>
                         </div>
 
+                        {formData.isMedical && (
+                          <div className="space-y-1">
+                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-4">মেডিকেল কলেজের নাম</label>
+                            <input type="text" value={formData.medicalInstitution} onChange={(e) => setFormData({ ...formData, medicalInstitution: e.target.value })} className="w-full px-4 py-3 bg-slate-50/50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800 text-sm font-medium text-slate-800 dark:text-slate-200" placeholder="মেডিকেল কলেজের নাম" />
+                          </div>
+                        )}
+
+                        {formData.isPublicUniversity && (
+                          <div className="space-y-1">
+                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-4">পাবলিক ইউনিভার্সিটির নাম</label>
+                            <input type="text" value={formData.publicUniversityName} onChange={(e) => setFormData({ ...formData, publicUniversityName: e.target.value })} className="w-full px-4 py-3 bg-slate-50/50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800 text-sm font-medium text-slate-800 dark:text-slate-200" placeholder="ইউনিভার্সিটির নাম" />
+                          </div>
+                        )}
+
+                        {formData.canTeachHSC && (
+                          <div className="space-y-1">
+                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-4">HSC বিষয়</label>
+                            <input type="text" value={formData.hscSubject} onChange={(e) => setFormData({ ...formData, hscSubject: e.target.value })} className="w-full px-4 py-3 bg-slate-50/50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800 text-sm font-medium text-slate-800 dark:text-slate-200" placeholder="উদা: পদার্থবিজ্ঞান, রসায়ন" />
+                          </div>
+                        )}
+
                         <div className="space-y-1">
                           <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-4">ফেসবুক প্রোফাইল লিংক (অপশনাল)</label>
                           <div className="relative">
@@ -456,13 +536,25 @@ export const TeacherModal: React.FC<TeacherModalProps> = ({
 
                         <div className="space-y-1">
                           <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-4">স্টুডেন্ট আইডি কার্ডের ছবি (অপশনাল)</label>
-                          <label className="cursor-pointer flex flex-col items-center justify-center w-full h-24 bg-slate-50/50 dark:bg-slate-800/50 rounded-xl border-2 border-dashed border-slate-100 dark:border-slate-800 hover:border-emerald-400 transition-colors">
-                            <Icon icon={IdCard} size={24} className="text-slate-400 mb-1" />
-                            <p className="text-xs font-medium text-slate-600 dark:text-slate-400">
-                              {formData.studentIdUrl ? "ছবি আপলোড হয়েছে" : "আইডি কার্ড আপলোড করুন"}
-                            </p>
-                            <input type="file" accept="image/*" className="hidden" onChange={(e) => handleImageUpload(e, 'studentIdUrl')} />
-                          </label>
+                          {formData.studentIdUrl ? (
+                            <div className="relative group w-full h-40 rounded-xl overflow-hidden border-2 border-emerald-500 shadow-lg">
+                              <img src={formData.studentIdUrl} alt="ID Card Preview" className="w-full h-full object-contain bg-slate-50 dark:bg-slate-800" />
+                              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                <label className="cursor-pointer px-4 py-2 bg-white text-slate-900 rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-emerald-50 transition-colors">
+                                  পরিবর্তন করুন
+                                  <input type="file" accept="image/*" className="hidden" onChange={(e) => handleImageUpload(e, 'studentIdUrl')} />
+                                </label>
+                              </div>
+                            </div>
+                          ) : (
+                            <label className="cursor-pointer flex flex-col items-center justify-center w-full h-24 bg-slate-50/50 dark:bg-slate-800/50 rounded-xl border-2 border-dashed border-slate-100 dark:border-slate-800 hover:border-emerald-400 transition-colors">
+                              <Icon icon={IdCard} size={24} className="text-slate-400 mb-1" />
+                              <p className="text-xs font-medium text-slate-600 dark:text-slate-400">
+                                আইডি কার্ড আপলোড করুন
+                              </p>
+                              <input type="file" accept="image/*" className="hidden" onChange={(e) => handleImageUpload(e, 'studentIdUrl')} />
+                            </label>
+                          )}
                           <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold ml-4 mt-1">
                             * ভেরিফাইড টিচার ব্যাজ পেতে স্টুডেন্ট আইডি কার্ডের ছবি দিন।
                           </p>
@@ -502,7 +594,7 @@ export const TeacherModal: React.FC<TeacherModalProps> = ({
                   className="flex-[2] py-4 bg-emerald-600 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-lg shadow-emerald-500/20 hover:bg-emerald-700 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
                 >
                   {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
-                  {buttonText}
+                  {initialData ? "আপডেট করুন" : (propButtonText || "শিক্ষক যোগ করুন")}
                 </button>
               )}
             </div>

@@ -412,15 +412,28 @@ export default function App() {
     );
   };
 
+  const [editingTeacher, setEditingTeacher] = useState<Teacher | null>(null);
+
   const handleAddTeacher = async (teacherData: Partial<Teacher>) => {
     try {
       const teacherRef = collection(db, COLLECTIONS.TEACHERS);
-      await addDoc(teacherRef, { ...teacherData, status: "Approved", createdAt: Date.now() });
-      toast.success("শিক্ষক সফলভাবে যুক্ত করা হয়েছে");
+      if (editingTeacher) {
+        await updateDoc(doc(teacherRef, editingTeacher.id), { ...teacherData, updatedAt: Date.now() });
+        toast.success("শিক্ষকের তথ্য আপডেট করা হয়েছে");
+      } else {
+        await addDoc(teacherRef, { ...teacherData, status: "Approved", createdAt: Date.now() });
+        toast.success("শিক্ষক সফলভাবে যুক্ত করা হয়েছে");
+      }
+      setEditingTeacher(null);
     } catch (error) {
-      console.error("Error adding teacher:", error);
-      toast.error("শিক্ষক যুক্ত করতে সমস্যা হয়েছে");
+      console.error("Error saving teacher:", error);
+      toast.error("তথ্য সেভ করতে সমস্যা হয়েছে");
     }
+  };
+
+  const handleEditTeacherClick = (teacher: Teacher) => {
+    setEditingTeacher(teacher);
+    setIsTeacherModalOpen(true);
   };
 
   const handleAddManualTuitionRequest = async (request: Omit<TuitionRequest, "id" | "createdAt">) => {
@@ -543,9 +556,10 @@ export default function App() {
             {activeTab === "teachers" && (
               <TeacherList 
                 teachers={teachers} 
-                onAddTeacher={() => setIsTeacherModalOpen(true)} 
-                onUpdateStatus={handleUpdateTeacherStatus}
-                onDelete={handleDeleteTeacher}
+                onAddTeacher={() => { setEditingTeacher(null); setIsTeacherModalOpen(true); }} 
+                onEditTeacher={isAdmin ? handleEditTeacherClick : undefined}
+                onUpdateStatus={isAdmin ? handleUpdateTeacherStatus : undefined}
+                onDelete={isAdmin ? handleDeleteTeacher : undefined}
               />
             )}
             {activeTab === "admin_requests" && (
@@ -576,7 +590,12 @@ export default function App() {
       <PaymentModal onConfirm={processPayment} />
       <HistoryModal />
       <ConfirmDialog {...confirmDialog} />
-      <TeacherModal onAdd={handleAddTeacher} />
+      <TeacherModal 
+        onAdd={handleAddTeacher} 
+        isOpen={isTeacherModalOpen}
+        onClose={() => { setIsTeacherModalOpen(false); setEditingTeacher(null); }}
+        initialData={editingTeacher || undefined}
+      />
     </div>
   );
 }
