@@ -95,64 +95,50 @@ export const TuitionUpdatePost: React.FC<TuitionUpdatePostProps> = ({ deals, hid
 
         {/* Rows Section */}
         <div className="relative z-10 w-full space-y-4">
-          {Array.from({ length: 5 }).map((_, index) => {
-            const deal = deals[index];
-            return (
+          {deals.length === 0 ? (
+            <div className="text-center py-10 bg-white/5 rounded-[32px] border border-white/10">
+              <p className="text-slate-500 text-xs font-black uppercase tracking-widest">No recent updates available</p>
+            </div>
+          ) : (
+            deals.slice(0, 5).map((deal, index) => (
               <motion.div
-                key={deal?.id || `placeholder-${index}`}
+                key={deal.id}
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.1 * index + 0.3 }}
-                className={cn(
-                  "border rounded-[22px] p-4 flex items-center gap-4 transition-all",
-                  deal 
-                    ? "bg-white/[0.04] border-white/10 hover:bg-white/[0.08] hover:border-white/20" 
-                    : "bg-white/[0.01] border-white/[0.02] opacity-30"
-                )}
+                className="border rounded-[22px] p-4 flex items-center gap-4 transition-all bg-white/[0.04] border-white/10 hover:bg-white/[0.08] hover:border-white/20"
                 style={{ 
-                  backgroundColor: deal ? 'rgba(255, 255, 255, 0.04)' : 'rgba(255, 255, 255, 0.01)',
-                  borderColor: deal ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 255, 255, 0.02)'
+                  backgroundColor: 'rgba(255, 255, 255, 0.04)',
+                  borderColor: 'rgba(255, 255, 255, 0.1)'
                 }}
               >
                 <div 
-                  className={cn(
-                    "w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 border shadow-inner",
-                    deal 
-                      ? "bg-emerald-500/10 border-emerald-500/20" 
-                      : "bg-slate-500/5 border-slate-500/10"
-                  )}
+                  className="w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 border shadow-inner bg-emerald-500/10 border-emerald-500/20"
                   style={{
-                    backgroundColor: deal ? 'rgba(16, 185, 129, 0.1)' : 'rgba(100, 116, 139, 0.05)',
-                    borderColor: deal ? 'rgba(16, 185, 129, 0.2)' : 'rgba(100, 116, 139, 0.1)'
+                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                    borderColor: 'rgba(16, 185, 129, 0.2)'
                   }}
                 >
-                  {deal ? (
-                    <CheckCircle2 className="w-5 h-5" style={{ color: '#34d399' }} />
-                  ) : (
-                    <div className="w-2 h-2 rounded-full bg-slate-600" />
-                  )}
+                  <CheckCircle2 className="w-5 h-5" style={{ color: '#34d399' }} />
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex justify-between items-center mb-1">
                     <span className="text-[9px] font-black text-slate-500 uppercase tracking-[0.2em]">
-                      {deal ? `ID: ${deal.tuitionId}` : "Waiting for update..."}
+                      ID: {deal.tuitionId}
                     </span>
                     <span className="text-[9px] font-black text-white/20 uppercase tabular-nums">
                       {index + 1}
                     </span>
                   </div>
-                  <h3 className={cn(
-                    "text-[15px] font-black truncate leading-tight tracking-tight",
-                    deal ? "text-white" : "text-slate-700"
-                  )}
-                  style={{ color: deal ? '#ffffff' : '#334155' }}
+                  <h3 className="text-[15px] font-black truncate leading-tight tracking-tight text-white"
+                  style={{ color: '#ffffff' }}
                   >
-                    {deal ? deal.tutorName : "••••••••••••"}
+                    {deal.tutorName}
                   </h3>
                 </div>
               </motion.div>
-            );
-          })}
+            ))
+          )}
         </div>
 
         {/* Footer Section */}

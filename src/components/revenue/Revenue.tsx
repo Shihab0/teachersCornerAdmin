@@ -20,19 +20,18 @@ import { useStore } from "../../store/useStore";
 import { useRevenue } from "../../hooks/useRevenue";
 
 interface RevenueProps {
-  onResetDemo: () => void;
   onHistoryClick?: (data: { title: string; history: HistoryEntry[] }) => void;
 }
 
 export const Revenue = ({
   onHistoryClick,
-  onResetDemo,
 }: RevenueProps) => {
   const {
     revYear,
     setRevYear,
     revMonth,
     setRevMonth,
+    deals,
     expenses,
     expenseForm,
     setExpenseForm,
@@ -54,8 +53,11 @@ export const Revenue = ({
   const [showAllExpenses, setShowAllExpenses] = useState(false);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
-  const dNet = revStats.admins.Dipu - revStats.adminExps.Dipu;
-  const sNet = revStats.admins.Shimanto - revStats.adminExps.Shimanto;
+  const admin1 = revStats.sortedAdmins[0];
+  const admin2 = revStats.sortedAdmins[1];
+
+  const dNet = admin1 ? (revStats.admins[admin1] || 0) - (revStats.adminExps[admin1] || 0) : 0;
+  const sNet = admin2 ? (revStats.admins[admin2] || 0) - (revStats.adminExps[admin2] || 0) : 0;
   
   const totalNet = Math.max(0, dNet) + Math.max(0, sNet);
   const dWidth = totalNet > 0 ? (Math.max(0, dNet) / totalNet) * 100 : 50;
@@ -65,10 +67,14 @@ export const Revenue = ({
   const isEq = dNet === sNet;
 
   let msg = "হিসাব সম্পূর্ণ সমান!";
-  if (dNet > sNet) {
-    msg = `হিসাব সমান করতে Dipu-এর Shimanto-কে ৳${diff} দিতে হবে (বা খরচ করতে হবে)।`;
-  } else if (sNet > dNet) {
-    msg = `হিসাব সমান করতে Shimanto-এর Dipu-কে ৳${diff} দিতে হবে (বা খরচ করতে হবে)।`;
+  if (admin1 && admin2) {
+    if (dNet > sNet) {
+      msg = `হিসাব সমান করতে ${admin1}-এর ${admin2}-কে ৳${diff} দিতে হবে (বা খরচ করতে হবে)।`;
+    } else if (sNet > dNet) {
+      msg = `হিসাব সমান করতে ${admin2}-এর ${admin1}-কে ৳${diff} দিতে হবে (বা খরচ করতে হবে)।`;
+    }
+  } else {
+    msg = "হিসাব সমান করার জন্য অন্তত দুইজন অ্যাডমিন প্রয়োজন।";
   }
 
   const displayedExpenses = showAllExpenses ? expenses : expenses.slice(0, 4);
@@ -94,8 +100,13 @@ export const Revenue = ({
                   className="bg-transparent border-none text-[13px] font-black text-slate-700 dark:text-slate-300 outline-none cursor-pointer px-6 uppercase tracking-widest"
                 >
                   <option value="All">সব বছর</option>
-                  <option value="2025">২০২৫</option>
-                  <option value="2026">২০২৬</option>
+                  {Array.from(new Set([
+                    ...deals.map(d => new Date(d.confirmDate || d.selectionDate || d.createdAt).getFullYear().toString()),
+                    ...expenses.map(e => new Date(e.createdAt).getFullYear().toString()),
+                    new Date().getFullYear().toString()
+                  ])).sort((a, b) => b.localeCompare(a)).map(year => (
+                    <option key={year} value={year}>{year}</option>
+                  ))}
                 </select>
                 <div className="w-px h-8 bg-slate-300 dark:bg-slate-700 self-center" />
                 <select
@@ -192,18 +203,11 @@ export const Revenue = ({
             >
               <Download size={20} />
             </button>
-            <button
-              onClick={onResetDemo}
-              className="w-12 h-12 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-2xl hover:bg-rose-600 hover:text-white transition-all shadow-sm active:scale-95 flex items-center justify-center"
-              title="Reset Demo Data"
-            >
-              <RotateCcw size={20} />
-            </button>
           </div>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
-          {["Dipu", "Shimanto"].map((admin) => {
-            const net = revStats.admins[admin] - revStats.adminExps[admin];
+          {revStats.sortedAdmins.map((admin) => {
+            const net = (revStats.admins[admin] || 0) - (revStats.adminExps[admin] || 0);
             return (
               <div key={admin} className="bg-slate-50/50 dark:bg-slate-800/30 p-8 rounded-[40px] border border-slate-100 dark:border-slate-800/50 group hover:border-emerald-200 dark:hover:border-emerald-800 transition-all hover:shadow-xl">
                 <div className="font-bold text-slate-950 dark:text-white text-xl mb-8 flex items-center">
@@ -250,8 +254,8 @@ export const Revenue = ({
         <div className="space-y-12 mb-10">
           <div className="relative pt-6">
             <div className="flex justify-between text-[11px] font-black uppercase tracking-widest mb-6">
-              <span className="text-emerald-600 dark:text-emerald-400">Dipu ({Math.round(dWidth)}%)</span>
-              <span className="text-amber-600 dark:text-amber-400">Shimanto ({Math.round(sWidth)}%)</span>
+              <span className="text-emerald-600 dark:text-emerald-400">{admin1 || "Admin 1"} ({Math.round(dWidth)}%)</span>
+              <span className="text-amber-600 dark:text-amber-400">{admin2 || "Admin 2"} ({Math.round(sWidth)}%)</span>
             </div>
             <div className="h-6 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden flex shadow-inner">
               <div 
@@ -273,7 +277,7 @@ export const Revenue = ({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 w-full">
             <div className="p-8 bg-slate-50/50 dark:bg-white/5 rounded-[40px] border border-slate-100 dark:border-white/10 relative group-hover:border-emerald-500/30 transition-all duration-500">
               <div className="flex items-center justify-between mb-4">
-                <span className="text-[9px] font-mono text-slate-400 dark:text-white/20 uppercase tracking-widest">Admin_01 / Dipu</span>
+                <span className="text-[9px] font-mono text-slate-400 dark:text-white/20 uppercase tracking-widest">Admin_01 / {admin1 || "Admin 1"}</span>
                 <div className="w-3 h-3 rounded-full bg-emerald-500/20 flex items-center justify-center">
                   <div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
                 </div>
@@ -287,7 +291,7 @@ export const Revenue = ({
             
             <div className="p-8 bg-slate-50/50 dark:bg-white/5 rounded-[40px] border border-slate-100 dark:border-white/10 relative group-hover:border-amber-500/30 transition-all duration-500">
               <div className="flex items-center justify-between mb-4">
-                <span className="text-[9px] font-mono text-slate-400 dark:text-white/20 uppercase tracking-widest">Admin_02 / Shimanto</span>
+                <span className="text-[9px] font-mono text-slate-400 dark:text-white/20 uppercase tracking-widest">Admin_02 / {admin2 || "Admin 2"}</span>
                 <div className="w-3 h-3 rounded-full bg-amber-500/20 flex items-center justify-center">
                   <div className="w-1.5 h-1.5 rounded-full bg-amber-500"></div>
                 </div>
@@ -358,8 +362,9 @@ export const Revenue = ({
                   className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 rounded-3xl p-6 text-sm font-bold text-slate-700 dark:text-slate-300 outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 appearance-none uppercase tracking-widest shadow-sm transition-all"
                 >
                   <option value="" disabled>অ্যাডমিন সিলেক্ট করুন</option>
-                  <option value="Dipu">Dipu</option>
-                  <option value="Shimanto">Shimanto</option>
+                  {revStats.sortedAdmins.map(name => (
+                    <option key={name} value={name}>{name}</option>
+                  ))}
                 </select>
                 <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
                   <ChevronDown size={20} />
@@ -417,7 +422,7 @@ export const Revenue = ({
                     <div
                       className={cn(
                         "w-10 h-10 rounded-xl flex items-center justify-center mr-3 shrink-0 shadow-sm border transition-all group-hover:scale-110",
-                        exp.adminName === "Dipu" ? "bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 border-emerald-100 dark:border-emerald-900/20" : "bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 border-amber-100 dark:border-amber-900/20"
+                        exp.adminName === admin1 ? "bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 border-emerald-100 dark:border-emerald-900/20" : "bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 border-amber-100 dark:border-amber-900/20"
                       )}
                     >
                       <Icon icon={User} size={16} />

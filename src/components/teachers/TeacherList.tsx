@@ -25,7 +25,6 @@ const KISHOREGANJ_INSTITUTIONS = [
 interface TeacherListProps {
   teachers: Teacher[];
   onAddTeacher: () => void;
-  onResetDemo: () => void;
   onUpdateStatus?: (id: string, status: "Approved" | "Rejected") => Promise<void>;
   onDelete?: (id: string) => Promise<void>;
 }
@@ -33,7 +32,6 @@ interface TeacherListProps {
 export const TeacherList: React.FC<TeacherListProps> = ({ 
   teachers, 
   onAddTeacher, 
-  onResetDemo,
   onUpdateStatus,
   onDelete
 }) => {
@@ -393,25 +391,6 @@ export const TeacherList: React.FC<TeacherListProps> = ({
             </div>
             <h3 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tight mb-2">কোনো শিক্ষক পাওয়া যায়নি!</h3>
             <p className="text-slate-400 dark:text-slate-500 font-black uppercase tracking-[0.2em] text-[11px] mb-8">অন্য কোনো কি-ওয়ার্ড দিয়ে চেষ্টা করুন</p>
-            {teachers.length === 0 && (
-              <button
-                onClick={onResetDemo}
-                className="px-10 py-5 bg-emerald-500 text-white rounded-[28px] font-black text-[11px] uppercase tracking-[0.3em] shadow-2xl shadow-emerald-500/20 hover:bg-emerald-600 transition-all active:scale-95"
-              >
-                ডেমো ডাটা লোড করুন
-              </button>
-            )}
-          </div>
-        )}
-
-        {teachers.length > 0 && (
-          <div className="pt-8 pb-12">
-            <button
-              onClick={onResetDemo}
-              className="w-full py-6 bg-slate-100 dark:bg-slate-800/50 text-slate-400 dark:text-slate-500 rounded-[32px] font-black text-[11px] uppercase tracking-[0.4em] border-2 border-dashed border-slate-200 dark:border-slate-700 hover:bg-rose-50 hover:text-rose-500 hover:border-rose-200 transition-all"
-            >
-              Reset Demo Data
-            </button>
           </div>
         )}
       </div>

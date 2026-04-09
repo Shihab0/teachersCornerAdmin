@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, ChangeEvent, FormEvent } from "react";
 import { doc, addDoc, updateDoc, deleteDoc, collection, getDocs, getDocFromServer } from "firebase/firestore";
-import { auth, db } from "./lib/firebase";
+import { auth, db, handleFirestoreError, OperationType } from "./lib/firebase";
 import { Toaster, toast } from "sonner";
 import { cn } from "./lib/utils";
 import { Deal, Expense, HistoryEntry, Teacher, TuitionRequest } from "./types";
@@ -24,19 +24,8 @@ import { useTuitionDeals } from "./hooks/useTuitionDeals";
 import { useExpenses } from "./hooks/useExpenses";
 import { useTeachers } from "./hooks/useTeachers";
 import { useTuitionRequests } from "./hooks/useTuitionRequests";
-import { useDemoData } from "./hooks/useDemoData";
 import { COLLECTIONS } from "./constants";
-import { DEMO_TEACHERS, DEMO_DEALS, DEMO_EXPENSES } from "./lib/demoData";
 import { Footer } from "./components/layout/Footer";
-
-enum OperationType {
-  CREATE = 'create',
-  UPDATE = 'update',
-  DELETE = 'delete',
-  LIST = 'list',
-  GET = 'get',
-  WRITE = 'write',
-}
 
 export default function App() {
   const {
@@ -59,7 +48,6 @@ export default function App() {
   useExpenses();
   useTeachers();
   useTuitionRequests();
-  useDemoData();
 
   // App Install States
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
@@ -101,6 +89,15 @@ export default function App() {
   });
   const [idError, setIdError] = useState("");
 
+  // Sync dark mode class
+  useEffect(() => {
+    if (isDarkMode) {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+  }, [isDarkMode]);
+
   // Connection Test & PWA Prompt
   useEffect(() => {
     const testConnection = async () => {
@@ -115,39 +112,20 @@ export default function App() {
     };
     testConnection();
 
-    window.addEventListener("beforeinstallprompt", (e) => {
+    const handleBeforeInstallPrompt = (e: any) => {
       e.preventDefault();
       setDeferredPrompt(e);
-    });
+    };
+
+    window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+    return () => window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
   }, []);
 
-  const handleFirestoreError = (error: unknown, operationType: string, path: string | null) => {
-    const errInfo = {
-      error: error instanceof Error ? error.message : String(error),
-      authInfo: {
-        userId: auth.currentUser?.uid,
-        email: auth.currentUser?.email,
-        emailVerified: auth.currentUser?.emailVerified,
-        isAnonymous: auth.currentUser?.isAnonymous,
-        tenantId: auth.currentUser?.tenantId,
-        providerInfo: auth.currentUser?.providerData.map(provider => ({
-          providerId: provider.providerId,
-          displayName: provider.displayName,
-          email: provider.email,
-          photoUrl: provider.photoURL
-        })) || []
-      },
-      operationType,
-      path
-    };
-    console.error('Firestore Error: ', JSON.stringify(errInfo));
-  };
-
-  const handleResetDemoData = async () => {
+  const handleClearAllData = async () => {
     setConfirmDialog({
       isOpen: true,
-      title: "ডেমো ডাটা রিসেট",
-      message: "আপনি কি নিশ্চিত যে আপনি সব ডাটা মুছে ডেমো ডাটা রিসেট করতে চান? এটি বর্তমান সব ডাটা মুছে ফেলবে।",
+      title: "সব ডাটা মুছে ফেলুন",
+      message: "আপনি কি নিশ্চিত যে আপনি সব ডাটা মুছে ফেলতে চান? এটি বর্তমান সব ডাটা স্থায়ীভাবে মুছে ফেলবে।",
       isDanger: true,
       onCancel: () => setConfirmDialog(prev => ({ ...prev, isOpen: false })),
       onConfirm: async () => {
@@ -157,32 +135,27 @@ export default function App() {
           const tCol = collection(db, COLLECTIONS.TEACHERS);
           const dCol = collection(db, COLLECTIONS.DEALS);
           const eCol = collection(db, COLLECTIONS.EXPENSES);
+          const rCol = collection(db, COLLECTIONS.REQUESTS);
           
-          const [tSnap, dSnap, eSnap] = await Promise.all([
+          const [tSnap, dSnap, eSnap, rSnap] = await Promise.all([
             getDocs(tCol),
             getDocs(dCol),
-            getDocs(eCol)
+            getDocs(eCol),
+            getDocs(rCol)
           ]);
           
           const deletePromises = [
             ...tSnap.docs.map(d => deleteDoc(d.ref)),
             ...dSnap.docs.map(d => deleteDoc(d.ref)),
-            ...eSnap.docs.map(d => deleteDoc(d.ref))
+            ...eSnap.docs.map(d => deleteDoc(d.ref)),
+            ...rSnap.docs.map(d => deleteDoc(d.ref))
           ];
           
           await Promise.all(deletePromises);
-          
-          const injectPromises = [
-            ...DEMO_TEACHERS.map(t => addDoc(tCol, t)),
-            ...DEMO_DEALS.map(d => addDoc(dCol, d)),
-            ...DEMO_EXPENSES.map(e => addDoc(eCol, e))
-          ];
-          
-          await Promise.all(injectPromises);
-          toast.success("ডেমো ডাটা সফলভাবে রিসেট করা হয়েছে!");
+          toast.success("সব ডাটা সফলভাবে মুছে ফেলা হয়েছে");
         } catch (e) {
-          handleFirestoreError(e, "write", "demo_reset");
-          toast.error("ডেমো ডাটা রিসেট করতে সমস্যা হয়েছে। কনসোল চেক করুন।");
+          handleFirestoreError(e, "write", "clear_all_data");
+          toast.error("ডাটা মুছতে সমস্যা হয়েছে। কনসোল চেক করুন।");
         } finally {
           setIsLoading(false);
         }
@@ -191,19 +164,39 @@ export default function App() {
   };
 
   const handleInstallClick = async () => {
-    if (deferredPrompt) {
-      deferredPrompt.prompt();
-      const { outcome } = await deferredPrompt.userChoice;
-      if (outcome === "accepted") setDeferredPrompt(null);
-    } else {
-      toast.info("অ্যাপটি ইনস্টল করতে ব্রাউজারের 'Add to Home Screen' অপশন ব্যবহার করুন।");
-    }
+    requestConfirm(
+      "অ্যাপ ইনস্টল করার নিয়ম",
+      `অ্যান্ড্রয়েড ফোনে (Google Chrome ব্যবহার করে):
+১. আপনার ফোনের Chrome ব্রাউজারে অ্যাপটি ওপেন করুন।
+২. ব্রাউজারের উপরে ডানদিকের কোণায় তিনটি ডট (⋮) আইকনে ক্লিক করুন।
+৩. নিচের দিকে গিয়ে 'Install app' অথবা 'Add to Home Screen' অপশনটি খুঁজে পাবেন, সেখানে ক্লিক করুন।
+৪. একটি পপ-আপ আসবে, সেখানে 'Install' বাটনে ক্লিক করলেই অ্যাপটি আপনার ফোনের হোম স্ক্রিনে চলে আসবে।`,
+      async () => {
+        if (deferredPrompt) {
+          deferredPrompt.prompt();
+          const { outcome } = await deferredPrompt.userChoice;
+          if (outcome === "accepted") setDeferredPrompt(null);
+        }
+      },
+      false,
+      "ঠিক আছে",
+      "",
+      false
+    );
   };
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
     setFormData({ ...formData, [e.target.name]: e.target.value });
 
-  const requestConfirm = (title: string, message: string, onConfirm: () => void, isDanger = true) => {
+  const requestConfirm = (
+    title: string, 
+    message: string, 
+    onConfirm: () => void, 
+    isDanger = true,
+    confirmText = "নিশ্চিত",
+    cancelText = "বাতিল",
+    showCancel = true
+  ) => {
     setConfirmDialog({
       isOpen: true,
       title,
@@ -214,6 +207,9 @@ export default function App() {
       },
       onCancel: () => setConfirmDialog(prev => ({ ...prev, isOpen: false })),
       isDanger,
+      confirmText,
+      cancelText,
+      showCancel,
     });
   };
 
@@ -495,6 +491,7 @@ export default function App() {
         onLogout={handleLogout} 
         onInstall={handleInstallClick}
         deals={publicDeals} 
+        teachers={teachers}
         isDarkMode={isDarkMode}
         toggleDarkMode={toggleDarkMode}
       />
@@ -518,7 +515,6 @@ export default function App() {
             onHistoryClick={(data) => setHistoryModalData(data)}
             onPayment={(id) => setPaymentModalDealId(id)} 
             onUndoPayment={handleUndoPayment}
-            onResetDemo={handleResetDemoData}
           />
         )}
         {activeTab === "add" && (
@@ -536,7 +532,6 @@ export default function App() {
         )}
         {activeTab === "revenue" && (
           <Revenue 
-            onResetDemo={handleResetDemoData}
             onHistoryClick={(data) => setHistoryModalData(data)}
           />
         )}
@@ -544,14 +539,12 @@ export default function App() {
           <Stats 
             deals={deals} 
             teachers={teachers} 
-            onResetDemo={handleResetDemoData} 
           />
         )}
         {activeTab === "teachers" && (
           <TeacherList 
             teachers={teachers} 
             onAddTeacher={() => setIsTeacherModalOpen(true)} 
-            onResetDemo={handleResetDemoData}
             onUpdateStatus={handleUpdateTeacherStatus}
             onDelete={handleDeleteTeacher}
           />

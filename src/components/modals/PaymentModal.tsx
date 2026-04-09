@@ -5,12 +5,15 @@ import { useStore } from "../../store/useStore";
 import { cn } from "../../lib/utils";
 import { toast } from "sonner";
 
+import { useRevenue } from "../../hooks/useRevenue";
+
 interface PaymentModalProps {
   onConfirm: (collector: string, amount: number) => void;
 }
 
 export const PaymentModal = ({ onConfirm }: PaymentModalProps) => {
   const { paymentModalDealId, setPaymentModalDealId, deals } = useStore();
+  const { revStats } = useRevenue();
   const [paymentType, setPaymentType] = useState<"Full" | "Partial">("Full");
   const [amount, setAmount] = useState<string>("");
   const [collector, setCollector] = useState<string | null>(null);
@@ -40,6 +43,8 @@ export const PaymentModal = ({ onConfirm }: PaymentModalProps) => {
     }
     onConfirm(selectedCollector, payAmount);
   };
+
+  const adminList = revStats.sortedAdmins.length > 0 ? revStats.sortedAdmins : ["Dipu", "Shimanto"];
 
   return (
     <div className="fixed inset-0 bg-black/60 z-[100] flex items-center justify-center p-6 backdrop-blur-sm">
@@ -110,18 +115,15 @@ export const PaymentModal = ({ onConfirm }: PaymentModalProps) => {
           <div className="space-y-2">
             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">টাকা কে রিসিভ করেছেন?</label>
             <div className="grid grid-cols-2 gap-3">
-              <button
-                onClick={() => handleConfirm("Dipu")}
-                className="py-4 bg-cyan-50 dark:bg-cyan-900/20 text-cyan-700 dark:text-cyan-400 font-black rounded-2xl border border-cyan-100 dark:border-cyan-900/30 flex flex-col items-center active:scale-95 transition-transform"
-              >
-                <Icon icon={User} size={20} className="mb-1" /> Dipu
-              </button>
-              <button
-                onClick={() => handleConfirm("Shimanto")}
-                className="py-4 bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 font-black rounded-2xl border border-amber-100 dark:border-amber-900/30 flex flex-col items-center active:scale-95 transition-transform"
-              >
-                <Icon icon={User} size={20} className="mb-1" /> Shimanto
-              </button>
+              {adminList.map((name) => (
+                <button
+                  key={name}
+                  onClick={() => handleConfirm(name)}
+                  className="py-4 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-black rounded-2xl border border-slate-100 dark:border-slate-700 flex flex-col items-center active:scale-95 transition-transform hover:bg-emerald-50 dark:hover:bg-emerald-900/20 hover:text-emerald-600 dark:hover:text-emerald-400 hover:border-emerald-100 dark:hover:border-emerald-900/30"
+                >
+                  <Icon icon={User} size={20} className="mb-1" /> {name}
+                </button>
+              ))}
             </div>
           </div>
         </div>

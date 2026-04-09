@@ -52,12 +52,22 @@ export const useAuth = () => {
   }, [setUser, setIsAdmin, setAuthLoading, setIsLoading]);
 
   const handleLogin = async () => {
+    if (!window.navigator.onLine) {
+      toast.error("আপনার ইন্টারনেট সংযোগ নেই। অনুগ্রহ করে সংযোগ চেক করুন।");
+      return;
+    }
     try {
       setAuthLoading(true);
       await signInWithPopup(auth, googleProvider);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Login failed:", error);
-      toast.error("লগইন ব্যর্থ হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।");
+      if (error.code === "auth/popup-blocked") {
+        toast.error("পপ-আপ ব্লক করা হয়েছে। অনুগ্রহ করে ব্রাউজারের পপ-আপ অপশনটি চালু করুন।");
+      } else if (error.code === "auth/network-request-failed") {
+        toast.error("নেটওয়ার্ক সমস্যা। আপনার ইন্টারনেট সংযোগ চেক করুন এবং আবার চেষ্টা করুন।");
+      } else {
+        toast.error("লগইন ব্যর্থ হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।");
+      }
     } finally {
       setAuthLoading(false);
     }

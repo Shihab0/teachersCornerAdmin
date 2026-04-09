@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { collection, onSnapshot, query, orderBy } from "firebase/firestore";
-import { db } from "../lib/firebase";
+import { db, handleFirestoreError, OperationType } from "../lib/firebase";
 import { useStore } from "../store/useStore";
 import { COLLECTIONS } from "../constants";
 import { TuitionRequest } from "../types";
@@ -17,7 +17,7 @@ export const useTuitionRequests = () => {
       const data = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as TuitionRequest));
       setTuitionRequests(data);
     }, (err) => {
-      console.error("Firestore Error (Requests):", err);
+      handleFirestoreError(err, OperationType.LIST, COLLECTIONS.REQUESTS);
     });
 
     return () => unsubReq();

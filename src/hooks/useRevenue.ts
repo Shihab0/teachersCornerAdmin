@@ -117,7 +117,16 @@ export const useRevenue = () => {
 
     const totalExp = fExps.reduce((s, e) => s + Number(e.amount), 0);
 
-    const admins: Record<string, number> = { Dipu: 0, Shimanto: 0 };
+    const adminNames = new Set<string>();
+    deals.forEach(d => { if (d.adminName) adminNames.add(d.adminName); });
+    deals.forEach(d => { if (d.collectedBy) adminNames.add(d.collectedBy); });
+    expenses.forEach(e => { if (e.adminName) adminNames.add(e.adminName); });
+    
+    const sortedAdmins = Array.from(adminNames).sort();
+
+    const admins: Record<string, number> = {};
+    sortedAdmins.forEach(name => admins[name] = 0);
+    
     fDeals.forEach((d) => { 
       if (d.collectedBy && admins[d.collectedBy] !== undefined) {
         if (d.commissionStatus === "Paid") admins[d.collectedBy] += Number(d.commission);
@@ -125,10 +134,12 @@ export const useRevenue = () => {
       }
     });
 
-    const adminExps: Record<string, number> = { Dipu: 0, Shimanto: 0 };
+    const adminExps: Record<string, number> = {};
+    sortedAdmins.forEach(name => adminExps[name] = 0);
+    
     fExps.forEach((e) => { if (adminExps[e.adminName] !== undefined) adminExps[e.adminName] += Number(e.amount); });
 
-    return { collected, pending, totalExp, admins, adminExps };
+    return { collected, pending, totalExp, admins, adminExps, sortedAdmins };
   }, [deals, expenses, revYear, revMonth]);
 
   const exportToCSV = () => {

@@ -8,10 +8,9 @@ import { cn } from "../../lib/utils";
 interface StatsProps {
   deals: Deal[];
   teachers: Teacher[];
-  onResetDemo: () => void;
 }
 
-export const Stats: React.FC<StatsProps> = ({ deals, teachers, onResetDemo }) => {
+export const Stats: React.FC<StatsProps> = ({ deals, teachers }) => {
   const [selectedMonth, setSelectedMonth] = useState<number>(new Date().getMonth());
   const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
 
@@ -426,15 +425,6 @@ export const Stats: React.FC<StatsProps> = ({ deals, teachers, onResetDemo }) =>
             }
           </p>
         </div>
-      </div>
-
-      <div className="pt-10">
-        <button
-          onClick={onResetDemo}
-          className="w-full py-6 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-[40px] font-black text-[13px] uppercase tracking-[0.3em] shadow-2xl shadow-slate-900/30 dark:shadow-white/10 active:scale-[0.98] transition-all hover:opacity-90"
-        >
-          Reset Demo Data
-        </button>
       </div>
     </div>
   );

@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { collection, onSnapshot, query, orderBy } from "firebase/firestore";
-import { db } from "../lib/firebase";
+import { db, handleFirestoreError, OperationType } from "../lib/firebase";
 import { useStore } from "../store/useStore";
 import { COLLECTIONS } from "../constants";
 import { Expense } from "../types";
@@ -17,7 +17,7 @@ export const useExpenses = () => {
       const data = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Expense));
       setExpenses(data);
     }, (err) => {
-      console.error("Firestore Error (Expenses):", err);
+      handleFirestoreError(err, OperationType.LIST, COLLECTIONS.EXPENSES);
     });
 
     return () => unsubExp();

@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { collection, onSnapshot, query, orderBy } from "firebase/firestore";
-import { db } from "../lib/firebase";
+import { db, handleFirestoreError, OperationType } from "../lib/firebase";
 import { useStore } from "../store/useStore";
 import { COLLECTIONS } from "../constants";
 import { Teacher } from "../types";
@@ -18,7 +18,7 @@ export const useTeachers = () => {
       const data = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Teacher));
       setTeachers(data);
     }, (err) => {
-      console.error("Firestore Error (Teachers):", err);
+      handleFirestoreError(err, OperationType.LIST, COLLECTIONS.TEACHERS);
     });
 
     return () => unsubTeacher();

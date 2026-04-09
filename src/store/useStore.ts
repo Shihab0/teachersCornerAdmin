@@ -83,24 +83,12 @@ export const useStore = create<AppState>((set) => ({
   })(),
   setActiveTab: (activeTab) => set({ activeTab }),
   setIsDarkMode: (isDarkMode) => {
-    if (isDarkMode) {
-      document.documentElement.classList.add("dark");
-      localStorage.setItem("theme", "dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-      localStorage.setItem("theme", "light");
-    }
+    localStorage.setItem("theme", isDarkMode ? "dark" : "light");
     set({ isDarkMode });
   },
   toggleDarkMode: () => set((state) => {
     const nextMode = !state.isDarkMode;
-    if (nextMode) {
-      document.documentElement.classList.add("dark");
-      localStorage.setItem("theme", "dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-      localStorage.setItem("theme", "light");
-    }
+    localStorage.setItem("theme", nextMode ? "dark" : "light");
     return { isDarkMode: nextMode };
   }),
 

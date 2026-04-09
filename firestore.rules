@@ -22,12 +22,18 @@ service cloud.firestore {
 
     match /artifacts/{appId}/public/data/tc_teachers/{docId} {
       allow create: if true;
-      allow read, update, delete: if isAdmin();
+      allow read: if isAdmin();
+      allow list: if request.query.limit <= 5;
+      allow get: if true;
+      allow update, delete: if isAdmin();
     }
 
     match /artifacts/{appId}/public/data/tc_tuition_requests/{docId} {
       allow create: if true;
-      allow read, update, delete: if isAdmin();
+      allow read: if isAdmin();
+      allow list: if request.query.limit <= 5;
+      allow get: if true;
+      allow update, delete: if isAdmin();
     }
 
     match /artifacts/{appId}/public/data/tc_deals/{docId} {

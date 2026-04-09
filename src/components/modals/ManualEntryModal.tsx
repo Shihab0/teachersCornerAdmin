@@ -3,6 +3,8 @@ import { Icon } from "../ui/Icon";
 import { Plus, X, User, Phone, Hash, Book, Calendar, DollarSign, MapPin, Info, Users } from "lucide-react";
 import { cn } from "../../lib/utils";
 
+import { useRevenue } from "../../hooks/useRevenue";
+
 interface ManualEntryModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -10,6 +12,9 @@ interface ManualEntryModalProps {
 }
 
 export const ManualEntryModal = ({ isOpen, onClose, onAdd }: ManualEntryModalProps) => {
+  const { revStats } = useRevenue();
+  const adminList = revStats.sortedAdmins.length > 0 ? revStats.sortedAdmins : ["Dipu", "Shimanto"];
+
   const [formData, setFormData] = useState({
     tuitionId: "",
     guardianPhone: "",
@@ -20,7 +25,7 @@ export const ManualEntryModal = ({ isOpen, onClose, onAdd }: ManualEntryModalPro
     location: "",
     tutorGender: "Any",
     details: "",
-    adminName: "Dipu",
+    adminName: adminList[0] || "Dipu",
     commission: "",
   });
 
@@ -54,7 +59,7 @@ export const ManualEntryModal = ({ isOpen, onClose, onAdd }: ManualEntryModalPro
       location: "",
       tutorGender: "Any",
       details: "",
-      adminName: "Dipu",
+      adminName: adminList[0] || "Dipu",
       commission: "",
     });
   };
@@ -219,8 +224,9 @@ export const ManualEntryModal = ({ isOpen, onClose, onAdd }: ManualEntryModalPro
                   onChange={handleChange}
                   className="w-full pl-12 pr-4 py-3.5 bg-slate-50 dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 text-sm font-bold outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all dark:text-white appearance-none"
                 >
-                  <option value="Dipu">Dipu</option>
-                  <option value="Shimanto">Shimanto</option>
+                  {adminList.map((name) => (
+                    <option key={name} value={name}>{name}</option>
+                  ))}
                 </select>
               </div>
             </div>

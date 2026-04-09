@@ -4,6 +4,8 @@ import { Icon } from "../ui/Icon";
 import { Plus, Edit, CheckCircle, PlusCircle, Trash2, ChevronDown } from "lucide-react";
 import { Deal } from "../../types";
 
+import { useRevenue } from "../../hooks/useRevenue";
+
 interface AddDealProps {
   isEditing: boolean;
   formData: any;
@@ -28,6 +30,9 @@ export const AddDeal = ({
   onCancel,
 }: AddDealProps) => {
   const { isProcessing } = useStore();
+  const { revStats } = useRevenue();
+  const adminList = revStats.sortedAdmins.length > 0 ? revStats.sortedAdmins : ["Dipu", "Shimanto"];
+
   return (
     <div className="max-w-4xl mx-auto px-4 md:px-8 lg:px-12 py-12 fade-in">
       <div className="bg-white dark:bg-slate-900 p-10 md:p-16 rounded-[56px] card-shadow border border-slate-100 dark:border-slate-800/50 transition-all relative overflow-hidden">
@@ -280,8 +285,9 @@ export const AddDeal = ({
                     className="w-full p-5 bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 rounded-[24px] text-[11px] font-black text-slate-800 dark:text-slate-200 outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 appearance-none transition-all uppercase tracking-widest shadow-sm"
                   >
                     <option value="" disabled>ম্যানেজমেন্ট *</option>
-                    <option value="Dipu">Dipu</option>
-                    <option value="Shimanto">Shimanto</option>
+                    {adminList.map((name) => (
+                      <option key={name} value={name}>{name}</option>
+                    ))}
                   </select>
                   <div className="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none">
                     <ChevronDown size={18} className="text-slate-400" />

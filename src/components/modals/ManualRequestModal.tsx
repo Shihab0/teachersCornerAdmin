@@ -120,7 +120,7 @@ export const ManualRequestModal: React.FC<ManualRequestModalProps> = ({ isOpen, 
                   value={formData.studentClass}
                   onChange={(e) => setFormData({ ...formData, studentClass: e.target.value })}
                   className="w-full pl-11 sm:pl-12 pr-4 py-3 sm:py-4 bg-slate-50 dark:bg-slate-800/50 rounded-[18px] sm:rounded-[20px] border-2 border-transparent focus:border-emerald-500/20 focus:bg-white dark:focus:bg-slate-800 text-sm font-bold text-slate-800 dark:text-white outline-none transition-all shadow-sm"
-                  placeholder="যেমন: Class 10"
+                  placeholder="যেমন: ৮ম শ্রেণী"
                 />
               </div>
             </div>

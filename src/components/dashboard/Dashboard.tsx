@@ -35,7 +35,6 @@ interface DashboardProps {
   onHistoryClick: (data: { title: string; history: HistoryEntry[] }) => void;
   onPayment: (id: string) => void;
   onUndoPayment: (deal: Deal) => void;
-  onResetDemo: () => void;
 }
 
 export const Dashboard = ({
@@ -45,7 +44,6 @@ export const Dashboard = ({
   onHistoryClick,
   onPayment,
   onUndoPayment,
-  onResetDemo,
 }: DashboardProps) => {
   const { exportToCSV, exportToPDF } = useTuitionDeals();
   const {
@@ -601,13 +599,7 @@ Call or WhatsApp - 01700000000 (Your Number)
               <div className="w-20 h-20 bg-slate-50 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-6">
                 <Icon icon={Search} size={32} className="text-slate-200 dark:text-slate-700" />
               </div>
-              <p className="text-slate-500 dark:text-slate-400 text-sm font-black uppercase tracking-widest mb-8">কোনো ডেটা পাওয়া যায়নি।</p>
-              <button
-                onClick={onResetDemo}
-                className="px-8 py-4 bg-emerald-600 text-white rounded-[24px] font-black text-xs uppercase tracking-[0.2em] shadow-xl shadow-emerald-600/20 active:scale-95 transition-all"
-              >
-                ডেমো ডাটা লোড করুন
-              </button>
+              <p className="text-slate-500 dark:text-slate-400 text-sm font-black uppercase tracking-widest">কোনো ডেটা পাওয়া যায়নি।</p>
             </div>
           )}
         </div>

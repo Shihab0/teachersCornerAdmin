@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { collection, onSnapshot, query, orderBy } from "firebase/firestore";
-import { db } from "../lib/firebase";
+import { db, handleFirestoreError, OperationType } from "../lib/firebase";
 import { useStore } from "../store/useStore";
 import { COLLECTIONS } from "../constants";
 import { Deal } from "../types";
@@ -173,7 +173,7 @@ export const useTuitionDeals = () => {
       setDeals(data);
       setIsLoading(false);
     }, (err) => {
-      console.error("Firestore Error (Deals):", err);
+      handleFirestoreError(err, OperationType.LIST, COLLECTIONS.DEALS);
       setIsLoading(false);
     });
 

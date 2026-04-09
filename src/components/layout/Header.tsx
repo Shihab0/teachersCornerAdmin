@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { Icon } from "../ui/Icon";
-import { Smartphone, LogOut, Moon, Sun, ClipboardList, GraduationCap, ChevronDown } from "lucide-react";
+import { Smartphone, LogOut, Moon, Sun, ClipboardList, GraduationCap, ChevronDown, RotateCcw } from "lucide-react";
 import { useStore } from "../../store/useStore";
 import { cn } from "../../lib/utils";
 
@@ -88,5 +88,6 @@ export const Header = ({ onLogout, onInstall }: HeaderProps) => {
         </div>
       </div>
     </header>
+
   );
 };
