@@ -8,13 +8,14 @@ import {
   Loader2, MapPin, School, BookOpen, User, Briefcase, Award, 
   Facebook, IdCard, Check, Send, Heart, Users, Star, ArrowRight,
   ClipboardList, CheckCircle2, Info, Image as ImageIcon, Lightbulb,
-  Rocket, Target, X, Moon, Sun, ShieldCheck, Zap, Smartphone
+  Rocket, Target, X, Moon, Sun, ShieldCheck, Zap, Smartphone, Search
 } from "lucide-react";
 import { User as FirebaseUser } from "firebase/auth";
-import { collection, addDoc } from "firebase/firestore";
+import { collection, addDoc, doc, updateDoc } from "firebase/firestore";
 import { auth, db, appId } from "../../lib/firebase";
 import { TeacherModal } from "../modals/TeacherModal";
 import { GuardianModal } from "../modals/GuardianModal";
+import { TeacherStatusModal } from "../modals/TeacherStatusModal";
 import { TuitionUpdatePost } from "../stats/TuitionUpdatePost";
 
 import { Deal } from "../../types";
@@ -34,6 +35,8 @@ export const Login = ({ user, onLogin, onLogout, onInstall, deals = [], teachers
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [showGuardianModal, setShowGuardianModal] = useState(false);
   const [showTeacherModal, setShowTeacherModal] = useState(false);
+  const [showTeacherStatusModal, setShowTeacherStatusModal] = useState(false);
+  const [editingTeacher, setEditingTeacher] = useState<any | null>(null);
   const [isOnline, setIsOnline] = useState(window.navigator.onLine);
 
   React.useEffect(() => {
@@ -73,18 +76,28 @@ export const Login = ({ user, onLogin, onLogout, onInstall, deals = [], teachers
   const handleTeacherSubmit = async (teacherData: any) => {
     const path = `artifacts/${appId}/public/data/tc_teachers`;
     try {
-      const payload = {
-        ...teacherData,
-        status: "Pending",
-        createdAt: Date.now(),
-        rating: 5.0,
-      };
-
-      await addDoc(collection(db, "artifacts", appId, "public", "data", "tc_teachers"), payload);
-      toast.success("আপনার সিভি সফলভাবে জমা হয়েছে! আমরা শীঘ্রই আপনার সাথে যোগাযোগ করব।");
+      if (editingTeacher && editingTeacher.id) {
+        const teacherDocRef = doc(db, "artifacts", appId, "public", "data", "tc_teachers", editingTeacher.id);
+        await updateDoc(teacherDocRef, {
+          ...teacherData,
+          status: "Pending",
+          updatedAt: Date.now()
+        });
+        toast.success("আপনার সিভির তথ্য সফলভাবে আপডেট করা হয়েছে এবং পুনরায় এডমিন পর্যালোচনায় (Admin Review) পাঠানো হয়েছে!");
+        setEditingTeacher(null);
+      } else {
+        const payload = {
+          ...teacherData,
+          status: "Pending",
+          createdAt: Date.now(),
+          rating: 5.0,
+        };
+        await addDoc(collection(db, "artifacts", appId, "public", "data", "tc_teachers"), payload);
+        toast.success("আপনার সিভি সফলভাবে জমা হয়েছে! আমরা শীঘ্রই আপনার সাথে যোগাযোগ করব।");
+      }
     } catch (error) {
-      handleFirestoreError(error, "CREATE", path);
-      toast.error("CV জমা দিতে সমস্যা হয়েছে। আবার চেষ্টা করুন।");
+      handleFirestoreError(error, editingTeacher ? "UPDATE" : "CREATE", path);
+      toast.error("সিভি ডায়লগ সমস্যা হয়েছে। আবার চেষ্টা করুন।");
       throw error;
     }
   };
@@ -197,27 +210,37 @@ export const Login = ({ user, onLogin, onLogout, onInstall, deals = [], teachers
               কিশোরগঞ্জের অভিজ্ঞ এবং মেধাবী শিক্ষকদের সাথে সরাসরি যোগাযোগ। আপনার প্রয়োজন অনুযায়ী সেরা শিক্ষক খুঁজে পেতে আমরা আছি আপনার পাশে।
             </p>
 
-            <div className="flex flex-col sm:flex-row items-center gap-4">
+            <div className="flex flex-col sm:flex-row flex-wrap items-center gap-4">
               <button
                 onClick={() => setShowGuardianModal(true)}
-                className="w-full sm:w-auto px-8 py-4 sm:px-12 sm:py-6 bg-emerald-600 text-white rounded-2xl sm:rounded-[28px] font-black text-sm sm:text-base uppercase tracking-widest shadow-2xl shadow-emerald-200 dark:shadow-none hover:bg-emerald-700 hover:-translate-y-1 transition-all active:scale-95 flex items-center justify-center gap-3"
+                className="w-full sm:w-auto px-8 py-4 sm:px-10 sm:py-5 bg-emerald-600 text-white rounded-2xl sm:rounded-[28px] font-black text-sm uppercase tracking-widest shadow-2xl shadow-emerald-200 dark:shadow-none hover:bg-emerald-700 hover:-translate-y-1 transition-all active:scale-95 flex items-center justify-center gap-3"
               >
-                <Heart className="w-4 h-4 sm:w-6 sm:h-6" />
+                <Heart className="w-4 h-4 sm:w-5 sm:h-5" />
                 টিউটর প্রয়োজন
               </button>
               <button
-                onClick={() => setShowTeacherModal(true)}
-                className="w-full sm:w-auto px-8 py-4 sm:px-12 sm:py-6 bg-white dark:bg-slate-900 text-slate-900 dark:text-white border-2 border-slate-100 dark:border-slate-800 rounded-2xl sm:rounded-[28px] font-black text-sm sm:text-base uppercase tracking-widest hover:bg-slate-50 dark:hover:bg-slate-800 hover:-translate-y-1 transition-all active:scale-95 flex items-center justify-center gap-3"
+                onClick={() => {
+                  setEditingTeacher(null);
+                  setShowTeacherModal(true);
+                }}
+                className="w-full sm:w-auto px-8 py-4 sm:px-10 sm:py-5 bg-white dark:bg-slate-900 text-slate-900 dark:text-white border-2 border-slate-100 dark:border-slate-800 rounded-2xl sm:rounded-[28px] font-black text-sm uppercase tracking-widest hover:bg-slate-50 dark:hover:bg-slate-800 hover:-translate-y-1 transition-all active:scale-95 flex items-center justify-center gap-3"
               >
-                <Users className="w-4 h-4 sm:w-6 sm:h-6" />
+                <Users className="w-4 h-4 sm:w-5 sm:h-5" />
                 শিক্ষক হিসেবে যোগ দিন
+              </button>
+              <button
+                onClick={() => setShowTeacherStatusModal(true)}
+                className="w-full sm:w-auto px-8 py-4 sm:px-10 sm:py-5 bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/30 rounded-2xl sm:rounded-[28px] font-black text-sm uppercase tracking-widest hover:bg-amber-500/20 hover:-translate-y-1 transition-all active:scale-95 flex items-center justify-center gap-3"
+              >
+                <Search className="w-4 h-4 sm:w-5 sm:h-5 text-amber-600 dark:text-amber-400" />
+                সিভি স্ট্যাটাস ও আপডেট
               </button>
               {onInstall && (
                 <button
                   onClick={onInstall}
-                  className="w-full sm:w-auto px-8 py-4 sm:px-12 sm:py-6 bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white rounded-2xl sm:rounded-[28px] font-black text-sm sm:text-base uppercase tracking-widest hover:bg-slate-200 dark:hover:bg-slate-700 transition-all active:scale-95 flex items-center justify-center gap-3"
+                  className="w-full sm:w-auto px-8 py-4 sm:px-10 sm:py-5 bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white rounded-2xl sm:rounded-[28px] font-black text-sm uppercase tracking-widest hover:bg-slate-200 dark:hover:bg-slate-700 transition-all active:scale-95 flex items-center justify-center gap-3"
                 >
-                  <Smartphone className="w-4 h-4 sm:w-6 sm:h-6" />
+                  <Smartphone className="w-4 h-4 sm:w-5 sm:h-5" />
                   অ্যাপ ইনস্টল করুন
                 </button>
               )}
@@ -506,10 +529,27 @@ export const Login = ({ user, onLogin, onLogout, onInstall, deals = [], teachers
 
       <TeacherModal 
         isOpen={showTeacherModal} 
-        onClose={() => setShowTeacherModal(false)} 
+        onClose={() => {
+          setShowTeacherModal(false);
+          setEditingTeacher(null);
+        }} 
         onAdd={handleTeacherSubmit}
-        title="শিক্ষক হিসেবে যোগ দিন"
-        buttonText="সিভি জমা দিন"
+        title={editingTeacher ? "সিভির তথ্য পরিবর্তন ও আপডেট করুন" : "শিক্ষক হিসেবে যোগ দিন"}
+        buttonText={editingTeacher ? "আপডেট করুন" : "সিভি জমা দিন"}
+        initialData={editingTeacher || undefined}
+      />
+
+      <TeacherStatusModal
+        isOpen={showTeacherStatusModal}
+        onClose={() => setShowTeacherStatusModal(false)}
+        onEditTeacher={(teacher) => {
+          setEditingTeacher(teacher);
+          setShowTeacherModal(true);
+        }}
+        onOpenNewTeacherModal={() => {
+          setEditingTeacher(null);
+          setShowTeacherModal(true);
+        }}
       />
     </div>
   );

@@ -1,9 +1,10 @@
 import React, { useState, useMemo } from "react";
 import { Teacher } from "../../types";
-import { Search, Filter, Phone, MapPin, GraduationCap, Star, Plus, ChevronDown, ChevronUp, Briefcase, BookOpen, Award, Check, Facebook, IdCard } from "lucide-react";
+import { Search, Filter, Phone, MapPin, GraduationCap, Star, Plus, ChevronDown, ChevronUp, Briefcase, BookOpen, Award, Check, Facebook, IdCard, FileSearch } from "lucide-react";
 import { Icon } from "../ui/Icon";
 import { motion, AnimatePresence } from "motion/react";
 import { cn } from "../../lib/utils";
+import { TeacherStatusModal } from "../modals/TeacherStatusModal";
 
 const KISHOREGANJ_AREAS = [
   "Harua (হারুয়া)", "Rathkhola (রথখোলা)", "Gaital (গাইট্যাল)", "Botrish (বত্রিশ)",
@@ -43,6 +44,7 @@ export const TeacherList: React.FC<TeacherListProps> = ({
   const [filterCollege, setFilterCollege] = useState("All");
   const [filterSpecialCategory, setFilterSpecialCategory] = useState("All");
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [showStatusModal, setShowStatusModal] = useState(false);
 
   const areas = ["All", ...KISHOREGANJ_AREAS];
   const colleges = ["All", ...KISHOREGANJ_INSTITUTIONS];
@@ -86,12 +88,23 @@ export const TeacherList: React.FC<TeacherListProps> = ({
             <p className="text-[11px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.3em] mt-1">Total: {filteredTeachers.length} Teachers</p>
           </div>
         </div>
-        <button 
-          onClick={onAddTeacher}
-          className="w-14 h-14 bg-slate-950 dark:bg-white text-white dark:text-slate-950 rounded-[20px] shadow-2xl shadow-slate-950/20 dark:shadow-white/10 active:scale-95 transition-all flex items-center justify-center"
-        >
-          <Plus size={28} />
-        </button>
+        <div className="flex items-center gap-3">
+          <button 
+            onClick={() => setShowStatusModal(true)}
+            className="px-4 py-3 bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/30 rounded-[20px] font-black text-xs uppercase tracking-widest hover:bg-amber-500/20 active:scale-95 transition-all flex items-center gap-2"
+            title="সিভি স্ট্যাটাস ও তথ্য আপডেট"
+          >
+            <FileSearch size={18} />
+            <span className="hidden sm:inline">স্ট্যাটাস ও আপডেট</span>
+          </button>
+          <button 
+            onClick={onAddTeacher}
+            className="w-12 h-12 sm:w-14 sm:h-14 bg-slate-950 dark:bg-white text-white dark:text-slate-950 rounded-[20px] shadow-2xl shadow-slate-950/20 dark:shadow-white/10 active:scale-95 transition-all flex items-center justify-center shrink-0"
+            title="নতুন সিভি জমা দিন"
+          >
+            <Plus size={28} />
+          </button>
+        </div>
       </div>
 
       {/* Sub-tabs for Approved/Pending */}
@@ -439,6 +452,17 @@ export const TeacherList: React.FC<TeacherListProps> = ({
           </div>
         )}
       </div>
+
+      <TeacherStatusModal
+        isOpen={showStatusModal}
+        onClose={() => setShowStatusModal(false)}
+        onEditTeacher={(teacher) => {
+          if (onEditTeacher) {
+            onEditTeacher(teacher);
+          }
+        }}
+        onOpenNewTeacherModal={onAddTeacher}
+      />
     </div>
   );
 };

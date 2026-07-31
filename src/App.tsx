@@ -418,11 +418,21 @@ export default function App() {
     try {
       const teacherRef = collection(db, COLLECTIONS.TEACHERS);
       if (editingTeacher) {
-        await updateDoc(doc(teacherRef, editingTeacher.id), { ...teacherData, updatedAt: Date.now() });
-        toast.success("শিক্ষকের তথ্য আপডেট করা হয়েছে");
+        const newStatus = isAdmin ? (teacherData.status || editingTeacher.status || "Approved") : "Pending";
+        await updateDoc(doc(teacherRef, editingTeacher.id), { 
+          ...teacherData, 
+          status: newStatus,
+          updatedAt: Date.now() 
+        });
+        if (!isAdmin) {
+          toast.success("শিক্ষকের সিভির তথ্য আপডেট করা হয়েছে এবং পুনরায় এডমিন পর্যালোচনায় (Admin Review) পাঠানো হয়েছে");
+        } else {
+          toast.success("শিক্ষকের তথ্য সফলভাবে আপডেট করা হয়েছে");
+        }
       } else {
-        await addDoc(teacherRef, { ...teacherData, status: "Approved", createdAt: Date.now() });
-        toast.success("শিক্ষক সফলভাবে যুক্ত করা হয়েছে");
+        const initialStatus = isAdmin ? "Approved" : "Pending";
+        await addDoc(teacherRef, { ...teacherData, status: initialStatus, createdAt: Date.now() });
+        toast.success(isAdmin ? "শিক্ষক সফলভাবে যুক্ত করা হয়েছে" : "আপনার সিভি সফলভাবে জমা হয়েছে এবং এডমিন পর্যালোচনায় পাঠানো হয়েছে");
       }
       setEditingTeacher(null);
     } catch (error) {
