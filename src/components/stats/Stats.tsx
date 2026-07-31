@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from "react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend, BarChart, Bar, XAxis, YAxis, CartesianGrid, LineChart, Line } from "recharts";
 import { Deal, Teacher } from "../../types";
-import { TrendingUp, TrendingDown, Users, BookOpen, CheckCircle, XCircle, GraduationCap, MapPin, Award, Calendar, BarChart3, LineChart as LineChartIcon, ChevronDown } from "lucide-react";
+import { TrendingUp, TrendingDown, Users, BookOpen, CheckCircle, XCircle, GraduationCap, MapPin, Award, Calendar, BarChart3, LineChart as LineChartIcon, ChevronDown, UserCheck } from "lucide-react";
 import { TuitionUpdatePost } from "./TuitionUpdatePost";
 import { cn } from "../../lib/utils";
 
@@ -98,6 +98,36 @@ export const Stats: React.FC<StatsProps> = ({ deals, teachers }) => {
       };
     });
 
+    // Last 50 Tuitions Guardian Gender Requirement Analysis
+    const last50Deals = [...deals]
+      .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0))
+      .slice(0, 50);
+
+    let maleCount = 0;
+    let femaleCount = 0;
+    let anyCount = 0;
+
+    last50Deals.forEach(d => {
+      if (d.tutorGender === "Male") {
+        maleCount++;
+      } else if (d.tutorGender === "Female") {
+        femaleCount++;
+      } else {
+        anyCount++;
+      }
+    });
+
+    const total50 = last50Deals.length;
+    const malePercent = total50 > 0 ? Math.round((maleCount / total50) * 100) : 0;
+    const femalePercent = total50 > 0 ? Math.round((femaleCount / total50) * 100) : 0;
+    const anyPercent = total50 > 0 ? Math.round((anyCount / total50) * 100) : 0;
+
+    const genderReqData = [
+      { name: "পুরুষ (Male)", count: maleCount, percentage: malePercent, fill: "#3b82f6" },
+      { name: "মহিলা (Female)", count: femaleCount, percentage: femalePercent, fill: "#ec4899" },
+      { name: "উভয় / যে কোনো (Any)", count: anyCount, percentage: anyPercent, fill: "#10b981" },
+    ];
+
     return {
       running,
       totalTeachers: teachers.length,
@@ -109,7 +139,15 @@ export const Stats: React.FC<StatsProps> = ({ deals, teachers }) => {
       topInstitutions,
       topAreas,
       recentTuitions,
-      monthlyTrends
+      monthlyTrends,
+      total50,
+      maleCount,
+      femaleCount,
+      anyCount,
+      malePercent,
+      femalePercent,
+      anyPercent,
+      genderReqData
     };
   }, [deals, teachers, selectedYear, selectedMonth]);
 
@@ -343,6 +381,113 @@ export const Stats: React.FC<StatsProps> = ({ deals, teachers }) => {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Guardian Gender Requirement in Last 50 Tuitions */}
+      <div className="bg-white dark:bg-slate-900 p-10 md:p-12 rounded-[56px] card-shadow border border-slate-100 dark:border-slate-800/50 transition-colors">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-10">
+          <div className="text-[13px] font-black text-slate-800 dark:text-slate-200 flex items-center gap-4 uppercase tracking-[0.2em]">
+            <div className="p-3 bg-indigo-50 dark:bg-indigo-900/20 rounded-2xl border border-indigo-100 dark:border-indigo-900/20">
+              <UserCheck size={22} className="text-indigo-600 dark:text-indigo-400" />
+            </div>
+            <div>
+              <span>সর্বশেষ ৫০টি টিউশনে অভিভাবকের চাহিদা (Gender)</span>
+              <span className="text-[10px] text-slate-400 dark:text-slate-500 font-bold block normal-case tracking-normal mt-0.5">
+                Tutor Preference Breakdown (Male / Female / Any)
+              </span>
+            </div>
+          </div>
+          <span className="text-[11px] font-black text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 px-5 py-2.5 rounded-2xl whitespace-nowrap self-start sm:self-auto border border-indigo-100 dark:border-indigo-900/20 uppercase tracking-[0.15em]">
+            সর্বমোট বিশ্লেষণ: {stats.total50} টি টিউশন
+          </span>
+        </div>
+
+        {stats.total50 > 0 ? (
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+            {/* Stat Cards Column */}
+            <div className="lg:col-span-5 space-y-4">
+              <div className="p-5 bg-blue-50/60 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900/40 rounded-3xl flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-2xl bg-blue-500 text-white flex items-center justify-center font-black text-xs shadow-md shadow-blue-500/20">
+                    M
+                  </div>
+                  <div>
+                    <div className="text-xs font-black text-slate-800 dark:text-slate-200 uppercase tracking-wider">পুরুষ টিউটর আবশ্যক</div>
+                    <div className="text-[11px] text-slate-500 dark:text-slate-400 font-bold">Male Required</div>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="text-xl font-black text-blue-600 dark:text-blue-400">{stats.maleCount} টি</div>
+                  <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{stats.malePercent}%</div>
+                </div>
+              </div>
+
+              <div className="p-5 bg-pink-50/60 dark:bg-pink-950/30 border border-pink-100 dark:border-pink-900/40 rounded-3xl flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-2xl bg-pink-500 text-white flex items-center justify-center font-black text-xs shadow-md shadow-pink-500/20">
+                    F
+                  </div>
+                  <div>
+                    <div className="text-xs font-black text-slate-800 dark:text-slate-200 uppercase tracking-wider">মহিলা টিউটর আবশ্যক</div>
+                    <div className="text-[11px] text-slate-500 dark:text-slate-400 font-bold">Female Required</div>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="text-xl font-black text-pink-600 dark:text-pink-400">{stats.femaleCount} টি</div>
+                  <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{stats.femalePercent}%</div>
+                </div>
+              </div>
+
+              <div className="p-5 bg-emerald-50/60 dark:bg-emerald-950/30 border border-emerald-100 dark:border-emerald-900/40 rounded-3xl flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-2xl bg-emerald-500 text-white flex items-center justify-center font-black text-xs shadow-md shadow-emerald-500/20">
+                    A
+                  </div>
+                  <div>
+                    <div className="text-xs font-black text-slate-800 dark:text-slate-200 uppercase tracking-wider">যে কোনো (উভয়) গ্রহণযোগ্য</div>
+                    <div className="text-[11px] text-slate-500 dark:text-slate-400 font-bold">Any (Male / Female)</div>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="text-xl font-black text-emerald-600 dark:text-emerald-400">{stats.anyCount} টি</div>
+                  <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{stats.anyPercent}%</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Recharts Bar Chart */}
+            <div className="lg:col-span-7 h-[280px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={stats.genderReqData} layout="vertical" margin={{ left: 10, right: 30, top: 10, bottom: 10 }}>
+                  <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#e2e8f0" opacity={0.3} />
+                  <XAxis type="number" axisLine={false} tickLine={false} tick={{ fontSize: 11, fontWeight: 900, fill: '#94a3b8' }} />
+                  <YAxis type="category" dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 11, fontWeight: 900, fill: '#64748b' }} width={130} />
+                  <Tooltip
+                    cursor={{ fill: 'rgba(99, 102, 241, 0.05)' }}
+                    contentStyle={{
+                      backgroundColor: 'rgba(15, 23, 42, 0.95)',
+                      borderRadius: '24px',
+                      border: 'none',
+                      boxShadow: '0 25px 30px -5px rgb(0 0 0 / 0.2)',
+                      color: '#fff',
+                      fontSize: '13px',
+                      fontWeight: '900',
+                      padding: '14px 18px'
+                    }}
+                    formatter={(value: any) => [`${value} টি টিউশন`, "সংখ্যা"]}
+                  />
+                  <Bar dataKey="count" radius={[0, 12, 12, 0]} barSize={32}>
+                    {stats.genderReqData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.fill} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        ) : (
+          <div className="text-xs text-slate-400 text-center py-8 font-black uppercase tracking-widest">টিউশনের কোনো ডাটা পাওয়া যায়নি</div>
+        )}
       </div>
 
       {stats.recentTuitions.length > 0 && (
