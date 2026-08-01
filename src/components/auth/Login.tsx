@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import { User as FirebaseUser } from "firebase/auth";
 import { collection, addDoc, doc, updateDoc } from "firebase/firestore";
-import { auth, db, appId } from "../../lib/firebase";
+import { auth, db, appId, handleFirestoreError, OperationType } from "../../lib/firebase";
 import { TeacherModal } from "../modals/TeacherModal";
 import { GuardianModal } from "../modals/GuardianModal";
 import { TeacherStatusModal } from "../modals/TeacherStatusModal";
@@ -52,29 +52,6 @@ export const Login = ({ user, onLogin, onLogout, onInstall, deals = [], teachers
       window.removeEventListener("offline", handleOffline);
     };
   }, []);
-
-  const handleFirestoreError = (error: any, operationType: string, path: string | null) => {
-    const errInfo = {
-      error: error instanceof Error ? error.message : String(error),
-      authInfo: {
-        userId: auth.currentUser?.uid,
-        email: auth.currentUser?.email,
-        emailVerified: auth.currentUser?.emailVerified,
-        isAnonymous: auth.currentUser?.isAnonymous,
-        tenantId: auth.currentUser?.tenantId,
-        providerInfo: auth.currentUser?.providerData.map(provider => ({
-          providerId: provider.providerId,
-          displayName: provider.displayName,
-          email: provider.email,
-          photoUrl: provider.photoURL
-        })) || []
-      },
-      operationType,
-      path
-    };
-    console.error('Firestore Error: ', JSON.stringify(errInfo));
-    throw new Error(JSON.stringify(errInfo));
-  };
 
   const handleTeacherSubmit = async (teacherData: any) => {
     const path = `artifacts/${appId}/public/data/tc_teachers`;
