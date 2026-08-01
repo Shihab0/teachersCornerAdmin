@@ -163,10 +163,11 @@ export const useTuitionDeals = () => {
     const unsubPublic = onSnapshot(qPublicDeals, (snapshot) => {
       const data = snapshot.docs.map((doc) => {
         const raw = doc.data() as Partial<Deal>;
-        // Strip sensitive fields (phone numbers, commission, etc.) for public payload
+        // Include non-sensitive fields needed for public view (tuitionId, tutorName, studentClass, location, tuitionStatus)
         return {
           id: doc.id,
           tuitionId: raw.tuitionId || "",
+          tutorName: raw.tutorName || "",
           studentClass: raw.studentClass || "",
           subjects: raw.subjects || raw.details || "",
           location: raw.location || "",
