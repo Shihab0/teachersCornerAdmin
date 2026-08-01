@@ -1,11 +1,17 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    
+    // Default deny for safety
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
     // Helper Functions
     function isAuthenticated() {
       return request.auth != null;
     }
-    
+
     function isAdmin() {
       return isAuthenticated() && (
         request.auth.token.email.lower() in [
@@ -13,35 +19,90 @@ service cloud.firestore {
           "atahershihab151@gmail.com",
           "teacherscorner01@gmail.com",
           "dipu.tc@gmail.com",
-          "shimanto.tc@gmail.com",
-          "admin@tc.com",
-          "admin@test.com"
+          "shimanto.tc@gmail.com"
         ] || (request.auth.token.email.matches(".*@teacherscorner\\.com$") && request.auth.token.email_verified == true)
       );
     }
 
+    // Validation Functions
+    function isValidTeacherCreate() {
+      let data = request.resource.data;
+      return data.keys().hasAll(['name', 'phone', 'status'])
+        && data.name is string && data.name.size() > 0 && data.name.size() <= 200
+        && data.phone is string && data.phone.size() <= 20
+        && data.status == "Pending";
+    }
+
+    function isValidTeacherUpdate(docId) {
+      let incoming = request.resource.data;
+      let existing = resource.data;
+      return isAdmin() || (
+        isAuthenticated() &&
+        (
+          ("createdBy" in existing && existing.createdBy == request.auth.uid) ||
+          ("userId" in existing && existing.userId == request.auth.uid) ||
+          request.auth.uid == docId
+        ) &&
+        incoming.status == "Pending" &&
+        incoming.phone == existing.phone
+      );
+    }
+
+    function isValidTuitionRequestCreate() {
+      let data = request.resource.data;
+      return data.keys().hasAll(['phone'])
+        && data.phone is string && data.phone.size() <= 20
+        && (!("studentClass" in data) || (data.studentClass is string && data.studentClass.size() <= 100))
+        && (!("details" in data) || (data.details is string && data.details.size() <= 1000));
+    }
+
+    function isValidDealWrite() {
+      let data = request.resource.data;
+      return data.keys().hasAll(['tuitionStatus'])
+        && data.tuitionStatus is string
+        && (!("commission" in data) || data.commission is number || data.commission is int)
+        && (!("tuitionId" in data) || (data.tuitionId is string && data.tuitionId.size() <= 100));
+    }
+
+    function isValidExpenseWrite() {
+      let data = request.resource.data;
+      return data.keys().hasAll(['amount', 'title'])
+        && (data.amount is number || data.amount is int)
+        && data.title is string && data.title.size() <= 300;
+    }
+
+    // Collection Rules
+
+    // 1. Teachers Collection
     match /artifacts/{appId}/public/data/tc_teachers/{docId} {
-      allow create: if true;
+      allow create: if isValidTeacherCreate();
       allow read, get, list: if true;
-      allow update: if true;
+      allow update: if isValidTeacherUpdate(docId);
       allow delete: if isAdmin();
     }
 
+    // 2. Tuition Requests Collection
     match /artifacts/{appId}/public/data/tc_tuition_requests/{docId} {
-      allow create: if true;
-      allow read: if isAdmin();
-      allow list: if request.query.limit <= 5;
-      allow get: if true;
-      allow update, delete: if isAdmin();
+      allow create: if isValidTuitionRequestCreate();
+      allow read, get, list, update, delete: if isAdmin();
     }
 
+    // 3. Tuition Deals Collection
     match /artifacts/{appId}/public/data/tc_deals/{docId} {
-      allow read: if true;
-      allow write: if isAdmin();
+      allow read, get, list: if isAdmin() || (
+        resource.data.tuitionStatus in ["Confirmed", "Running"]
+      );
+      allow write, create, update, delete: if isAdmin() && isValidDealWrite();
     }
 
+    // 4. Expenses Collection
     match /artifacts/{appId}/public/data/tc_expenses/{docId} {
-      allow read, write: if isAdmin();
+      allow read, write, create, update, delete: if isAdmin() && (request.method == 'get' || request.method == 'list' || isValidExpenseWrite());
+    }
+
+    // 5. Connection Test
+    match /artifacts/{appId}/public/data/connection_test/{docId} {
+      allow read, write: if true;
     }
   }
 }

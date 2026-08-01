@@ -38,41 +38,36 @@ export interface FirestoreErrorInfo {
   operationType: OperationType | string;
   path: string | null;
   authInfo: {
-    userId: string | undefined;
-    email: string | null | undefined;
+    userId: string | null | undefined;
     emailVerified: boolean | undefined;
     isAnonymous: boolean | undefined;
-    tenantId: string | null | undefined;
-    providerInfo: {
-      providerId: string;
-      displayName: string | null;
-      email: string | null;
-      photoUrl: string | null;
-    }[];
   }
 }
 
 export function handleFirestoreError(error: unknown, operationType: OperationType | string, path: string | null) {
-  const errInfo: FirestoreErrorInfo = {
+  const isDev = Boolean((import.meta as any).env?.DEV);
+
+  const sanitizedErrInfo: FirestoreErrorInfo = {
     error: error instanceof Error ? error.message : String(error),
     authInfo: {
-      userId: auth.currentUser?.uid,
-      email: auth.currentUser?.email,
+      userId: auth.currentUser?.uid || null,
       emailVerified: auth.currentUser?.emailVerified,
-      isAnonymous: auth.currentUser?.isAnonymous,
-      tenantId: auth.currentUser?.tenantId,
-      providerInfo: auth.currentUser?.providerData.map(provider => ({
-        providerId: provider.providerId,
-        displayName: provider.displayName,
-        email: provider.email,
-        photoUrl: provider.photoURL
-      })) || []
+      isAnonymous: auth.currentUser?.isAnonymous
     },
     operationType,
     path
+  };
+
+  if (isDev) {
+    console.error('Firestore Error [Dev Context]:', {
+      operationType,
+      path,
+      error: sanitizedErrInfo.error,
+      uid: auth.currentUser?.uid
+    });
   }
-  console.error('Firestore Error: ', JSON.stringify(errInfo));
-  throw new Error(JSON.stringify(errInfo));
+
+  throw new Error(JSON.stringify(sanitizedErrInfo));
 }
 
 async function testConnection() {

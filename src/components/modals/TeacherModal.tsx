@@ -5,6 +5,7 @@ import { Icon } from "../ui/Icon";
 import { Teacher } from "../../types";
 import { toast } from "sonner";
 import { useStore } from "../../store/useStore";
+import { cn } from "../../lib/utils";
 
 const KISHOREGANJ_AREAS = [
   "Harua (হারুয়া)", "Rathkhola (রথখোলা)", "Gaital (গাইট্যাল)", "Botrish (বত্রিশ)",
@@ -57,6 +58,7 @@ export const TeacherModal: React.FC<TeacherModalProps> = ({
   const [formData, setFormData] = useState({
     name: initialData?.name || "",
     phone: initialData?.phone || "",
+    gender: initialData?.gender || "" as "" | "Male" | "Female",
     photoUrl: initialData?.photoUrl || "",
     collegeName: initialData?.collegeName || "",
     presentAddress: initialData?.presentAddress || "",
@@ -90,6 +92,7 @@ export const TeacherModal: React.FC<TeacherModalProps> = ({
       setFormData({
         name: initialData.name || "",
         phone: initialData.phone || "",
+        gender: initialData.gender || "",
         photoUrl: initialData.photoUrl || "",
         collegeName: initialData.collegeName || "",
         presentAddress: initialData.presentAddress || "",
@@ -181,6 +184,7 @@ export const TeacherModal: React.FC<TeacherModalProps> = ({
       await onAdd({
         name: formData.name,
         phone: formData.phone,
+        gender: formData.gender as "Male" | "Female",
         photoUrl: formData.photoUrl,
         collegeName: finalCollegeName,
         presentAddress: finalPresentAddress,
@@ -207,7 +211,7 @@ export const TeacherModal: React.FC<TeacherModalProps> = ({
       
       toast.success("শিক্ষক সফলভাবে যোগ করা হয়েছে!");
       setFormData({
-        name: "", phone: "", photoUrl: "", collegeName: "", presentAddress: "", permanentAddress: "",
+        name: "", phone: "", gender: "", photoUrl: "", collegeName: "", presentAddress: "", permanentAddress: "",
         sscYear: "", sscGroup: "", sscGpa: "", hscYear: "", hscGroup: "", hscGpa: "",
         honoursYear: "", honoursSubject: "", honoursStudyYear: "", honoursGpa: "",
         experience: "", hasCurrentTuition: false, interestedSubjectsAndClasses: "", 
@@ -227,7 +231,7 @@ export const TeacherModal: React.FC<TeacherModalProps> = ({
 
   const nextStep = () => {
     if (step === 1) {
-      if (!formData.name || !formData.phone || !formData.collegeName) {
+      if (!formData.name || !formData.phone || !formData.gender || !formData.collegeName) {
         toast.error("অনুগ্রহ করে সব তারকা চিহ্নিত (*) তথ্য পূরণ করুন");
         return;
       }
@@ -315,6 +319,39 @@ export const TeacherModal: React.FC<TeacherModalProps> = ({
                             <input required type="tel" value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })} className="w-full pl-12 pr-4 py-3 bg-slate-50/50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800 focus:bg-white dark:focus:bg-slate-800 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 shadow-sm transition-all text-sm font-medium text-slate-800 dark:text-slate-200" placeholder="ফোন নম্বর" />
                           </div>
                         </div>
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-4">লিঙ্গ *</label>
+                        <div className="grid grid-cols-2 gap-3">
+                          <button
+                            type="button"
+                            onClick={() => setFormData({ ...formData, gender: "Male" })}
+                            className={cn(
+                              "py-3 px-4 rounded-xl font-bold text-xs border transition-all flex items-center justify-center gap-2",
+                              formData.gender === "Male"
+                                ? "bg-emerald-600 text-white border-emerald-600 shadow-md shadow-emerald-600/20"
+                                : "bg-slate-50/50 dark:bg-slate-800/50 text-slate-700 dark:text-slate-300 border-slate-100 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800"
+                            )}
+                          >
+                            👨 পুরুষ
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setFormData({ ...formData, gender: "Female" })}
+                            className={cn(
+                              "py-3 px-4 rounded-xl font-bold text-xs border transition-all flex items-center justify-center gap-2",
+                              formData.gender === "Female"
+                                ? "bg-emerald-600 text-white border-emerald-600 shadow-md shadow-emerald-600/20"
+                                : "bg-slate-50/50 dark:bg-slate-800/50 text-slate-700 dark:text-slate-300 border-slate-100 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800"
+                            )}
+                          >
+                            👩 মহিলা
+                          </button>
+                        </div>
+                        <p className="text-[10px] text-slate-400 dark:text-slate-500 font-medium ml-4 mt-1">
+                          * মহিলা শিক্ষকদের প্রোফাইল ছবি পাবলিক পেজে গোপন রাখা হয়, প্রাইভেসির জন্য এই তথ্যটি প্রয়োজন।
+                        </p>
                       </div>
 
                       <div className="space-y-1">

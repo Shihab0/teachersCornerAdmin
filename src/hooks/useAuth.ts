@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { onAuthStateChanged, signInWithPopup, signOut } from "firebase/auth";
 import { auth, googleProvider } from "../lib/firebase";
 import { useStore } from "../store/useStore";
-import { ALLOWED_EMAILS } from "../constants";
+import { ALLOWED_EMAILS, isAdminEmail } from "../constants";
 import { toast } from "sonner";
 
 export const useAuth = () => {
@@ -24,8 +24,7 @@ export const useAuth = () => {
       setUser(currentUser);
       
       if (currentUser && currentUser.email) {
-        const email = currentUser.email.toLowerCase();
-        if (ALLOWED_EMAILS.map(e => e.toLowerCase()).includes(email)) {
+        if (isAdminEmail(currentUser.email)) {
           setIsAdmin(true);
         } else {
           setIsAdmin(false);

@@ -43,6 +43,7 @@ export interface Teacher {
   id: string;
   name: string;
   phone: string;
+  gender?: "Male" | "Female";
   photoUrl: string;
   collegeName: string;
   presentAddress: string;

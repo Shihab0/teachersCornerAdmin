@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { collection, onSnapshot, query, orderBy } from "firebase/firestore";
+import { collection, onSnapshot, query, orderBy, where, limit } from "firebase/firestore";
 import { db, handleFirestoreError, OperationType } from "../lib/firebase";
 import { useStore } from "../store/useStore";
 import { COLLECTIONS } from "../constants";
@@ -153,14 +153,30 @@ export const useTuitionDeals = () => {
 
   useEffect(() => {
     const baseRef = collection(db, COLLECTIONS.DEALS);
-    const qPublicDeals = query(baseRef, orderBy("createdAt", "desc"));
+    const qPublicDeals = query(
+      baseRef,
+      where("tuitionStatus", "in", ["Confirmed", "Running"]),
+      orderBy("createdAt", "desc"),
+      limit(5)
+    );
     
     const unsubPublic = onSnapshot(qPublicDeals, (snapshot) => {
-      const data = snapshot.docs
-        .map((doc) => ({ id: doc.id, ...doc.data() } as Deal))
-        .filter(d => d.tuitionStatus === "Confirmed" || d.tuitionStatus === "Running")
-        .slice(0, 5);
+      const data = snapshot.docs.map((doc) => {
+        const raw = doc.data() as Partial<Deal>;
+        // Strip sensitive fields (phone numbers, commission, etc.) for public payload
+        return {
+          id: doc.id,
+          tuitionId: raw.tuitionId || "",
+          studentClass: raw.studentClass || "",
+          subjects: raw.subjects || raw.details || "",
+          location: raw.location || "",
+          tuitionStatus: raw.tuitionStatus || "Confirmed",
+          selectionDate: raw.selectionDate || ""
+        } as Deal;
+      });
       setPublicDeals(data);
+    }, (err) => {
+      handleFirestoreError(err, OperationType.LIST, COLLECTIONS.DEALS);
     });
 
     // Only fetch all deals if admin and on a relevant tab

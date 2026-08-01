@@ -17,6 +17,8 @@ import { TeacherModal } from "../modals/TeacherModal";
 import { GuardianModal } from "../modals/GuardianModal";
 import { TeacherStatusModal } from "../modals/TeacherStatusModal";
 import { TuitionUpdatePost } from "../stats/TuitionUpdatePost";
+import { TeacherPreviewList } from "../public/TeacherPreviewList";
+import { usePublicTeachers } from "../../hooks/usePublicTeachers";
 
 import { Deal } from "../../types";
 
@@ -38,6 +40,7 @@ export const Login = ({ user, onLogin, onLogout, onInstall, deals = [], teachers
   const [showTeacherStatusModal, setShowTeacherStatusModal] = useState(false);
   const [editingTeacher, setEditingTeacher] = useState<any | null>(null);
   const [isOnline, setIsOnline] = useState(window.navigator.onLine);
+  const previewTeachers = usePublicTeachers();
 
   React.useEffect(() => {
     const handleOnline = () => setIsOnline(true);
@@ -412,6 +415,9 @@ export const Login = ({ user, onLogin, onLogout, onInstall, deals = [], teachers
           </div>
         </div>
       </section>
+
+      {/* Public Verified Teachers Preview Section */}
+      <TeacherPreviewList teachers={previewTeachers} />
 
       {/* CTA Section - Visual Cards */}
       <section className="py-20 md:py-32 px-6 bg-slate-50 dark:bg-slate-950 relative overflow-hidden transition-colors duration-500">

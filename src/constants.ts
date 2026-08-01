@@ -15,3 +15,11 @@ export const ALLOWED_EMAILS = [
   "dipu.tc@gmail.com",
   "shimanto.tc@gmail.com"
 ];
+
+export const isAdminEmail = (email: string | null | undefined): boolean => {
+  if (!email) return false;
+  const lower = email.toLowerCase();
+  if (ALLOWED_EMAILS.map(e => e.toLowerCase()).includes(lower)) return true;
+  if (lower.endsWith("@teacherscorner.com")) return true;
+  return false;
+};
