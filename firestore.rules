@@ -17,9 +17,9 @@ service cloud.firestore {
         request.auth.token.email.lower() in [
           "ataharshihab1@gmail.com",
           "atahershihab151@gmail.com",
-          "teacherscorner01@gmail.com",
-          "dipu.tc@gmail.com",
-          "shimanto.tc@gmail.com"
+          "teacherscorner01@gmaill.com",
+          
+          
         ] || (request.auth.token.email.matches(".*@teacherscorner\\.com$") && request.auth.token.email_verified == true)
       );
     }
