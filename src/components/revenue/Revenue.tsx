@@ -109,9 +109,9 @@ export const Revenue = ({
                 >
                   <option value="All">সব বছর</option>
                   {Array.from(new Set([
-                    ...deals.map(d => new Date(d.confirmDate || d.selectionDate || d.createdAt).getFullYear().toString()),
-                    ...expenses.map(e => new Date(e.createdAt).getFullYear().toString()),
-                    new Date().getFullYear().toString()
+                    ...deals.map(d => new Date(d.confirmDate || d.selectionDate || d.createdAt).getFullYear().toString()).filter(y => y && y !== "NaN"),
+                    ...expenses.map(e => new Date(e.createdAt).getFullYear().toString()).filter(y => y && y !== "NaN"),
+                    ...Array.from({ length: 2030 - 2024 + 1 }, (_, i) => (2030 - i).toString())
                   ])).sort((a, b) => b.localeCompare(a)).map(year => (
                     <option key={year} value={year}>{year}</option>
                   ))}
@@ -138,7 +138,7 @@ export const Revenue = ({
                 </select>
               </div>
               <div className="text-[12px] font-black text-slate-400 uppercase tracking-[0.5em] vertical-rl transform rotate-180 opacity-40">
-                FINANCIAL OVERVIEW 2026
+                FINANCIAL OVERVIEW {revYear !== "All" ? revYear : new Date().getFullYear()}
               </div>
             </div>
           </div>

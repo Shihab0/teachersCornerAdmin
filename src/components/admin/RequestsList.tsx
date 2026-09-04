@@ -120,7 +120,7 @@ export const RequestsList: React.FC<RequestsListProps> = ({ requests, onUpdateSt
                 </div>
               </button>
               <div className="text-[11px] font-black text-slate-400 uppercase tracking-[0.4em] vertical-rl transform rotate-180 opacity-40">
-                PENDING APPROVALS 2026
+                PENDING APPROVALS {new Date().getFullYear()}
               </div>
             </div>
           </div>

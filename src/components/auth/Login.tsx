@@ -490,7 +490,7 @@ export const Login = ({ user, onLogin, onLogout, onInstall, deals = [], teachers
 
             <div className="text-center md:text-right">
               <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">
-                © 2026 Teacher's Corner
+                © {new Date().getFullYear()} Teacher's Corner
               </p>
               <p className="text-[9px] sm:text-[10px] text-slate-600 mt-1 sm:mt-2">Kishoreganj, Bangladesh</p>
             </div>
