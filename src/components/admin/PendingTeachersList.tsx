@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { toast } from "sonner";
 import { Skeleton } from "../ui/Skeleton";
 import { ConfirmDialog } from "../modals/ConfirmDialog";
+import { AdminTeacherNotes } from "./AdminTeacherNotes";
 
 interface PendingTeachersListProps {
   teachers: Teacher[];
@@ -396,6 +397,9 @@ export const PendingTeachersList: React.FC<PendingTeachersListProps> = ({
                           )}
                         </div>
                       )}
+
+                      {/* Admin Teacher Notes */}
+                      <AdminTeacherNotes teacher={teacher} />
 
                       {/* Admin Actions */}
                       <div className="flex items-center gap-3 pt-6 border-t border-gray-100 dark:border-slate-800">

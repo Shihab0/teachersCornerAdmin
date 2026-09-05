@@ -153,10 +153,12 @@ export const useTuitionDeals = () => {
 
   useEffect(() => {
     const baseRef = collection(db, COLLECTIONS.DEALS);
+    
+    // Read from the new public collection for the landing page
+    const publicRef = collection(db, COLLECTIONS.DEALS_PUBLIC);
     const qPublicDeals = query(
-      baseRef,
-      where("tuitionStatus", "in", ["Confirmed", "Running"]),
-      orderBy("createdAt", "desc"),
+      publicRef,
+      orderBy("updatedAt", "desc"),
       limit(5)
     );
     

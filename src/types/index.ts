@@ -67,6 +67,8 @@ export interface Teacher {
   rating: number;
   createdAt: number;
   status?: "Pending" | "Approved" | "Rejected";
+  adminMessage?: string;
+  internalNote?: string;
 }
 
 export interface TuitionRequest {

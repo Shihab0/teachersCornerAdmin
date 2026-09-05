@@ -42,3 +42,32 @@ export function resolveTeacherGender(teacher: Partial<Teacher>): "Male" | "Femal
   }
   return inferGenderFromNameOrInstitution(teacher.name, teacher.collegeName);
 }
+
+export function normalizePhoneVariations(phone: string): string[] {
+  // Extract only digits
+  const digits = phone.replace(/\D/g, "");
+  let core = digits;
+  
+  // Extract the core 11-digit BD number starting with "01"
+  if (digits.startsWith("8801") && digits.length === 13) {
+    core = digits.substring(2);
+  } else if (digits.startsWith("01") && digits.length === 11) {
+    core = digits;
+  } else if (digits.startsWith("1") && digits.length === 10) {
+    core = "0" + digits;
+  }
+
+  // If we successfully found an 11 digit core, generate known historical database formats
+  if (core.startsWith("01") && core.length === 11) {
+    return [
+      core,                  // "01761992500"
+      `+88${core}`,          // "+8801761992500"
+      `88${core}`,           // "8801761992500"
+      `${core.slice(0,5)}-${core.slice(5)}` // "01761-992500"
+    ];
+  }
+
+  // Fallback to exactly what the user entered if it doesn't match standard BD format
+  return [phone];
+}
+

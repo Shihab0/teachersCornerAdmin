@@ -17,7 +17,9 @@ service cloud.firestore {
         request.auth.token.email.lower() in [
           "ataharshihab1@gmail.com",
           "atahershihab151@gmail.com",
-          "teacherscorner01@gmaill.com",
+          "teacherscorner01@gmail.com",
+          "dipu.tc@gmail.com",
+          "shimanto.tc@gmail.com",
           
           
         ] || (request.auth.token.email.matches(".*@teacherscorner\\.com$") && request.auth.token.email_verified == true)
@@ -80,9 +82,19 @@ service cloud.firestore {
     // 1. Teachers Collection
     match /artifacts/{appId}/public/data/tc_teachers/{docId} {
       allow create: if isValidTeacherCreate();
-      allow read, get, list: if true;
+      allow read, get, list: if isAdmin() || resource.data.status == "Approved";
       allow update: if isValidTeacherUpdate(docId);
       allow delete: if isAdmin();
+    }
+
+    // 1a. Public Teacher Status (Sanitized)
+    match /artifacts/{appId}/public/data/tc_teacher_public_status/{phone} {
+      allow get, list: if true;
+      allow write: if isAdmin() || (
+        request.resource.data.keys().hasAll(['phone', 'applications']) &&
+        request.resource.data.phone == phone &&
+        request.resource.data.applications is list
+      );
     }
 
     // 2. Tuition Requests Collection
@@ -93,11 +105,15 @@ service cloud.firestore {
 
     // 3. Tuition Deals Collection
     match /artifacts/{appId}/public/data/tc_deals/{docId} {
-      allow read, get, list: if isAdmin() || (
-        resource.data.tuitionStatus in ["Confirmed", "Running"]
-      );
+      allow read, get, list: if isAdmin();
       allow create, update: if isAdmin() && isValidDealWrite();
       allow delete: if isAdmin();
+    }
+    
+    // 3a. Public Tuition Deals Collection
+    match /artifacts/{appId}/public/data/tc_deals_public/{docId} {
+      allow read, get, list: if true;
+      allow write: if isAdmin();
     }
 
     // 4. Expenses Collection
@@ -105,6 +121,12 @@ service cloud.firestore {
       allow read, get, list: if isAdmin();
       allow create, update: if isAdmin() && isValidExpenseWrite();
       allow delete: if isAdmin();
+    }
+
+    // 4a. Area Stats Collection
+    match /artifacts/{appId}/public/data/tc_area_stats/{docId} {
+      allow read, get, list: if true;
+      allow write: if isAdmin();
     }
 
     // 5. Connection Test

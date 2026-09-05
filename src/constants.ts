@@ -2,9 +2,11 @@ import { appId } from "./lib/firebase";
 
 export const COLLECTIONS = {
   DEALS: `artifacts/${appId}/public/data/tc_deals`,
+  DEALS_PUBLIC: `artifacts/${appId}/public/data/tc_deals_public`,
   EXPENSES: `artifacts/${appId}/public/data/tc_expenses`,
   TEACHERS: `artifacts/${appId}/public/data/tc_teachers`,
   REQUESTS: `artifacts/${appId}/public/data/tc_tuition_requests`,
+  AREA_STATS: `artifacts/${appId}/public/data/tc_area_stats`,
   CONNECTION_TEST: `artifacts/${appId}/public/data/connection_test`,
 };
 

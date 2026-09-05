@@ -19,6 +19,7 @@ import { TeacherStatusModal } from "../modals/TeacherStatusModal";
 import { TuitionUpdatePost } from "../stats/TuitionUpdatePost";
 import { TeacherPreviewList } from "../public/TeacherPreviewList";
 import { usePublicTeachers } from "../../hooks/usePublicTeachers";
+import { useAreaStats } from "../../hooks/useAreaStats";
 
 import { Deal } from "../../types";
 
@@ -41,6 +42,7 @@ export const Login = ({ user, onLogin, onLogout, onInstall, deals = [], teachers
   const [editingTeacher, setEditingTeacher] = useState<any | null>(null);
   const [isOnline, setIsOnline] = useState(window.navigator.onLine);
   const previewTeachers = usePublicTeachers();
+  const { stats: areaStats } = useAreaStats();
 
   React.useEffect(() => {
     const handleOnline = () => setIsOnline(true);
@@ -443,6 +445,41 @@ export const Login = ({ user, onLogin, onLogout, onInstall, deals = [], teachers
           </div>
         </div>
       </section>
+
+      {/* Area Stats Section */}
+      {areaStats.length > 0 && (
+        <section className="py-24 px-6 bg-slate-50 dark:bg-slate-900 transition-colors duration-500">
+          <div className="max-w-7xl mx-auto">
+            <div className="text-center mb-16">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-full text-[10px] font-black uppercase tracking-[0.2em] mb-6"
+              >
+                <MapPin className="w-4 h-4" />
+                Areas
+              </motion.div>
+              <h2 className="text-4xl font-black text-slate-900 dark:text-white tracking-wide [word-spacing:0.2em] mb-4">আমাদের <span className="text-emerald-600">এলাকাভিত্তিক</span> টিউশন</h2>
+              <p className="text-slate-500 dark:text-slate-400 max-w-2xl mx-auto font-medium">কিশোরগঞ্জের কোন এলাকায় আমাদের কতগুলো টিউশন রয়েছে তার একটি পরিসংখ্যান।</p>
+            </div>
+            
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {areaStats.map((stat, idx) => (
+                <motion.div
+                  key={stat.area}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ delay: idx * 0.05 }}
+                  className="bg-white dark:bg-slate-800 p-6 rounded-3xl shadow-sm border border-slate-100 dark:border-white/5 flex flex-col items-center justify-center gap-2"
+                >
+                  <span className="text-4xl font-black text-emerald-600 dark:text-emerald-400">{stat.count}+</span>
+                  <span className="text-sm font-bold text-slate-700 dark:text-slate-300 text-center">{stat.area}</span>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Latest Success Stories */}
       {deals.length > 0 && (

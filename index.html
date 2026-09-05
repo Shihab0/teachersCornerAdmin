@@ -17,6 +17,21 @@
     />
   </head>
   <body class="antialiased">
+    <script>
+      // Prevent libraries from crashing the app by trying to overwrite window.fetch
+      try {
+        const originalFetch = window.fetch;
+        Object.defineProperty(window, 'fetch', {
+          get: () => originalFetch,
+          set: () => {
+            console.warn('Prevented attempt to overwrite window.fetch');
+          },
+          configurable: true
+        });
+      } catch (e) {
+        console.error("Could not protect window.fetch", e);
+      }
+    </script>
     <!-- 🚀 PWA সুন্দর লোডিং স্ক্রিন -->
     <div id="pwa-loader">
       <div class="loader-spinner"></div>

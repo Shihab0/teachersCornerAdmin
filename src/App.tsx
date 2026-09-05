@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useMemo, ChangeEvent, FormEvent } from "react";
-import { doc, addDoc, updateDoc, deleteDoc, collection, getDocs, getDocFromServer } from "firebase/firestore";
-import { auth, db, handleFirestoreError, OperationType } from "./lib/firebase";
+import { doc, addDoc, updateDoc, deleteDoc, collection, getDocs, getDocFromServer, getDoc, setDoc, runTransaction } from "firebase/firestore";
+import { auth, db, appId, handleFirestoreError, OperationType } from "./lib/firebase";
 import { Toaster, toast } from "sonner";
 import { cn } from "./lib/utils";
+import { updateAreaStat } from "./lib/areaUtils";
 import { Deal, Expense, HistoryEntry, Teacher, TuitionRequest } from "./types";
 import { Header } from "./components/layout/Header";
 import { Dashboard } from "./components/dashboard/Dashboard";
@@ -239,6 +240,7 @@ export default function App() {
 
     try {
       const colRef = collection(db, COLLECTIONS.DEALS);
+      let targetId: string | undefined;
       if (isEditing && editId) {
         const old = deals.find((d) => d.id === editId);
         
@@ -265,15 +267,50 @@ export default function App() {
         ];
         await updateDoc(doc(colRef, editId), { ...payload, history });
         toast.success("টিউশন সফলভাবে আপডেট করা হয়েছে!");
+        targetId = editId;
       } else {
-        await addDoc(colRef, {
+        const newDocRef = await addDoc(colRef, {
           ...payload,
           collectedBy: null,
           createdAt: Date.now(),
           history: [{ date: new Date().toISOString(), log: "নতুন এন্ট্রি তৈরি করা হয়েছে" }],
         });
+        targetId = newDocRef.id;
         toast.success("নতুন টিউশন সফলভাবে যোগ করা হয়েছে!");
       }
+
+      // Sync public deal
+      if (targetId) {
+        const publicRef = doc(db, COLLECTIONS.DEALS_PUBLIC, targetId);
+        if (payload.tuitionStatus === "Confirmed" || payload.tuitionStatus === "Running") {
+          await setDoc(publicRef, {
+            tuitionId: payload.tuitionId || "",
+            tutorName: payload.tutorName || "",
+            studentClass: payload.studentClass || "",
+            subjects: payload.subjects || payload.details || "",
+            location: payload.location || "",
+            tuitionStatus: payload.tuitionStatus || "Confirmed",
+            selectionDate: payload.selectionDate || "",
+            updatedAt: Date.now()
+          });
+        } else {
+          await deleteDoc(publicRef).catch(() => {});
+        }
+      }
+
+      // Update area stats
+      if (isEditing && editId) {
+        const old = deals.find((d) => d.id === editId);
+        if (old && old.location !== payload.location) {
+          if (old.location) await updateAreaStat(old.location, -1);
+          if (payload.location) await updateAreaStat(payload.location, 1);
+        }
+      } else {
+        if (payload.location) {
+          await updateAreaStat(payload.location, 1);
+        }
+      }
+
       setFormData({
         tuitionId: "",
         tutorName: "",
@@ -348,18 +385,47 @@ export default function App() {
       updates.commissionStatus = "Rejected";
     }
     await updateDoc(doc(db, COLLECTIONS.DEALS, id), updates);
+
+    // Sync public deal
+    const publicRef = doc(db, COLLECTIONS.DEALS_PUBLIC, id);
+    if (newStatus === "Confirmed" || newStatus === "Running") {
+      if (deal) {
+        await setDoc(publicRef, {
+          tuitionId: deal.tuitionId || "",
+          tutorName: deal.tutorName || "",
+          studentClass: deal.studentClass || "",
+          subjects: deal.subjects || deal.details || "",
+          location: deal.location || "",
+          tuitionStatus: newStatus,
+          selectionDate: deal.selectionDate || "",
+          updatedAt: Date.now()
+        }, { merge: true });
+      }
+    } else {
+      await deleteDoc(publicRef).catch(() => {});
+    }
   };
 
   const deleteDeal = (id: string) => {
     requestConfirm("নিশ্চিত ডিলিট?", "এই রেকর্ডটি চিরতরে মুছে যাবে।", async () => {
+      const dealToDelete = deals.find(d => d.id === id);
       await deleteDoc(doc(db, COLLECTIONS.DEALS, id));
+      await deleteDoc(doc(db, COLLECTIONS.DEALS_PUBLIC, id)).catch(() => {});
+      if (dealToDelete?.location) {
+        await updateAreaStat(dealToDelete.location, -1);
+      }
     });
   };
 
   const handleDeleteFromEdit = () => {
     if (!editId) return;
     requestConfirm("নিশ্চিত ডিলিট?", "এই রেকর্ডটি চিরতরে মুছে যাবে।", async () => {
+      const dealToDelete = deals.find(d => d.id === editId);
       await deleteDoc(doc(db, COLLECTIONS.DEALS, editId));
+      await deleteDoc(doc(db, COLLECTIONS.DEALS_PUBLIC, editId)).catch(() => {});
+      if (dealToDelete?.location) {
+        await updateAreaStat(dealToDelete.location, -1);
+      }
       setIsEditing(false);
       setEditId(null);
       setIdError("");
@@ -431,9 +497,37 @@ export default function App() {
         }
       } else {
         const initialStatus = isAdmin ? "Approved" : "Pending";
-        await addDoc(teacherRef, { ...teacherData, status: initialStatus, createdAt: Date.now() });
+        const newDocRef = await addDoc(teacherRef, { ...teacherData, status: initialStatus, createdAt: Date.now() });
+        
+        // Ensure public status is updated for non-admins who can't run sync
+        if (!isAdmin && teacherData.phone) {
+          const publicDocRef = doc(db, "artifacts", appId, "public", "data", "tc_teacher_public_status", teacherData.phone);
+          const publicSnap = await getDoc(publicDocRef);
+          
+          const newApp = {
+            id: newDocRef.id,
+            name: teacherData.name || "",
+            collegeName: teacherData.collegeName || "",
+            status: initialStatus,
+            adminMessage: "",
+            photoUrl: teacherData.photoUrl || ""
+          };
+
+          if (publicSnap.exists()) {
+            const currentApps = publicSnap.data().applications || [];
+            await setDoc(publicDocRef, { phone: teacherData.phone, applications: [...currentApps, newApp] });
+          } else {
+            await setDoc(publicDocRef, { phone: teacherData.phone, applications: [newApp] });
+          }
+        }
+        
         toast.success(isAdmin ? "শিক্ষক সফলভাবে যুক্ত করা হয়েছে" : "আপনার সিভি সফলভাবে জমা হয়েছে এবং এডমিন পর্যালোচনায় পাঠানো হয়েছে");
       }
+      
+      if (isAdmin && teacherData.phone) {
+        import("./lib/syncTeacherPublicStatus").then(m => m.syncTeacherPublicStatus(teacherData.phone!));
+      }
+      
       setEditingTeacher(null);
     } catch (error) {
       console.error("Error saving teacher:", error);
@@ -480,6 +574,10 @@ export default function App() {
   const handleUpdateTeacherStatus = async (id: string, status: "Approved" | "Rejected") => {
     try {
       await updateDoc(doc(db, COLLECTIONS.TEACHERS, id), { status, updatedAt: Date.now() });
+      const t = teachers.find(t => t.id === id);
+      if (t) {
+        import("./lib/syncTeacherPublicStatus").then(m => m.syncTeacherPublicStatus(t.phone));
+      }
     } catch (error) {
       console.error("Error updating teacher status:", error);
       throw error;
@@ -488,7 +586,11 @@ export default function App() {
 
   const handleDeleteTeacher = async (id: string) => {
     try {
+      const t = teachers.find(t => t.id === id);
       await deleteDoc(doc(db, COLLECTIONS.TEACHERS, id));
+      if (t) {
+        import("./lib/syncTeacherPublicStatus").then(m => m.syncTeacherPublicStatus(t.phone));
+      }
     } catch (error) {
       console.error("Error deleting teacher:", error);
       throw error;

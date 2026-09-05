@@ -2,18 +2,26 @@ import React, { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { 
   X, Phone, Search, GraduationCap, CheckCircle2, Clock, XCircle, 
-  Loader2, School, MapPin, ShieldCheck, Lock, Info, Sparkles, PhoneCall
+  Loader2, School, MapPin, ShieldCheck, Lock, Info, Sparkles, PhoneCall, MessageSquare
 } from "lucide-react";
 import { collection, query, where, getDocs } from "firebase/firestore";
 import { db, appId } from "../../lib/firebase";
-import { Teacher } from "../../types";
 import { toast } from "sonner";
+import { normalizePhoneVariations } from "../../lib/utils";
 
 interface TeacherStatusModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onEditTeacher: (teacher: Teacher) => void;
   onOpenNewTeacherModal: () => void;
+}
+
+interface PublicTeacherStatus {
+  id: string;
+  name: string;
+  status: "Pending" | "Approved" | "Rejected";
+  adminMessage: string;
+  collegeName: string;
+  photoUrl: string;
 }
 
 export const TeacherStatusModal: React.FC<TeacherStatusModalProps> = ({
@@ -23,33 +31,43 @@ export const TeacherStatusModal: React.FC<TeacherStatusModalProps> = ({
 }) => {
   const [phone, setPhone] = useState("");
   const [isSearching, setIsSearching] = useState(false);
-  const [foundTeacher, setFoundTeacher] = useState<Teacher | null>(null);
+  const [foundTeachers, setFoundTeachers] = useState<PublicTeacherStatus[]>([]);
   const [hasSearched, setHasSearched] = useState(false);
 
   const handleSearch = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    const cleanPhone = phone.trim();
-    if (!cleanPhone || !/^01\d{9}$/.test(cleanPhone)) {
-      toast.error("সঠিক ১১ ডিজিটের মোবাইল নম্বর দিন (যেমন: 01611536951)");
+    const rawPhone = phone.trim();
+    if (!rawPhone || rawPhone.replace(/\D/g, "").length < 10) {
+      toast.error("সঠিক মোবাইল নম্বর দিন");
       return;
     }
 
     setIsSearching(true);
-    setFoundTeacher(null);
+    setFoundTeachers([]);
     setHasSearched(true);
 
     try {
-      const colRef = collection(db, "artifacts", appId, "public", "data", "tc_teachers");
-      const q = query(colRef, where("phone", "==", cleanPhone));
+      const variations = normalizePhoneVariations(rawPhone);
+      const q = query(
+        collection(db, "artifacts", appId, "public", "data", "tc_teacher_public_status"),
+        where("phone", "in", variations)
+      );
+      
       const querySnapshot = await getDocs(q);
+      
+      let allApps: PublicTeacherStatus[] = [];
+      querySnapshot.forEach(docSnap => {
+         const data = docSnap.data();
+         if (data.applications && Array.isArray(data.applications)) {
+           allApps = [...allApps, ...data.applications];
+         }
+      });
 
-      if (!querySnapshot.empty) {
-        const teacherDoc = querySnapshot.docs[0];
-        const data = { id: teacherDoc.id, ...teacherDoc.data() } as Teacher;
-        setFoundTeacher(data);
+      if (allApps.length > 0) {
+        setFoundTeachers(allApps);
         toast.success("আবেদনের স্ট্যাটাস খুঁজে পাওয়া গেছে!");
       } else {
-        setFoundTeacher(null);
+        setFoundTeachers([]);
       }
     } catch (error) {
       console.error("Error searching teacher status:", error);
@@ -117,64 +135,76 @@ export const TeacherStatusModal: React.FC<TeacherStatusModalProps> = ({
             {/* Results Section */}
             {hasSearched && (
               <div className="space-y-4 pt-2">
-                {foundTeacher ? (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="p-5 rounded-3xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 space-y-4"
-                  >
-                    {/* Status Banner */}
-                    {foundTeacher.status === "Approved" && (
-                      <div className="flex items-center gap-3 p-4 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900/50 rounded-2xl text-emerald-800 dark:text-emerald-300">
-                        <CheckCircle2 size={24} className="text-emerald-600 dark:text-emerald-400 shrink-0" />
-                        <div>
-                          <div className="text-xs font-black uppercase tracking-wider">সিভি অনুমোদিত (Verified & Live)</div>
-                          <div className="text-[11px] font-medium opacity-90 mt-0.5">আপনার সিভিটি ভেরিফাইড হয়েছে এবং শিক্ষক তালিকায় লাইভ যুক্ত রয়েছে।</div>
-                        </div>
-                      </div>
-                    )}
-
-                    {foundTeacher.status === "Pending" && (
-                      <div className="flex items-center gap-3 p-4 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/50 rounded-2xl text-amber-800 dark:text-amber-300">
-                        <Clock size={24} className="text-amber-600 dark:text-amber-400 shrink-0" />
-                        <div>
-                          <div className="text-xs font-black uppercase tracking-wider">আবেদন অপেক্ষমাণ (Pending Admin Review)</div>
-                          <div className="text-[11px] font-medium opacity-90 mt-0.5">আপনার আবেদনটি বর্তমানে এডমিন পর্যালোচনায় রয়েছে। দ্রুতই ভেরিফাই শেষে লাইভ করা হবে।</div>
-                        </div>
-                      </div>
-                    )}
-
-                    {foundTeacher.status === "Rejected" && (
-                      <div className="flex items-center gap-3 p-4 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/50 rounded-2xl text-rose-800 dark:text-rose-300">
-                        <XCircle size={24} className="text-rose-600 dark:text-rose-400 shrink-0" />
-                        <div>
-                          <div className="text-xs font-black uppercase tracking-wider">আবেদন প্রতাহৃত / সংশোধনী আবশ্যক</div>
-                          <div className="text-[11px] font-medium opacity-90 mt-0.5">আপনার আবেদনটিতে তথ্যের ঘাটতি রয়েছে। সংশোধনের জন্য এডমিনের সাথে যোগাযোগ করুন।</div>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Teacher Card */}
-                    <div className="flex items-center gap-4 p-3.5 bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800">
-                      <div className="w-14 h-14 rounded-2xl bg-emerald-100 dark:bg-slate-800 overflow-hidden shrink-0 border border-slate-200 dark:border-slate-700 flex items-center justify-center">
-                        {foundTeacher.photoUrl ? (
-                          <img src={foundTeacher.photoUrl} alt={foundTeacher.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
-                        ) : (
-                          <span className="text-emerald-600 font-black text-xl">{foundTeacher.name.charAt(0)}</span>
+                {foundTeachers.length > 0 ? (
+                  <div className="space-y-6">
+                    {foundTeachers.map((foundTeacher) => (
+                      <motion.div
+                        key={foundTeacher.id}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="p-5 rounded-3xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 space-y-4"
+                      >
+                        {/* Status Banner */}
+                        {foundTeacher.status === "Approved" && (
+                          <div className="flex items-center gap-3 p-4 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900/50 rounded-2xl text-emerald-800 dark:text-emerald-300">
+                            <CheckCircle2 size={24} className="text-emerald-600 dark:text-emerald-400 shrink-0" />
+                            <div>
+                              <div className="text-xs font-black uppercase tracking-wider">সিভি অনুমোদিত (Verified & Live)</div>
+                              <div className="text-[11px] font-medium opacity-90 mt-0.5">আপনার সিভিটি ভেরিফাইড হয়েছে এবং শিক্ষক তালিকায় লাইভ যুক্ত রয়েছে।</div>
+                            </div>
+                          </div>
                         )}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h4 className="font-black text-slate-900 dark:text-white text-base truncate">{foundTeacher.name}</h4>
-                        <p className="text-xs font-bold text-slate-500 dark:text-slate-400 flex items-center gap-1 mt-0.5 truncate">
-                          <School size={12} className="text-emerald-500 shrink-0" />
-                          {foundTeacher.collegeName}
-                        </p>
-                        <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 flex items-center gap-1 mt-0.5">
-                          <MapPin size={10} className="text-emerald-500 shrink-0" />
-                          {foundTeacher.presentAddress}
-                        </p>
-                      </div>
-                    </div>
+
+                        {foundTeacher.status === "Pending" && (
+                          <div className="flex items-center gap-3 p-4 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/50 rounded-2xl text-amber-800 dark:text-amber-300">
+                            <Clock size={24} className="text-amber-600 dark:text-amber-400 shrink-0" />
+                            <div>
+                              <div className="text-xs font-black uppercase tracking-wider">আবেদন অপেক্ষমাণ (Pending Admin Review)</div>
+                              <div className="text-[11px] font-medium opacity-90 mt-0.5">আপনার আবেদনটি বর্তমানে এডমিন পর্যালোচনায় রয়েছে। দ্রুতই ভেরিফাই শেষে লাইভ করা হবে।</div>
+                            </div>
+                          </div>
+                        )}
+
+                        {foundTeacher.status === "Rejected" && (
+                          <div className="flex items-center gap-3 p-4 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/50 rounded-2xl text-rose-800 dark:text-rose-300">
+                            <XCircle size={24} className="text-rose-600 dark:text-rose-400 shrink-0" />
+                            <div>
+                              <div className="text-xs font-black uppercase tracking-wider">আবেদন প্রতাহৃত / সংশোধনী আবশ্যক</div>
+                              <div className="text-[11px] font-medium opacity-90 mt-0.5">আপনার আবেদনটিতে তথ্যের ঘাটতি রয়েছে। সংশোধনের জন্য এডমিনের সাথে যোগাযোগ করুন।</div>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Admin Message */}
+                        {foundTeacher.adminMessage && (
+                          <div className="flex items-start gap-3 p-4 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900/50 rounded-2xl text-blue-900 dark:text-blue-200">
+                            <MessageSquare size={20} className="text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
+                            <div>
+                              <div className="text-[10px] font-black uppercase tracking-widest text-blue-600 dark:text-blue-400 mb-1">অ্যাডমিন মেসেজ</div>
+                              <div className="text-[13px] font-bold leading-relaxed whitespace-pre-wrap">{foundTeacher.adminMessage}</div>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Teacher Card */}
+                        <div className="flex items-center gap-4 p-3.5 bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800">
+                          <div className="w-14 h-14 rounded-2xl bg-emerald-100 dark:bg-slate-800 overflow-hidden shrink-0 border border-slate-200 dark:border-slate-700 flex items-center justify-center">
+                            {foundTeacher.photoUrl ? (
+                              <img src={foundTeacher.photoUrl} alt={foundTeacher.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                            ) : (
+                              <span className="text-emerald-600 font-black text-xl">{foundTeacher.name.charAt(0)}</span>
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h4 className="font-black text-slate-900 dark:text-white text-base truncate">{foundTeacher.name}</h4>
+                            <p className="text-xs font-bold text-slate-500 dark:text-slate-400 flex items-center gap-1 mt-0.5 truncate">
+                              <School size={12} className="text-emerald-500 shrink-0" />
+                              {foundTeacher.collegeName}
+                            </p>
+                          </div>
+                        </div>
+                      </motion.div>
+                    ))}
 
                     {/* Security Notice regarding Edit Feature */}
                     <div className="p-4 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50 rounded-2xl space-y-2 text-amber-900 dark:text-amber-200">
@@ -185,10 +215,6 @@ export const TeacherStatusModal: React.FC<TeacherStatusModalProps> = ({
                       <p className="text-xs leading-relaxed font-medium">
                         অন্য কেউ যাতে আপনার মোবাইল নম্বর দিয়ে অননুমোদিতভাবে তথ্য পরিবর্তন করতে না পারে, সেজন্য সরাসরি ইডিট সুবিধা নিরাপত্তার স্বার্থে আপাতত বন্ধ রয়েছে।
                       </p>
-                      <div className="pt-2 border-t border-amber-200/60 dark:border-amber-900/60 flex items-center gap-2 text-xs font-black text-emerald-700 dark:text-emerald-400">
-                        <Sparkles size={14} className="shrink-0" />
-                        <span>সিকিউরিটি ভেরিফিকেশনসহ ইডিট অপশন দ্রুতই যুক্ত করা হবে।</span>
-                      </div>
                     </div>
 
                     {/* Contact Support info */}
@@ -203,7 +229,7 @@ export const TeacherStatusModal: React.FC<TeacherStatusModalProps> = ({
                         <PhoneCall size={12} /> এডমিন কল দিন
                       </a>
                     </div>
-                  </motion.div>
+                  </div>
                 ) : (
                   <motion.div
                     initial={{ opacity: 0, y: 10 }}

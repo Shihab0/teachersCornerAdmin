@@ -5,6 +5,8 @@ import { Icon } from "../ui/Icon";
 import { motion, AnimatePresence } from "motion/react";
 import { cn } from "../../lib/utils";
 import { TeacherStatusModal } from "../modals/TeacherStatusModal";
+import { AdminTeacherNotes } from "../admin/AdminTeacherNotes";
+import { toast } from "sonner";
 
 const KISHOREGANJ_AREAS = [
   "Harua (হারুয়া)", "Rathkhola (রথখোলা)", "Gaital (গাইট্যাল)", "Botrish (বত্রিশ)",
@@ -76,6 +78,32 @@ export const TeacherList: React.FC<TeacherListProps> = ({
     setExpandedId(expandedId === id ? null : id);
   };
 
+  const handleSyncStatus = async () => {
+    try {
+      const toastId = toast.loading("Syncing public statuses...");
+      const { collection, getDocs } = await import("firebase/firestore");
+      const { db, appId } = await import("../../lib/firebase");
+      const { syncTeacherPublicStatus } = await import("../../lib/syncTeacherPublicStatus");
+      
+      const q = collection(db, "artifacts", appId, "public", "data", "tc_teachers");
+      const snapshot = await getDocs(q);
+      
+      const phones = new Set<string>();
+      snapshot.forEach(doc => {
+        if (doc.data().phone) phones.add(doc.data().phone);
+      });
+      
+      for (const phone of phones) {
+        await syncTeacherPublicStatus(phone);
+      }
+      
+      toast.success("Sync complete!", { id: toastId });
+    } catch (e) {
+      console.error(e);
+      toast.error("Sync failed");
+    }
+  };
+
   return (
     <div className="space-y-10 pb-12 pt-6 px-4 md:px-8 lg:px-12 max-w-6xl mx-auto fade-in transition-colors">
       <div className="flex justify-between items-center px-4 mb-8">
@@ -85,7 +113,16 @@ export const TeacherList: React.FC<TeacherListProps> = ({
           </div>
           <div>
             <h2 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tight">শিক্ষক তালিকা</h2>
-            <p className="text-[11px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.3em] mt-1">Total: {filteredTeachers.length} Teachers</p>
+            <div className="flex items-center gap-4 mt-1">
+              <p className="text-[11px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.3em]">Total: {filteredTeachers.length} Teachers</p>
+              <button 
+                onClick={handleSyncStatus}
+                className="text-[9px] font-black text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200 uppercase tracking-widest hover:bg-emerald-100 transition-colors"
+                title="Update Public Status collection for old records"
+              >
+                Sync DB
+              </button>
+            </div>
           </div>
         </div>
         <div className="flex items-center gap-3">
@@ -385,6 +422,9 @@ export const TeacherList: React.FC<TeacherListProps> = ({
                           )}
                         </div>
                       )}
+                      
+                      {/* Admin Teacher Notes */}
+                      <AdminTeacherNotes teacher={teacher} />
 
                       {/* Admin Actions for Approved Teachers */}
                       {activeSubTab === "Approved" && onEditTeacher && onDelete && (
