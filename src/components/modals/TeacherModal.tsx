@@ -6,16 +6,8 @@ import { Teacher } from "../../types";
 import { toast } from "sonner";
 import { useStore } from "../../store/useStore";
 import { cn } from "../../lib/utils";
-
-
-
-const KISHOREGANJ_AREAS = [
-  "Harua (হারুয়া)", "Rathkhola (রথখোলা)", "Gaital (গাইট্যাল)", "Botrish (বত্রিশ)",
-  "Akhrakhabazar (আখড়াবাজার)", "Boro Bazar (বড় বাজার)", "Nilganj (নীলগঞ্জ)",
-  "Puran Thana (পুরান থানা)", "Tarapasha (তারা পাশা)", "Yashodal (যশোদল)",
-  "Haybatnagar (হায়বতনগর)", "Ukilpara (উকিলপাড়া)", "Shikkok Polli (শিক্ষক পল্লী)",
-  "Borpul (বড়পুল)", "Newtown (নিউটাউন)", "Others (অন্যান্য)"
-];
+import { HONOURS_SUBJECTS } from "../../constants";
+import { KISHOREGANJ_AREAS } from "../../lib/areaUtils";
 
 const KISHOREGANJ_INSTITUTIONS = [
   "Gurudayal Govt. College", "Kishoreganj Govt. Boys' High School", 
@@ -25,12 +17,6 @@ const KISHOREGANJ_INSTITUTIONS = [
 ];
 
 const GROUPS = ["Science (বিজ্ঞান)", "Commerce (ব্যবসায় শিক্ষা)", "Arts (মানবিক)"];
-const HONOURS_SUBJECTS = [
-  "Physics", "Chemistry", "Mathematics", "Zoology", "Botany", 
-  "English", "Bangla", "Accounting", "Management", "Economics", 
-  "Political Science", "History", "Islamic History", "Sociology", 
-  "Social Work", "MBBS", "BDS", "Computer Science", "Others"
-];
 
 interface TeacherModalProps {
   onAdd: (teacher: Partial<Teacher>) => void;

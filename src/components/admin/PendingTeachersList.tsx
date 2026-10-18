@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { Skeleton } from "../ui/Skeleton";
 import { ConfirmDialog } from "../modals/ConfirmDialog";
 import { AdminTeacherNotes } from "./AdminTeacherNotes";
+import { HONOURS_SUBJECTS } from "../../constants";
 
 interface PendingTeachersListProps {
   teachers: Teacher[];
@@ -22,6 +23,7 @@ export const PendingTeachersList: React.FC<PendingTeachersListProps> = ({
   isLoading = false
 }) => {
   const [search, setSearch] = useState("");
+  const [filterSubject, setFilterSubject] = useState("All");
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [processingId, setProcessingId] = useState<string | null>(null);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -30,12 +32,22 @@ export const PendingTeachersList: React.FC<PendingTeachersListProps> = ({
 
   const filteredTeachers = useMemo(() => {
     return teachers.filter(t => {
-      const matchesSearch = t.name.toLowerCase().includes(search.toLowerCase()) || 
-                           t.collegeName.toLowerCase().includes(search.toLowerCase()) ||
-                           t.phone.includes(search);
-      return matchesSearch && t.status === "Pending";
+      const q = search.toLowerCase().trim();
+      const honoursSub = t.education?.honours?.subject || "";
+      const matchesSearch = !q ||
+                           (t.name && t.name.toLowerCase().includes(q)) || 
+                           (t.collegeName && t.collegeName.toLowerCase().includes(q)) ||
+                           (t.phone && t.phone.includes(q)) ||
+                           honoursSub.toLowerCase().includes(q);
+
+      const matchesSubject = filterSubject === "All" ||
+        (filterSubject === "Others"
+          ? (honoursSub && !HONOURS_SUBJECTS.slice(0, -1).some(s => s.toLowerCase() === honoursSub.toLowerCase()))
+          : honoursSub.toLowerCase() === filterSubject.toLowerCase());
+
+      return matchesSearch && matchesSubject && t.status === "Pending";
     });
-  }, [teachers, search]);
+  }, [teachers, search, filterSubject]);
 
   const handleStatusChange = async (id: string, status: "Approved" | "Rejected") => {
     setProcessingId(id);
@@ -126,15 +138,30 @@ export const PendingTeachersList: React.FC<PendingTeachersListProps> = ({
       </div>
 
       <div className="space-y-6">
-        <div className="relative group">
-          <Icon icon={Search} size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-emerald-500 transition-colors" />
-          <input
-            type="text"
-            placeholder="নাম, প্রতিষ্ঠান বা ফোন দিয়ে খুঁজুন..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-12 pr-4 py-5 bg-gray-50 dark:bg-slate-900/50 dark:text-white rounded-2xl border-2 border-transparent focus:border-emerald-500/20 focus:bg-white dark:focus:bg-slate-900 transition-all outline-none font-bold text-sm"
-          />
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="md:col-span-2 relative group">
+            <Icon icon={Search} size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-emerald-500 transition-colors" />
+            <input
+              type="text"
+              placeholder="নাম, ফোন, প্রতিষ্ঠান বা অনার্স বিষয় দিয়ে খুঁজুন..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full pl-12 pr-4 py-4 bg-gray-50 dark:bg-slate-900/50 dark:text-white rounded-2xl border-2 border-transparent focus:border-emerald-500/20 focus:bg-white dark:focus:bg-slate-900 transition-all outline-none font-bold text-sm"
+            />
+          </div>
+          <div className="relative group">
+            <select
+              value={filterSubject}
+              onChange={(e) => setFilterSubject(e.target.value)}
+              className="w-full px-5 py-4 bg-gray-50 dark:bg-slate-900/50 dark:text-slate-200 rounded-2xl border-2 border-transparent focus:border-emerald-500/20 focus:bg-white dark:focus:bg-slate-900 transition-all outline-none font-bold text-xs uppercase tracking-wider appearance-none cursor-pointer"
+            >
+              <option value="All">সব অনার্স বিষয়</option>
+              {HONOURS_SUBJECTS.map((sub) => (
+                <option key={sub} value={sub}>{sub}</option>
+              ))}
+            </select>
+            <Icon icon={ChevronDown} size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+          </div>
         </div>
       </div>
 
@@ -223,7 +250,13 @@ export const PendingTeachersList: React.FC<PendingTeachersListProps> = ({
                       </div>
                       <div className="text-[9px] font-black text-gray-400 dark:text-slate-500 truncate flex items-center gap-1.5 uppercase tracking-wider">
                         <GraduationCap size={12} className="text-emerald-500" />
-                        {teacher.collegeName}
+                        <span>{teacher.collegeName}</span>
+                        {teacher.education?.honours?.subject && (
+                          <>
+                            <span className="text-gray-300 dark:text-slate-700">·</span>
+                            <span className="text-emerald-600 dark:text-emerald-400 font-bold">{teacher.education.honours.subject}</span>
+                          </>
+                        )}
                       </div>
                     </div>
                   </div>

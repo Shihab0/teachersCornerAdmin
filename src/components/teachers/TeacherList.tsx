@@ -7,14 +7,8 @@ import { cn } from "../../lib/utils";
 import { TeacherStatusModal } from "../modals/TeacherStatusModal";
 import { AdminTeacherNotes } from "../admin/AdminTeacherNotes";
 import { toast } from "sonner";
-
-const KISHOREGANJ_AREAS = [
-  "Harua (হারুয়া)", "Rathkhola (রথখোলা)", "Gaital (গাইট্যাল)", "Botrish (বত্রিশ)",
-  "Akhrakhabazar (আখড়াবাজার)", "Boro Bazar (বড় বাজার)", "Nilganj (নীলগঞ্জ)",
-  "Puran Thana (পুরান থানা)", "Tarapasha (তারা পাশা)", "Yashodal (যশোদল)",
-  "Haybatnagar (হায়বতনগর)", "Ukilpara (উকিলপাড়া)", "Shikkok Polli (শিক্ষক পল্লী)",
-  "Borpul (বড়পুল)", "Newtown (নিউটাউন)", "Others (অন্যান্য)"
-];
+import { HONOURS_SUBJECTS } from "../../constants";
+import { KISHOREGANJ_AREAS } from "../../lib/areaUtils";
 
 const KISHOREGANJ_INSTITUTIONS = [
   "Gurudayal Govt. College",
@@ -44,23 +38,34 @@ export const TeacherList: React.FC<TeacherListProps> = ({
   const [search, setSearch] = useState("");
   const [filterArea, setFilterArea] = useState("All");
   const [filterCollege, setFilterCollege] = useState("All");
+  const [filterSubject, setFilterSubject] = useState("All");
   const [filterSpecialCategory, setFilterSpecialCategory] = useState("All");
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [showStatusModal, setShowStatusModal] = useState(false);
 
   const areas = ["All", ...KISHOREGANJ_AREAS];
   const colleges = ["All", ...KISHOREGANJ_INSTITUTIONS];
+  const subjects = ["All", ...HONOURS_SUBJECTS];
   const specialCategories = ["All", "Medical", "Public University", "HSC"];
 
   const filteredTeachers = useMemo(() => {
     return teachers
       .filter(t => t.status === activeSubTab)
       .filter(t => {
-        const matchesSearch = t.name.toLowerCase().includes(search.toLowerCase()) || 
-                             t.collegeName.toLowerCase().includes(search.toLowerCase());
+        const query = search.toLowerCase().trim();
+        const honoursSub = t.education?.honours?.subject || "";
+        const matchesSearch = !query ||
+                             (t.name && t.name.toLowerCase().includes(query)) ||
+                             (t.collegeName && t.collegeName.toLowerCase().includes(query)) ||
+                             (t.phone && t.phone.includes(query)) ||
+                             honoursSub.toLowerCase().includes(query);
         const matchesArea = filterArea === "All" || t.presentAddress === filterArea;
         const matchesCollege = filterCollege === "All" || t.collegeName === filterCollege;
-        
+        const matchesSubject = filterSubject === "All" ||
+          (filterSubject === "Others"
+            ? (honoursSub && !HONOURS_SUBJECTS.slice(0, -1).some(s => s.toLowerCase() === honoursSub.toLowerCase()))
+            : honoursSub.toLowerCase() === filterSubject.toLowerCase());
+
         let matchesSpecialCategory = true;
         if (filterSpecialCategory === "Medical") {
           matchesSpecialCategory = !!t.isMedical;
@@ -70,9 +75,9 @@ export const TeacherList: React.FC<TeacherListProps> = ({
           matchesSpecialCategory = !!t.canTeachHSC;
         }
 
-        return matchesSearch && matchesArea && matchesCollege && matchesSpecialCategory;
+        return matchesSearch && matchesArea && matchesCollege && matchesSubject && matchesSpecialCategory;
       });
-  }, [teachers, activeSubTab, search, filterArea, filterCollege, filterSpecialCategory]);
+  }, [teachers, activeSubTab, search, filterArea, filterCollege, filterSubject, filterSpecialCategory]);
 
   const toggleExpand = (id: string) => {
     setExpandedId(expandedId === id ? null : id);
@@ -171,14 +176,14 @@ export const TeacherList: React.FC<TeacherListProps> = ({
           <Icon icon={Search} size={24} className="absolute left-8 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-emerald-500 transition-colors" />
           <input
             type="text"
-            placeholder="নাম বা প্রতিষ্ঠান দিয়ে খুঁজুন..."
+            placeholder="নাম, প্রতিষ্ঠান, ফোন নম্বর বা অনার্স বিষয় দিয়ে খুঁজুন..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full pl-20 pr-10 py-8 bg-white dark:bg-slate-900 rounded-[40px] border border-slate-100 dark:border-slate-800 shadow-sm focus:outline-none focus:ring-8 focus:ring-emerald-500/5 dark:text-white font-black text-base transition-all placeholder:text-slate-400 tracking-tight"
           />
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
           <div className="relative group">
             <select
               value={filterArea}
@@ -200,6 +205,19 @@ export const TeacherList: React.FC<TeacherListProps> = ({
             >
               {colleges.map(college => (
                 <option key={college} value={college}>{college === "All" ? "সব কলেজ" : college}</option>
+              ))}
+            </select>
+            <Icon icon={ChevronDown} size={18} className="absolute right-8 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+          </div>
+
+          <div className="relative group">
+            <select
+              value={filterSubject}
+              onChange={(e) => setFilterSubject(e.target.value)}
+              className="w-full px-8 py-6 bg-white dark:bg-slate-900 rounded-[28px] border border-slate-100 dark:border-slate-800 text-[11px] font-black uppercase tracking-[0.2em] text-slate-700 dark:text-slate-400 focus:outline-none appearance-none shadow-sm focus:ring-4 focus:ring-emerald-500/10 transition-all"
+            >
+              {subjects.map(subject => (
+                <option key={subject} value={subject}>{subject === "All" ? "সব অনার্স বিষয়" : subject}</option>
               ))}
             </select>
             <Icon icon={ChevronDown} size={18} className="absolute right-8 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
@@ -249,7 +267,13 @@ export const TeacherList: React.FC<TeacherListProps> = ({
                     </div>
                     <div className="text-[9px] font-black text-slate-500 dark:text-slate-400 truncate flex items-center gap-1.5 uppercase tracking-wider">
                       <div className="w-1 h-1 rounded-full bg-emerald-500" />
-                      {teacher.collegeName}
+                      <span>{teacher.collegeName}</span>
+                      {teacher.education?.honours?.subject && (
+                        <>
+                          <span className="text-slate-300 dark:text-slate-600">·</span>
+                          <span className="text-emerald-600 dark:text-emerald-400 font-bold">{teacher.education.honours.subject}</span>
+                        </>
+                      )}
                     </div>
                   </div>
                 </div>

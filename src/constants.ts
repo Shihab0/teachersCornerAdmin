@@ -25,3 +25,25 @@ export const isAdminEmail = (email: string | null | undefined): boolean => {
   if (lower.endsWith("@teacherscorner.com")) return true;
   return false;
 };
+
+export const HONOURS_SUBJECTS = [
+  "Physics",
+  "Chemistry",
+  "Mathematics",
+  "Zoology",
+  "Botany",
+  "English",
+  "Bangla",
+  "Accounting",
+  "Management",
+  "Economics",
+  "Political Science",
+  "History",
+  "Islamic History",
+  "Sociology",
+  "Social Work",
+  "MBBS",
+  "BDS",
+  "Computer Science",
+  "Others"
+];
