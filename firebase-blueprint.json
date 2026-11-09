@@ -5,17 +5,37 @@
       "description": "Teacher profile data",
       "type": "object",
       "properties": {
-        "name": { "type": "string" },
-        "phone": { "type": "string" },
-        "institution": { "type": "string" },
-        "department": { "type": "string" },
-        "area": { "type": "string" },
+        "name": { "type": "string", "maxLength": 200 },
+        "phone": { "type": "string", "maxLength": 20 },
+        "collegeName": { "type": "string" },
+        "presentAddress": { "type": "string" },
+        "permanentAddress": { "type": "string" },
         "canTeachHSC": { "type": "boolean" },
         "isMedical": { "type": "boolean" },
         "rating": { "type": "number" },
-        "createdAt": { "type": "number" }
+        "status": { "type": "string", "enum": ["Pending", "Approved", "Rejected"] },
+        "createdAt": { "type": "number" },
+        "updatedAt": { "type": "number" }
       },
-      "required": ["name", "phone", "institution", "area"]
+      "required": ["name", "phone", "status"]
+    },
+    "TeacherAuth": {
+      "title": "TeacherAuth",
+      "description": "Teacher OTP verification, daily rate limit, and OTP-free dashboard login PIN state",
+      "type": "object",
+      "properties": {
+        "phone": { "type": "string", "maxLength": 20 },
+        "otpHash": { "type": "string" },
+        "expiresAt": { "type": "number" },
+        "attempts": { "type": "number" },
+        "dailyCount": { "type": "number" },
+        "dailyResetDate": { "type": "string" },
+        "lastSentAt": { "type": "number" },
+        "isVerified": { "type": "boolean" },
+        "pinHash": { "type": "string" },
+        "updatedAt": { "type": "number" }
+      },
+      "required": ["phone"]
     },
     "Deal": {
       "title": "Deal",
@@ -38,7 +58,7 @@
         "collectedBy": { "type": "string" },
         "createdAt": { "type": "number" },
         "updatedAt": { "type": "number" },
-        "history": { "type": "array", "items": { "type": "object" } }
+        "history": { "type": "array" }
       }
     },
     "Expense": {
@@ -50,20 +70,24 @@
         "amount": { "type": "number" },
         "purpose": { "type": "string" },
         "createdAt": { "type": "number" },
-        "history": { "type": "array", "items": { "type": "object" } }
+        "history": { "type": "array" }
       }
     }
   },
   "firestore": {
-    "/artifacts/tc-admin-panel/public/data/tc_teachers": {
+    "/artifacts/{appId}/public/data/tc_teachers/{docId}": {
       "schema": "Teacher",
       "description": "Collection of teachers"
     },
-    "/artifacts/tc-admin-panel/public/data/tc_deals": {
+    "/artifacts/{appId}/public/data/tc_teacher_auth/{phone}": {
+      "schema": "TeacherAuth",
+      "description": "Collection storing teacher OTP rate limits and OTP-free repeat dashboard login credentials"
+    },
+    "/artifacts/{appId}/public/data/tc_deals/{docId}": {
       "schema": "Deal",
       "description": "Collection of tuition deals"
     },
-    "/artifacts/tc-admin-panel/public/data/tc_expenses": {
+    "/artifacts/{appId}/public/data/tc_expenses/{docId}": {
       "schema": "Expense",
       "description": "Collection of office expenses"
     }

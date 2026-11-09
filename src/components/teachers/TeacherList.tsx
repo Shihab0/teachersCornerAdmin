@@ -262,7 +262,7 @@ export const TeacherList: React.FC<TeacherListProps> = ({
                       <h3 className="font-black text-slate-950 dark:text-white text-sm truncate tracking-tight uppercase">{teacher.name}</h3>
                       <div className="flex items-center gap-0.5 bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 px-1.5 py-0.5 rounded-md text-[8px] font-black shrink-0 border border-amber-100 dark:border-amber-900/30 shadow-sm">
                         <Star size={8} fill="currentColor" />
-                        {teacher.rating}
+                        {teacher.rating || 5}
                       </div>
                     </div>
                     <div className="text-[9px] font-black text-slate-500 dark:text-slate-400 truncate flex items-center gap-1.5 uppercase tracking-wider">
@@ -277,7 +277,8 @@ export const TeacherList: React.FC<TeacherListProps> = ({
                     </div>
                   </div>
                 </div>
-                <div className="flex items-center gap-3 shrink-0 ml-3">
+
+                <div className="flex items-center gap-2 shrink-0 ml-3">
                   <a 
                     href={`tel:${teacher.phone}`} 
                     onClick={(e) => e.stopPropagation()}
@@ -452,7 +453,7 @@ export const TeacherList: React.FC<TeacherListProps> = ({
 
                       {/* Admin Actions for Approved Teachers */}
                       {activeSubTab === "Approved" && onEditTeacher && onDelete && (
-                        <div className="flex gap-3 pt-4 border-t border-slate-100 dark:border-slate-800/50">
+                        <div className="flex flex-wrap gap-3 pt-4 border-t border-slate-100 dark:border-slate-800/50">
                           <button
                             onClick={(e) => {
                               e.stopPropagation();

@@ -1,88 +1,114 @@
-# Teacher Filtering & Search by Honours Subject
+# সিভি আপডেটের জন্য SMS OTP ভেরিফিকেশন, লিমিট ও টিচার ড্যাশবোর্ড লগইন সিস্টেম
 
-Empower administrators to rapidly find and filter registered and pending tutors by their Honours (Hons) academic subjects via both freeform search and a dedicated subject dropdown.
+শিক্ষকদের সিভি বা প্রোফাইল তথ্য পরিবর্তনের জন্য অ্যাডমিনকে কল করার পরিবর্তে মোবাইল নম্বর দিয়ে সার্চ করার পর **"Need Update (সিভি আপডেট প্রয়োজন)"** বাটনের মাধ্যমে **বাংলাদেশি SMS Gateway OTP ভেরিফিকেশন**, **দৈনিক ওটিপি লিমিট**, এবং **একবার ওটিপি ভেরিফিকেশন সফল হলে পরবর্তীতে ওটিপি ছাড়াই ড্যাশবোর্ড লগইন** করার পূর্ণাঙ্গ সিস্টেম।
 
 ## User Review & Critical Decisions
 
 > [!IMPORTANT]
-> The following design and behavioral choices were confirmed through your input:
-> - **Search Integration**: Enabled both in the main search bar (freeform text) and via a dedicated Honours subject dropdown filter.
-> - **Scope of Application**: Implemented across both the primary **Approved / All Teachers List** (`TeacherList.tsx`) and the **Pending Teachers List** (`PendingTeachersList.tsx`).
+> আপনার দেওয়া নির্দেশনা ও পছন্দ অনুযায়ী নিচের সিদ্ধান্তগুলো চূড়ান্ত করা হয়েছে:
 
-- **Confirmed Decision 1**: Searching in the search bar matches teacher name, institution, phone number, and Honours subject (`education.honours.subject`).
-- **Confirmed Decision 2**: Added a dedicated Honours Subject dropdown selector alongside existing Area and College dropdowns, populated with standard Kishoreganj tutor subjects and custom subjects.
-
----
-
-### 1. Overview & Core Concept
-
-When parents or guardians request a tutor for higher-grade subjects (e.g., Higher Math, Physics, Zoology, English), administrators need to find tutors who specialize in those subjects at the undergraduate/honours level. Currently, the search bar only matches teacher name and institution, making subject-specific lookups time-consuming.
-
-This enhancement introduces dual-mode filtering:
-1. **Dynamic Text Search**: Typing any subject name (e.g., "Physics", "ইংরেজি", "Mathematics", "Zoology") into the search bar instantly filters matching tutors.
-2. **Dedicated Subject Selector**: A clean dropdown filter featuring all recognized university departments/subjects, enabling one-click segmentation of all available tutors.
+- **Confirmed Decision 1 (বাংলাদেশি SMS Gateway API)**: শিক্ষকের নিবন্ধিত মোবাইল নম্বরে সরাসরি ৬-ডিজিটের OTP পাঠানোর জন্য সার্ভার-সাইড প্রক্সি রাউট তৈরি করা হবে, যা বাংলাদেশি SMS Gateway (যেমন: BulkSMSBD, GreenWeb, MimSMS বা কাস্টম HTTP SMS API) সাপোর্ট করবে। পাশাপাশি টেস্ট করার সুবিধার্থে ডেভেলপমেন্ট/টেস্ট মোড ফলব্যাক যুক্ত থাকবে।
+- **Confirmed Decision 2 (OTP লিমিট ও রেট-লিমিটিং)**: এসএমএস খরচ ও অপব্যবহার রোধে একটি নম্বরে **প্রতি ২৪ ঘণ্টায় সর্বোচ্চ ৩ বার OTP** পাঠানো যাবে। প্রতিটি ওটিপির মেয়াদ থাকবে **৫ মিনিট**, পুনরায় পাঠানোর জন্য **৬০ সেকেন্ডের কাউন্টডাউন টাইমার**, এবং ভুল কোড দেওয়ার সর্বোচ্চ **৩ বার সুযোগ** থাকবে।
+- **Confirmed Decision 3 (একবার OTP ভেরিফাইয়ের পর OTP ছাড়াই ড্যাশবোর্ড লগইন)**: প্রথমবার OTP ভেরিফাই সফল হওয়ার সাথে সাথে শিক্ষক একটি **৪-ডিজিটের সিকিউরিটি পিন (PIN/Password)** সেট করে নিতে পারবেন এবং ডিভাইসে সেশন সেভ থাকবে। ফলে পরবর্তীতে তিনি নাম্বার দিয়ে সার্চ করে **"Need Update / টিচার ড্যাশবোর্ড"** বাটনে ক্লিক করলে আর কোনো OTP ছাড়াই সরাসরি সেশন বা পিন দিয়ে নিজের ড্যাশবোর্ডে ঢুকে যতবার খুশি সিভি আপডেট করতে পারবেন।
+- **Confirmed Decision 4 (অ্যাডমিন রিভিউয়ের জন্য Pending স্ট্যাটাস)**: শিক্ষক সিভি আপডেট করে সাবমিট করার সাথে সাথে সিভির স্ট্যাটাস স্বয়ংক্রিয়ভাবে **`Pending`** হয়ে যাবে, যাতে অ্যাডমিন যাচাই করে পুনরায় অ্যাপ্রুভ করতে পারেন।
 
 ---
 
-### 2. User Experience & Visual Design
+## 1. Overview & Core Concept
 
-#### Admin Filter Bar Refinement
-- **Main Teacher List (`TeacherList.tsx`)**:
-  - The search input placeholder is updated to: `নাম, প্রতিষ্ঠান, ফোন নম্বর বা অনার্স বিষয় দিয়ে খুঁজুন...`.
-  - The filter row expands from a 3-column grid (`sm:grid-cols-3`) to a balanced 4-column grid (`grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4`) containing:
-    1. **এলাকা (Area)**
-    2. **কলেজ / প্রতিষ্ঠান (Institution)**
-    3. **অনার্স বিষয় (Honours Subject)**
-    4. **বিশেষ ক্যাটাগরি (Special Category)**
-  - Retains the existing dark/light slate styling, chevron icons, and smooth transitions.
-
-- **Pending Teachers List (`PendingTeachersList.tsx`)**:
-  - Search placeholder updated to: `নাম, ফোন, প্রতিষ্ঠান বা অনার্স বিষয় দিয়ে খুঁজুন...`.
-  - Added an Honours Subject dropdown filter right beside the search input, styled consistently with the high-contrast dashboard aesthetic.
-
-- **Zero-Pill Compliance & Clean Data Display**:
-  - The Honours subject is displayed as clean, unboxed typography in teacher profiles and expanded detail drawers (`education.honours.subject (Year)`), maintaining the strict anti-slop guidelines.
+- **What It Does**: ল্যান্ডিং পেজে **"সিভি স্ট্যাটাস দেখুন"** মোডালে মোবাইল নম্বর দিয়ে সার্চ করলে ফলাফলের ঠিক উপরে একটি স্পষ্ট **"Need Update (সিভি আপডেট করুন)"** বাটন দেখাবে। নতুন ব্যবহারকারীরা ফোনে OTP নিয়ে ভেরিফাই ও পিন সেট করবেন; আর একবার ভেরিফাইড শিক্ষকরা পরবর্তীতে কোনো OTP খরচ না করেই সরাসরি নিজেদের টিচার ড্যাশবোর্ড থেকে সিভির সব তথ্য (কলেজ, অনার্স বিষয়, অভিজ্ঞতা, ঠিকানা, ছবি ইত্যাদি) আপডেট করতে পারবেন।
+- **Target Audience / Persona**: নিবন্ধিত গৃহশিক্ষকবৃন্দ (যাদের তথ্যের পরিবর্তন বা সংশোধন প্রয়োজন) এবং প্ল্যাটফর্ম অ্যাডমিন (যাদের কাছে এসএমএস খরচ নিয়ন্ত্রণ ও আপডেট হওয়া সিভি পুনরায় ভেরিফাই করার নিয়ন্ত্রণ থাকবে)।
+- **Key Value**: অ্যাডমিনকে বারবার ফোন কল করার ঝামেলা দূর করা, শিক্ষকদের স্বয়ংক্রিয় সেলফ-সার্ভিস সিভি আপডেট সুবিধা দেওয়া এবং একবার ওটিপি ব্যবহারের পর পিন/সেশন ভিত্তিক লগইনের মাধ্যমে এসএমএস গেটওয়ে খরচ সর্বনিম্ন রাখা।
 
 ---
 
-### 3. Key Product Decisions & Trade-Offs
+## 2. User Experience & Visual Design
 
-- **Centralized Subject Constants**:
-  - *Chosen Approach*: Move `HONOURS_SUBJECTS` to `src/constants.ts` so that registration forms, modal editors, and admin filter dropdowns always share a unified, consistent list of subjects.
-  - *Why*: Eliminates duplication and guarantees that when a tutor selects a subject during onboarding, the exact same string is available in the admin filter.
-- **Case-Insensitive & Flexible Matching**:
-  - *Chosen Approach*: Text search matches against `.toLowerCase()` on both Latin and Bengali characters, ensuring seamless searching regardless of keyboard language.
-  - *Why*: Bengali users sometimes search in English ("Physics") and sometimes in Bengali phonetics; normal text search handles exact substrings gracefully.
+- **Key User Flows**:
+  1. **নম্বর সার্চ ও "Need Update" বাটন**: শিক্ষক তার ১১-ডিজিটের মোবাইল নম্বর দিয়ে সার্চ করলে স্ট্যাটাস কার্ডের একদম উপরে **"Need Update (সিভি আপডেট প্রয়োজন?)"** বাটন প্রদর্শিত হবে।
+  2. **প্রথমবার OTP ভেরিফিকেশন ও লিমিট ট্র্যাকার**:
+     - শিক্ষক আগে কখনো OTP ভেরিফাই না করে থাকলে **"Send OTP"** অপশন আসবে, যেখানে আজকের অবশিষ্ট OTP লিমিট (`আজকের অবশিষ্ট ওটিপি: ৩/৩`) দেখাবে।
+     - ফোনে যাওয়া ৬-ডিজিটের কোডটি ইনপুট দিয়ে ভেরিফাই করার পর শিক্ষককে একটি **৪-ডিজিটের স্থায়ী ড্যাশবোর্ড পিন (PIN)** সেট করতে বলা হবে।
+  3. **পরবর্তীতে OTP ছাড়াই ড্যাশবোর্ড লগইন**:
+     - একবার OTP ভেরিফাই সম্পন্ন হলে, একই ডিভাইসে সেশন অটো-লগইন থাকবে অথবা অন্য ডিভাইসে শুধু ৪-ডিজিটের পিন দিয়েই (কোনো নতুন OTP ছাড়াই) সরাসরি **Teacher Self-Service Dashboard**-এ প্রবেশ করা যাবে।
+     - পিন ভুলে গেলে দৈনিক লিমিটের আওতায় **"OTP দিয়ে পিন রিসেট"** করার অপশন থাকবে।
+  4. **টিচার ড্যাশবোর্ড ও সিভি আপডেট**:
+     - ড্যাশবোর্ডে শিক্ষকের বর্তমান সিভির বিস্তারিত তথ্য, স্ট্যাটাস এবং **"সিভির তথ্য এডিট করুন"** বাটন থাকবে।
+     - বাটনে ক্লিক করলে পূর্বের সব তথ্যসহ সিভি ফর্ম (`TeacherModal`) ওপেন হবে। তথ্য পরিবর্তন করে সাবমিট করলে স্ট্যাটাস `Pending` হয়ে অ্যাডমিন প্যানেলে চলে যাবে।
+- **Visual Identity & Theme**:
+  - *Aesthetic Direction*: বর্তমান অ্যাপের ক্লিন এমারেল্ড-স্লেট (`#059669` ও `#0F172A`) ডুয়াল-থিম (Light/Dark Mode) ডিজাইন বজায় রাখা হবে।
+  - *Typography & Tabular Discipline*: ওটিপি ইনপুট বক্স, কাউন্টডাউন টাইমার (`04:59`) এবং দৈনিক লিমিট কাউন্টারে `font-mono tabular-nums` ব্যবহার করা হবে যাতে সংখ্যা পরিবর্তনের সময় লেআউট না নড়ে।
+- **Interactive Feedback & Motion**: ওটিপি পাঠানোর সময় লোডিং স্টেট, ৬০ সেকেন্ডের রিসেন্ড টাইমার, অবশিষ্ট চেষ্টার সতর্কবার্তা এবং সফল আপডেটের পর টোস্ট নোটিফিকেশন।
 
 ---
 
-### 4. Technical Architecture & Data Strategy
+## 3. Key Product Decisions & Trade-Offs
+
+- **Decision 1: এককালীন OTP ভেরিফিকেশন + স্থায়ী পিন ও ডিভাইস সেশন**
+  - *Chosen Approach*: প্রথমবার OTP ভেরিফাই সফল হলে ফায়ারস্টোরে শিক্ষকের নম্বরের বিপরীতে `isOtpVerified: true` এবং হ্যাশ করা ৪-ডিজিট পিন (`pinHash`) সংরক্ষণ করা হবে, পাশাপাশি ব্রাউজারে সেশন টোকেন থাকবে।
+  - *Why*: প্রতিবার সিভি এডিট করতে গেলে নতুন SMS OTP পাঠাতে হলে গেটওয়ে খরচ অনেক বেড়ে যাবে। একবার মোবাইল নম্বরটি ওটিপি দিয়ে মালিকানা নিশ্চিত করার পর পিন বা সেশন দিয়ে আনলিমিটেড বার ওটিপি ছাড়াই ড্যাশবোর্ডে ঢোকা যাবে।
+- **Decision 2: দৈনিক ওটিপি লিমিট (Rate Limiting)**
+  - *Chosen Approach*: নম্বর প্রতি দিনে সর্বোচ্চ ৩টি ওটিপি, দুটি ওটিপির মাঝে ৬০ সেকেন্ডের বিরতি এবং প্রতিটি ওটিপিতে সর্বোচ্চ ৩ বার ভুল কোড ট্রাই করার সীমা।
+  - *Why*: কোনো ব্যবহারকারী বা বট যেন বারবার ওটিপি বাটন চেপে এসএমএস ব্যালেন্স শেষ করতে না পারে।
+- **Decision 3: সার্ভার-সাইড SMS Gateway প্রক্সি**
+  - *Chosen Approach*: এক্সপ্রেস সার্ভারে `/api/otp/send` রাউটের মাধ্যমে বাংলাদেশি SMS Gateway API কল করা হবে এবং API Key শুধুমাত্র সার্ভার এনভায়রনমেন্টে (`SMS_API_KEY`, `SMS_API_URL`, `SMS_SENDER_ID`) থাকবে।
+  - *Why*: ব্রাউজার বা ফ্রন্টএন্ডে কখনোই SMS API Key প্রকাশ পাবে না, ফলে নিরাপত্তা শতভাগ অক্ষুণ্ণ থাকবে।
+
+---
+
+## 4. Technical Architecture & Data Strategy *(Technical Reference)*
+
+- **Architecture & Component Diagram**:
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                       Admin Dashboard                       │
-└──────────────┬───────────────────────────────┬──────────────┘
-               │                               │
-               ▼                               ▼
-  ┌────────────────────────┐      ┌─────────────────────────┐
-  │   TeacherList (All)    │      │   PendingTeachersList   │
-  ├────────────────────────┤      ├─────────────────────────┤
-  │ [Search: Name/Hons]    │      │ [Search: Name/Hons]     │
-  │ [Area Dropdown]        │      │ [Hons Subject Dropdown] │
-  │ [Institution Dropdown] │      └────────────┬────────────┘
-  │ [Hons Subject Dropdown]│                   │
-  │ [Category Dropdown]    │                   │
-  └────────────┬───────────┘                   │
-               │                               │
-               ▼                               ▼
-       ┌───────────────────────────────────────────────┐
-       │             filteredTeachers Memo             │
-       │  • matchesSearch (name, college, phone, hons) │
-       │  • matchesSubject (education.honours.subject) │
-       │  • matchesArea / matchesCollege / matchesCat  │
-       └───────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────────┐
+│                    Public Landing & Status Search                       │
+│  ┌───────────────────────────────────────────────────────────────────┐  │
+│  │                TeacherStatusModal (Phone Search)                  │  │
+│  │  ┌─────────────────────────────────────────────────────────────┐  │  │
+│  │  │ Top Action Bar: [ Need Update (সিভি আপডেট প্রয়োজন) ] Button │  │  │
+│  │  └──────────────┬──────────────────────────────────┬───────────┘  │  │
+│  │                 │ First-Time / Reset               │ Verified Before │
+│  │                 ▼                                  ▼              │  │
+│  │  ┌──────────────────────────────┐   ┌──────────────────────────┐  │  │
+│  │  │   OTP Verification & Limit   │   │ Direct Dashboard Login   │  │  │
+│  │  │  • Max 3 OTPs / 24 Hours     │   │ • Auto Session or 4-PIN  │  │  │
+│  │  │  • 60s Resend Cooldown       │   │ • Zero SMS Cost Login    │  │  │
+│  │  │  • Set 4-Digit Dashboard PIN │   └──────────────┬───────────┘  │  │
+│  │  └──────────────┬───────────────┘                  │              │  │
+│  │                 └─────────────────┬────────────────┘              │  │
+│  │                                   ▼                               │  │
+│  │  ┌─────────────────────────────────────────────────────────────┐  │  │
+│  │  │            Teacher Self-Service Dashboard View              │  │  │
+│  │  │  • View Full CV Summary, Status & Admin Feedback            │  │  │
+│  │  │  • Open Pre-filled TeacherModal -> Save -> Status="Pending" │  │  │
+│  │  └─────────────────────────────────────────────────────────────┘  │  │
+│  └───────────────────────────────────────────────────────────────────┘  │
+└────────────────────┬──────────────────────────────────┬─────────────────┘
+                     │ POST /api/otp/send               │ Read / Write
+                     ▼                                  ▼
+      ┌──────────────────────────────┐   ┌──────────────────────────────┐
+      │ Express Server Proxy         │   │ Cloud Firestore              │
+      │ • BD SMS Gateway Integration │   │ • tc_teacher_auth/{phone}    │
+      │ • Env Secret Protection      │   │ • tc_teachers/{docId}        │
+      └──────────────────────────────┘   │ • tc_teacher_public_status   │
+                                         └──────────────────────────────┘
 ```
 
-#### Entity Properties
-- `teacher.education.honours.subject`: String representing the major department (e.g., "Physics", "Chemistry", "Mathematics", "English", "Others").
-- Standard List from `HONOURS_SUBJECTS`: Physics, Chemistry, Mathematics, Zoology, Botany, English, Bangla, Accounting, Management, Economics, Political Science, History, Islamic History, Sociology, Social Work, MBBS, BDS, Computer Science, Others.
+- **Data Model & State**:
+  - **`tc_teacher_auth/{phone}` (Firestore Collection)**:
+    - `phone`: শিক্ষকের ১১-ডিজিটের মোবাইল নম্বর।
+    - `otpHash`: বর্তমান সক্রিয় ৬-ডিজিট ওটিপির হ্যাশ।
+    - `expiresAt`: ওটিপি মেয়াদোত্তীর্ণের সময় (৫ মিনিট)।
+    - `attempts`: বর্তমান ওটিপিতে ভুল চেষ্টার সংখ্যা (সর্বোচ্চ ৩)।
+    - `dailyCount`: আজকের দিনে পাঠানো মোট ওটিপির সংখ্যা (সর্বোচ্চ ৩)।
+    - `dailyResetDate`: সর্বশেষ ওটিপি কাউন্টার রিসেটের তারিখ (`YYYY-MM-DD`)।
+    - `lastSentAt`: সর্বশেষ ওটিপি পাঠানোর টাইমস্ট্যাম্প (৬০ সেকেন্ড কুলডাউন চেকের জন্য)।
+    - `isVerified`: একবার ওটিপি সফলভাবে ভেরিফাই হয়েছে কি না (`boolean`)।
+    - `pinHash`: ওটিপি ছাড়াই ড্যাশবোর্ডে লগইনের জন্য শিক্ষকের সেট করা ৪-ডিজিট পিনের হ্যাশ।
+  - **`tc_teachers/{docId}` & `tc_teacher_public_status/{phone}`**:
+    - সিভি আপডেট সাবমিট হলে `tc_teachers/{docId}` ডকুমেন্টে নতুন তথ্য আপডেট হবে, `status: "Pending"` এবং `updatedAt` সেট হবে (রেটিং বা ফোন নম্বর অপরিবর্তিত থাকবে), এবং পাবলিক স্ট্যাটাস সিঙ্ক হবে।
+- **Interactive Component & State Mapping**:
+  - `TeacherStatusModal` এ সার্চ করার পর ফলাফলের উপরে **"Need Update"** বাটনে ক্লিক করলে সিস্টেম চেক করবে ওই নম্বরে ইতিমধ্যে ডিভাইস সেশন বা `isVerified + pinHash` আছে কি না।
+  - যদি সেশন থাকে, সরাসরি **Teacher Dashboard** ভিউ দেখাবে; যদি পিন সেট করা থাকে, পিন ইনপুট দিয়ে ওটিপি ছাড়াই লগইন করবে; আর প্রথমবার হলে `/api/otp/send` এ কল করে ফোনে SMS পাঠাবে এবং ভেরিফাই শেষে পিন সেট করিয়ে ড্যাশবোর্ডে নিয়ে যাবে।
+  - ড্যাশবোর্ড থেকে **"সিভি এডিট করুন"** বাটনে ক্লিক করলে ডাটাবেস থেকে শিক্ষকের সম্পূর্ণ প্রোফাইল লোড হয়ে `TeacherModal` ফর্মে বসবে এবং সাবমিট করলে পুনরায় অ্যাডমিন অনুমোদনের জন্য `Pending` তালিকায় যুক্ত হবে।

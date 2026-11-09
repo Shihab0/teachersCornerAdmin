@@ -19,9 +19,7 @@ service cloud.firestore {
           "atahershihab151@gmail.com",
           "teacherscorner01@gmail.com",
           "dipu.tc@gmail.com",
-          "shimanto.tc@gmail.com",
-          
-          
+          "shimanto.tc@gmail.com"
         ] || (request.auth.token.email.matches(".*@teacherscorner\\.com$") && request.auth.token.email_verified == true)
       );
     }
@@ -39,18 +37,13 @@ service cloud.firestore {
       );
     }
 
-    function isValidTeacherUpdate(docId) {
+    function isValidTeacherUpdate() {
       let incoming = request.resource.data;
       let existing = resource.data;
       return isAdmin() || (
-        isAuthenticated() &&
-        (
-          ("createdBy" in existing && existing.createdBy == request.auth.uid) ||
-          ("userId" in existing && existing.userId == request.auth.uid) ||
-          request.auth.uid == docId
-        ) &&
         incoming.status == "Pending" &&
-        incoming.phone == existing.phone
+        incoming.phone == existing.phone &&
+        incoming.name is string && incoming.name.size() > 0 && incoming.name.size() <= 200
       );
     }
 
@@ -82,8 +75,9 @@ service cloud.firestore {
     // 1. Teachers Collection
     match /artifacts/{appId}/public/data/tc_teachers/{docId} {
       allow create: if isValidTeacherCreate();
-      allow read, get, list: if isAdmin() || resource.data.status == "Approved";
-      allow update: if isValidTeacherUpdate(docId);
+      allow get: if true;
+      allow list: if isAdmin() || resource.data.status == "Approved";
+      allow update: if isValidTeacherUpdate() || isAdmin();
       allow delete: if isAdmin();
     }
 
@@ -94,6 +88,19 @@ service cloud.firestore {
         request.resource.data.keys().hasAll(['phone', 'applications']) &&
         request.resource.data.phone == phone &&
         request.resource.data.applications is list
+      );
+    }
+
+    // 1b. Teacher OTP & Self-Service Dashboard Auth State
+    match /artifacts/{appId}/public/data/tc_teacher_auth/{phone} {
+      allow get: if true;
+      allow write: if isAdmin() || (
+        request.resource.data.keys().hasAll(['phone']) &&
+        request.resource.data.phone == phone &&
+        request.resource.data.phone is string &&
+        request.resource.data.phone.size() <= 20 &&
+        (!("dailyCount" in request.resource.data) || request.resource.data.dailyCount is number) &&
+        (!("attempts" in request.resource.data) || request.resource.data.attempts is number)
       );
     }
 

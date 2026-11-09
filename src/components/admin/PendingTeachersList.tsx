@@ -260,7 +260,7 @@ export const PendingTeachersList: React.FC<PendingTeachersListProps> = ({
                       </div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3 shrink-0 ml-3">
+                  <div className="flex items-center gap-2 shrink-0 ml-3">
                     <a 
                       href={`tel:${teacher.phone}`} 
                       onClick={(e) => e.stopPropagation()}

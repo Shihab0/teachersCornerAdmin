@@ -485,12 +485,25 @@ export default function App() {
       const teacherRef = collection(db, COLLECTIONS.TEACHERS);
       if (editingTeacher) {
         const newStatus = isAdmin ? (teacherData.status || editingTeacher.status || "Approved") : "Pending";
+        const targetPhone = teacherData.phone || editingTeacher.phone;
         await updateDoc(doc(teacherRef, editingTeacher.id), { 
           ...teacherData, 
+          phone: targetPhone,
           status: newStatus,
           updatedAt: Date.now() 
         });
         if (!isAdmin) {
+          if (targetPhone) {
+            const { upsertPublicTeacherStatusEntry } = await import("./lib/syncTeacherPublicStatus");
+            await upsertPublicTeacherStatusEntry(targetPhone, {
+              id: editingTeacher.id,
+              name: teacherData.name || editingTeacher.name || "",
+              collegeName: teacherData.collegeName || editingTeacher.collegeName || "",
+              status: "Pending",
+              adminMessage: editingTeacher.adminMessage || "",
+              photoUrl: teacherData.photoUrl ?? editingTeacher.photoUrl ?? "",
+            });
+          }
           toast.success("শিক্ষকের সিভির তথ্য আপডেট করা হয়েছে এবং পুনরায় এডমিন পর্যালোচনায় (Admin Review) পাঠানো হয়েছে");
         } else {
           toast.success("শিক্ষকের তথ্য সফলভাবে আপডেট করা হয়েছে");

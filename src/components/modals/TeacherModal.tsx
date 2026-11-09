@@ -75,15 +75,33 @@ export const TeacherModal: React.FC<TeacherModalProps> = ({
     rating: initialData?.rating?.toString() || "5.0",
   });
 
+  const [customCollege, setCustomCollege] = useState("");
+  const [customPresentAddress, setCustomPresentAddress] = useState("");
+  const [customHonoursSubject, setCustomHonoursSubject] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   React.useEffect(() => {
     if (initialData) {
+      const initCollege = initialData.collegeName || "";
+      const isKnownCollege = KISHOREGANJ_INSTITUTIONS.includes(initCollege);
+
+      const initAddress = initialData.presentAddress || "";
+      const isKnownAddress = KISHOREGANJ_AREAS.includes(initAddress);
+
+      const initHonoursSub = initialData.education?.honours?.subject || "";
+      const isKnownHonoursSub = HONOURS_SUBJECTS.includes(initHonoursSub);
+
+      setCustomCollege(!isKnownCollege && initCollege ? initCollege : "");
+      setCustomPresentAddress(!isKnownAddress && initAddress ? initAddress : "");
+      setCustomHonoursSubject(!isKnownHonoursSub && initHonoursSub ? initHonoursSub : "");
+
       setFormData({
         name: initialData.name || "",
         phone: initialData.phone || "",
         gender: initialData.gender || "",
         photoUrl: initialData.photoUrl || "",
-        collegeName: initialData.collegeName || "",
-        presentAddress: initialData.presentAddress || "",
+        collegeName: initCollege ? (isKnownCollege ? initCollege : "Others") : "",
+        presentAddress: initAddress ? (isKnownAddress ? initAddress : "Others (অন্যান্য)") : "",
         permanentAddress: initialData.permanentAddress || "",
         sscYear: initialData.education?.ssc?.year || "",
         sscGroup: initialData.education?.ssc?.group || "",
@@ -92,7 +110,7 @@ export const TeacherModal: React.FC<TeacherModalProps> = ({
         hscGroup: initialData.education?.hsc?.group || "",
         hscGpa: initialData.education?.hsc?.gpa || "",
         honoursYear: initialData.education?.honours?.year || "",
-        honoursSubject: initialData.education?.honours?.subject || "",
+        honoursSubject: initHonoursSub ? (isKnownHonoursSub ? initHonoursSub : "Others") : "",
         honoursStudyYear: initialData.education?.honours?.studyYear || "",
         honoursGpa: initialData.education?.honours?.gpa || "",
         experience: initialData.experience || "",
@@ -111,11 +129,6 @@ export const TeacherModal: React.FC<TeacherModalProps> = ({
       setStep(1);
     }
   }, [initialData]);
-
-  const [customCollege, setCustomCollege] = useState("");
-  const [customPresentAddress, setCustomPresentAddress] = useState("");
-  const [customHonoursSubject, setCustomHonoursSubject] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, field: 'photoUrl' | 'studentIdUrl') => {
     const file = e.target.files?.[0];
@@ -194,10 +207,12 @@ export const TeacherModal: React.FC<TeacherModalProps> = ({
         facebookLink: formData.facebookLink,
         studentIdUrl: formData.studentIdUrl,
         rating: parseFloat(formData.rating),
-        createdAt: Date.now(),
+        createdAt: initialData?.createdAt || Date.now(),
       });
       
-      toast.success("শিক্ষক সফলভাবে যোগ করা হয়েছে!");
+      if (!initialData) {
+        toast.success("শিক্ষক সফলভাবে যোগ করা হয়েছে!");
+      }
       setFormData({
         name: "", phone: "", gender: "", photoUrl: "", collegeName: "", presentAddress: "", permanentAddress: "",
         sscYear: "", sscGroup: "", sscGpa: "", hscYear: "", hscGroup: "", hscGpa: "",
@@ -304,7 +319,18 @@ export const TeacherModal: React.FC<TeacherModalProps> = ({
                           <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-4">ফোন *</label>
                           <div className="relative">
                             <Icon icon={Phone} size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-400" />
-                            <input required type="tel" value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })} className="w-full pl-12 pr-4 py-3 bg-slate-50/50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800 focus:bg-white dark:focus:bg-slate-800 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 shadow-sm transition-all text-sm font-medium text-slate-800 dark:text-slate-200" placeholder="ফোন নম্বর" />
+                            <input
+                              required
+                              type="tel"
+                              readOnly={Boolean(initialData?.phone)}
+                              value={formData.phone}
+                              onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                              className={cn(
+                                "w-full pl-12 pr-4 py-3 bg-slate-50/50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800 focus:bg-white dark:focus:bg-slate-800 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 shadow-sm transition-all text-sm font-medium text-slate-800 dark:text-slate-200",
+                                initialData?.phone && "opacity-75 cursor-not-allowed"
+                              )}
+                              placeholder="ফোন নম্বর"
+                            />
                           </div>
                         </div>
                       </div>

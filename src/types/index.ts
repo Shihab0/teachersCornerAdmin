@@ -65,6 +65,7 @@ export interface Teacher {
   facebookLink?: string;
   studentIdUrl?: string;
   rating: number;
+  verificationBadge?: "NID" | "Student ID" | "Both" | "None";
   createdAt: number;
   status?: "Pending" | "Approved" | "Rejected";
   adminMessage?: string;

@@ -58,14 +58,27 @@ export const Login = ({ user, onLogin, onLogout, onInstall, deals = [], teachers
   const handleTeacherSubmit = async (teacherData: any) => {
     const path = `artifacts/${appId}/public/data/tc_teachers`;
     try {
+      const { upsertPublicTeacherStatusEntry } = await import("../../lib/syncTeacherPublicStatus");
       if (editingTeacher && editingTeacher.id) {
         const teacherDocRef = doc(db, "artifacts", appId, "public", "data", "tc_teachers", editingTeacher.id);
+        const targetPhone = teacherData.phone || editingTeacher.phone;
         await updateDoc(teacherDocRef, {
           ...teacherData,
+          phone: targetPhone,
           status: "Pending",
           updatedAt: Date.now()
         });
-        toast.success("আপনার সিভির তথ্য সফলভাবে আপডেট করা হয়েছে এবং পুনরায় এডমিন পর্যালোচনায় (Admin Review) পাঠানো হয়েছে!");
+        if (targetPhone) {
+          await upsertPublicTeacherStatusEntry(targetPhone, {
+            id: editingTeacher.id,
+            name: teacherData.name || editingTeacher.name || "",
+            collegeName: teacherData.collegeName || editingTeacher.collegeName || "",
+            status: "Pending",
+            adminMessage: editingTeacher.adminMessage || "",
+            photoUrl: teacherData.photoUrl ?? editingTeacher.photoUrl ?? "",
+          });
+        }
+        toast.success("আপনার সিভির তথ্য সফলভাবে আপডেট করা হয়েছে এবং পুনরায় এডমিন পর্যালোচনায় (Pending) পাঠানো হয়েছে!");
         setEditingTeacher(null);
       } else {
         const payload = {
@@ -74,12 +87,22 @@ export const Login = ({ user, onLogin, onLogout, onInstall, deals = [], teachers
           createdAt: Date.now(),
           rating: 5.0,
         };
-        await addDoc(collection(db, "artifacts", appId, "public", "data", "tc_teachers"), payload);
+        const newDocRef = await addDoc(collection(db, "artifacts", appId, "public", "data", "tc_teachers"), payload);
+        if (teacherData.phone) {
+          await upsertPublicTeacherStatusEntry(teacherData.phone, {
+            id: newDocRef.id,
+            name: teacherData.name || "",
+            collegeName: teacherData.collegeName || "",
+            status: "Pending",
+            adminMessage: "",
+            photoUrl: teacherData.photoUrl || "",
+          });
+        }
         toast.success("আপনার সিভি সফলভাবে জমা হয়েছে! আমরা শীঘ্রই আপনার সাথে যোগাযোগ করব।");
       }
     } catch (error) {
-      handleFirestoreError(error, editingTeacher ? "UPDATE" : "CREATE", path);
-      toast.error("সিভি ডায়লগ সমস্যা হয়েছে। আবার চেষ্টা করুন।");
+      handleFirestoreError(error, editingTeacher ? OperationType.UPDATE : OperationType.CREATE, path);
+      toast.error("সিভি জমা বা আপডেট করতে সমস্যা হয়েছে। আবার চেষ্টা করুন।");
       throw error;
     }
   };
