@@ -1,1 +1,2 @@
+/api/otp/send /.netlify/functions/send-otp 200!
 /* /index.html 200

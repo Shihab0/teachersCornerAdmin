@@ -1,4 +1,4 @@
-const CACHE_NAME = "tc-admin-v6"; // Bumping version to force clear
+const CACHE_NAME = "tc-admin-v7"; // Bumping version to force clear
 const ASSETS_TO_CACHE = [
   "/manifest.json",
 ];
@@ -34,6 +34,15 @@ self.addEventListener("activate", (event) => {
 self.addEventListener("fetch", (event) => {
   const { request } = event;
   const url = new URL(request.url);
+
+  // Never intercept non-GET requests or backend/serverless API calls
+  if (
+    request.method !== "GET" ||
+    url.pathname.startsWith("/api/") ||
+    url.pathname.startsWith("/.netlify/")
+  ) {
+    return;
+  }
 
   // 1. NEVER cache the index.html or root path. 
   // This is the most important fix for the "MIME type" error.

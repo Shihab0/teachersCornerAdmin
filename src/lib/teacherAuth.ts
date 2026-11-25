@@ -155,13 +155,22 @@ export async function requestTeacherOtp(phone: string): Promise<{
   const today = getTodayDateKey();
   const newDailyCount = (record.dailyResetDate === today ? (record.dailyCount || 0) : 0) + 1;
 
-  const response = await fetch("/api/otp/send", {
+  let response = await fetch("/api/otp/send", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ phone: cleanPhone, otp }),
   });
 
-  const contentType = response.headers.get("content-type") || "";
+  let contentType = response.headers.get("content-type") || "";
+  if (!contentType.includes("application/json")) {
+    response = await fetch("/.netlify/functions/send-otp", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ phone: cleanPhone, otp }),
+    });
+    contentType = response.headers.get("content-type") || "";
+  }
+
   if (!contentType.includes("application/json")) {
     throw new Error("সার্ভার OTP এন্ডপয়েন্ট পাওয়া যায়নি। অনুগ্রহ করে পরে আবার চেষ্টা করুন।");
   }
