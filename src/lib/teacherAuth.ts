@@ -155,70 +155,27 @@ export async function requestTeacherOtp(phone: string): Promise<{
   const today = getTodayDateKey();
   const newDailyCount = (record.dailyResetDate === today ? (record.dailyCount || 0) : 0) + 1;
 
-  let mode: "live" | "sandbox" = "live";
-  let demoOtp: string | undefined = undefined;
-  let gatewayNotice: string | undefined = undefined;
-  let serverIp: string | undefined = undefined;
-  let message = `${cleanPhone} নম্বরে OTP পাঠানো হয়েছে।`;
+  const response = await fetch("/api/otp/send", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ phone: cleanPhone, otp }),
+  });
 
-  try {
-    const response = await fetch("/api/otp/send", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ phone: cleanPhone, otp }),
-    });
-
-    const contentType = response.headers.get("content-type") || "";
-    if (contentType.includes("application/json")) {
-      const data = await response.json();
-      if (!response.ok || !data.success) {
-        throw new Error(data.error || "ওটিপি পাঠাতে সমস্যা হয়েছে।");
-      }
-      mode = data.mode || "live";
-      demoOtp = data.demoOtp;
-      gatewayNotice = data.gatewayNotice;
-      serverIp = data.serverIp;
-      message = data.message;
-    } else {
-      // Fallback for Netlify static hosting via /api/bulksms edge redirect
-      const intlPhone = `88${cleanPhone}`;
-      const smsMessage = `Your Teachers Corner OTP is ${otp}`;
-      const apiKey = (import.meta as any).env?.VITE_SMS_API_KEY || "4imlJiQWPaDjZyQnTBCK";
-      const senderId = (import.meta as any).env?.VITE_SMS_SENDER_ID || "8809617634959";
-
-      const params = new URLSearchParams({
-        api_key: apiKey,
-        type: "text",
-        number: intlPhone,
-        senderid: senderId,
-        message: smsMessage,
-      });
-
-      const proxyRes = await fetch(`/api/bulksms?${params.toString()}`);
-      const proxyText = await proxyRes.text();
-      try {
-        const parsed = JSON.parse(proxyText);
-        const code = Number(parsed.response_code || 0);
-        if (code !== 202 && code !== 200) {
-          const note = String(parsed.error_message || "");
-          const ipMatch = note.match(/\b(?:\d{1,3}\.){3}\d{1,3}\b/);
-          serverIp = ipMatch ? ipMatch[0] : "34.34.244.77";
-          mode = "sandbox";
-          demoOtp = otp;
-          gatewayNotice =
-            code === 1032
-              ? `BulkSMSBD প্যানেলে সার্ভার IP (${serverIp}) Whitelist করা নেই। bulksmsbd.net-এর Phonebook থেকে এই IP-টি Whitelist করলে সরাসরি ফোনে SMS যাবে।`
-              : `BulkSMSBD কোড (${code}): ${note}`;
-        }
-      } catch {
-        mode = "sandbox";
-        demoOtp = otp;
-      }
-    }
-  } catch {
-    mode = "sandbox";
-    demoOtp = otp;
+  const contentType = response.headers.get("content-type") || "";
+  if (!contentType.includes("application/json")) {
+    throw new Error("সার্ভার OTP এন্ডপয়েন্ট পাওয়া যায়নি। অনুগ্রহ করে পরে আবার চেষ্টা করুন।");
   }
+
+  const data = await response.json();
+  if (!response.ok || !data.success) {
+    throw new Error(data.error || "ওটিপি পাঠাতে সমস্যা হয়েছে।");
+  }
+
+  const mode: "live" | "sandbox" = data.mode || "live";
+  const demoOtp: string | undefined = data.demoOtp;
+  const gatewayNotice: string | undefined = data.gatewayNotice;
+  const serverIp: string | undefined = data.serverIp;
+  const message: string = data.message || `${cleanPhone} নম্বরে OTP পাঠানো হয়েছে।`;
 
   // Save OTP state & rate limit counter in Firestore
   const authRef = doc(db, "artifacts", appId, "public", "data", "tc_teacher_auth", cleanPhone);

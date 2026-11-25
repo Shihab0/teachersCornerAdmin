@@ -3,8 +3,8 @@
   publish = "dist"
 
 [[redirects]]
-  from = "/api/bulksms"
-  to = "http://bulksmsbd.net/api/smsapi"
+  from = "/api/otp/send"
+  to = "/.netlify/functions/send-otp"
   status = 200
   force = true
 

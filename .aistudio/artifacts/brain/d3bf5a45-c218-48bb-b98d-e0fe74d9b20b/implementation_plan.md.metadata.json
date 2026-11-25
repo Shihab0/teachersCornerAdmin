@@ -1,6 +1,0 @@
-{
-  "summary":  "Implementation plan for Teacher CV Update via Bangladeshi SMS Gateway OTP with rate limiting, PIN/Dashboard passwordless/OTP-free repeat login, and automatic Pending status transition for Admin review.",
-  "updatedAt":  "2026-11-07T05:30:51.807343152Z",
-  "requestFeedback":  true,
-  "userFacing":  true
-}

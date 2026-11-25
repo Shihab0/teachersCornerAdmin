@@ -3,6 +3,26 @@ import react from '@vitejs/plugin-react';
 import path from 'path';
 import {defineConfig, loadEnv, Plugin} from 'vite';
 
+const ALLOWED_SMS_HOSTS = new Set(['bulksmsbd.net', 'www.bulksmsbd.net']);
+const DEFAULT_SMS_API_URL = 'http://bulksmsbd.net/api/smsapi';
+
+function resolveSafeSmsUrl(rawUrl?: string): URL {
+  if (rawUrl) {
+    try {
+      const parsed = new URL(rawUrl.trim());
+      if (
+        (parsed.protocol === 'http:' || parsed.protocol === 'https:') &&
+        ALLOWED_SMS_HOSTS.has(parsed.hostname.toLowerCase())
+      ) {
+        return parsed;
+      }
+    } catch {
+      // Fall back to default URL
+    }
+  }
+  return new URL(DEFAULT_SMS_API_URL);
+}
+
 function bulkSmsOtpPlugin(env: Record<string, string>): Plugin {
   return {
     name: 'bulksms-otp-api-middleware',
@@ -23,16 +43,19 @@ function bulkSmsOtpPlugin(env: Record<string, string>): Plugin {
         req.on('end', async () => {
           try {
             const parsedBody = JSON.parse(body || '{}');
-            const {phone, otp} = parsedBody as {phone?: string; otp?: string};
+            const {phone, otp} = parsedBody as {phone?: unknown; otp?: unknown};
 
-            if (!phone || !otp) {
+            const rawPhone = typeof phone === 'string' ? phone : '';
+            const rawOtp = typeof otp === 'string' ? otp.trim() : '';
+
+            if (!rawPhone || !rawOtp) {
               res.statusCode = 400;
               res.setHeader('Content-Type', 'application/json');
               res.end(JSON.stringify({error: 'মোবাইল নম্বর এবং ওটিপি আবশ্যক।'}));
               return;
             }
 
-            const digitsOnly = phone.replace(/\D/g, '');
+            const digitsOnly = rawPhone.replace(/\D/g, '');
             const localPhone = digitsOnly.startsWith('880')
               ? digitsOnly.slice(2)
               : digitsOnly;
@@ -48,28 +71,55 @@ function bulkSmsOtpPlugin(env: Record<string, string>): Plugin {
               return;
             }
 
-            const intlPhone = `88${localPhone}`;
-            // Strict BulkSMSBD required format: (Your {Brand/Company Name} OTP is XXXX)
-            const smsMessage = `Your Teachers Corner OTP is ${otp}`;
+            if (!/^\d{4,6}$/.test(rawOtp)) {
+              res.statusCode = 400;
+              res.setHeader('Content-Type', 'application/json');
+              res.end(
+                JSON.stringify({
+                  error: 'সঠিক ৪-ডিজিটের ওটিপি কোড প্রয়োজন।',
+                })
+              );
+              return;
+            }
 
-            const apiKey =
+            const apiKey = (
               process.env.SMS_API_KEY ||
               env.SMS_API_KEY ||
-              '4imlJiQWPaDjZyQnTBCK';
-            const senderId =
+              ''
+            ).trim();
+            const senderId = (
               process.env.SMS_SENDER_ID ||
               env.SMS_SENDER_ID ||
-              '8809617634959';
-            const apiUrl =
-              process.env.SMS_API_URL ||
-              env.SMS_API_URL ||
-              'http://bulksmsbd.net/api/smsapi';
+              ''
+            ).trim();
 
-            const url = new URL(apiUrl);
-            url.searchParams.set('api_key', apiKey.trim());
+            if (!apiKey || !senderId) {
+              res.statusCode = 200;
+              res.setHeader('Content-Type', 'application/json');
+              res.end(
+                JSON.stringify({
+                  success: true,
+                  mode: 'sandbox',
+                  demoOtp: rawOtp,
+                  gatewayNotice:
+                    'লাইভ SMS পাঠাতে Settings → Secrets-এ SMS_API_KEY এবং SMS_SENDER_ID সেট করুন।',
+                  message: `OTP কোড প্রস্তুত হয়েছে (${rawOtp})`,
+                })
+              );
+              return;
+            }
+
+            const intlPhone = `88${localPhone}`;
+            // Strict BulkSMSBD required format: (Your {Brand/Company Name} OTP is XXXX)
+            const smsMessage = `Your Teachers Corner OTP is ${rawOtp}`;
+
+            const url = resolveSafeSmsUrl(
+              process.env.SMS_API_URL || env.SMS_API_URL
+            );
+            url.searchParams.set('api_key', apiKey);
             url.searchParams.set('type', 'text');
             url.searchParams.set('number', intlPhone);
-            url.searchParams.set('senderid', senderId.trim());
+            url.searchParams.set('senderid', senderId);
             url.searchParams.set('message', smsMessage);
 
             const gatewayRes = await fetch(url.toString(), {method: 'GET'});
@@ -100,10 +150,10 @@ function bulkSmsOtpPlugin(env: Record<string, string>): Plugin {
             }
 
             const ipMatch = gatewayNote.match(/\b(?:\d{1,3}\.){3}\d{1,3}\b/);
-            const serverIp = ipMatch ? ipMatch[0] : '34.34.244.77';
+            const serverIp = ipMatch ? ipMatch[0] : '';
             const gatewayNotice =
               gatewayCode === 1032
-                ? `BulkSMSBD প্যানেলে সার্ভার IP (${serverIp}) Whitelist করা নেই। bulksmsbd.net-এর Phonebook থেকে এই IP-টি Whitelist করলে সরাসরি ফোনে SMS যাবে।`
+                ? `BulkSMSBD প্যানেলে সার্ভার IP${serverIp ? ` (${serverIp})` : ''} Whitelist করা নেই। bulksmsbd.net-এর Phonebook → IP White List থেকে Source IP Checking Disable করলে সরাসরি ফোনে SMS যাবে।`
                 : gatewayNote
                   ? `BulkSMSBD কোড (${gatewayCode}): ${gatewayNote}`
                   : 'SMS গেটওয়ে রেসপন্স পাওয়া যায়নি।';
@@ -114,21 +164,18 @@ function bulkSmsOtpPlugin(env: Record<string, string>): Plugin {
               JSON.stringify({
                 success: true,
                 mode: 'sandbox',
-                demoOtp: otp,
+                demoOtp: rawOtp,
                 gatewayNotice,
-                serverIp,
-                message: `OTP কোড প্রস্তুত হয়েছে (${otp})`,
+                serverIp: serverIp || undefined,
+                message: `OTP কোড প্রস্তুত হয়েছে (${rawOtp})`,
               })
             );
           } catch {
-            res.statusCode = 200;
+            res.statusCode = 500;
             res.setHeader('Content-Type', 'application/json');
             res.end(
               JSON.stringify({
-                success: true,
-                mode: 'sandbox',
-                demoOtp: '1234',
-                message: 'ওটিপি সার্ভিস সাময়িকভাবে ব্যস্ত।',
+                error: 'ওটিপি পাঠাতে সার্ভার ত্রুটি হয়েছে। আবার চেষ্টা করুন।',
               })
             );
           }
